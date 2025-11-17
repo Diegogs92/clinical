@@ -20,23 +20,13 @@ export default function DashboardPage() {
           </div>
           <StatsOverview />
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="card">
-              <h2 className="font-semibold text-primary-dark mb-4">Próximos Turnos</h2>
-              <ul className="space-y-3 text-sm">
-                <li className="flex justify-between"><span>09:00 - Juan Pérez</span><span className="text-secondary">Confirmado</span></li>
-                <li className="flex justify-between"><span>10:30 - Ana Gómez</span><span className="text-secondary">Pendiente</span></li>
-                <li className="flex justify-between"><span>12:00 - Carlos Díaz</span><span className="text-secondary">Confirmado</span></li>
-                <li className="flex justify-between"><span>16:00 - Lucía Romero</span><span className="text-secondary">Pendiente</span></li>
-              </ul>
+            <div className="card dark:bg-gray-800 dark:border-gray-700">
+              <h2 className="font-semibold text-primary-dark dark:text-white mb-4">Próximos Turnos</h2>
+              <p className="text-sm text-secondary dark:text-gray-400">No hay turnos registrados aún.</p>
             </div>
-            <div className="card">
-              <h2 className="font-semibold text-primary-dark mb-4">Resumen Financiero</h2>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span>Ingresos Semana</span><span className="font-semibold">$38.200</span></div>
-                <div className="flex justify-between"><span>Ingresos Mes</span><span className="font-semibold">$152.300</span></div>
-                <div className="flex justify-between"><span>Pendientes Cobro</span><span className="font-semibold text-red-600">$18.500</span></div>
-                <div className="flex justify-between"><span>Promedio por Consulta</span><span className="font-semibold">$3.200</span></div>
-              </div>
+            <div className="card dark:bg-gray-800 dark:border-gray-700">
+              <h2 className="font-semibold text-primary-dark dark:text-white mb-4">Resumen Financiero</h2>
+              <p className="text-sm text-secondary dark:text-gray-400">No hay datos financieros disponibles.</p>
             </div>
           </div>
         </div>

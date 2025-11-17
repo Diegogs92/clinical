@@ -1,0 +1,16 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo circular con gradiente -->
+  <circle cx="256" cy="256" r="240" fill="#08415C"/>
+  <circle cx="256" cy="256" r="200" fill="#388697"/>
+  
+  <!-- Cruz médica estilizada -->
+  <rect x="226" y="140" width="60" height="232" rx="10" fill="#F4FAFF"/>
+  <rect x="140" y="226" width="232" height="60" rx="10" fill="#F4FAFF"/>
+  
+  <!-- Detalle de pulso/latido del corazón -->
+  <path d="M150 256 L180 256 L195 226 L210 286 L225 256 L362 256" stroke="#70AE6E" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  
+  <!-- Círculo central decorativo -->
+  <circle cx="256" cy="256" r="35" fill="#7494EA"/>
+  <circle cx="256" cy="256" r="20" fill="#F4FAFF"/>
+</svg>

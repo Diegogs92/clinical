@@ -6,21 +6,21 @@ interface Stat {
   sub?: string;
 }
 
-const mockStats: Stat[] = [
-  { label: 'Pacientes', value: 42, sub: '+3 este mes' },
-  { label: 'Turnos Hoy', value: 8, sub: '2 pendientes' },
-  { label: 'Ingresos Mes', value: '$152.300', sub: 'Objetivo 75%' },
-  { label: 'Pendientes Cobro', value: '$18.500' },
+const stats: Stat[] = [
+  { label: 'Pacientes', value: 0, sub: 'Sin registros' },
+  { label: 'Turnos Hoy', value: 0, sub: 'Sin turnos' },
+  { label: 'Ingresos Mes', value: '$0', sub: 'Sin datos' },
+  { label: 'Pendientes Cobro', value: '$0' },
 ];
 
 export default function StatsOverview() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {mockStats.map(s => (
-        <div key={s.label} className="card shadow-sm">
-          <div className="text-xs uppercase tracking-wide text-secondary mb-1">{s.label}</div>
-          <div className="text-3xl font-bold text-primary-dark mb-1">{s.value}</div>
-          {s.sub && <div className="text-xs text-secondary">{s.sub}</div>}
+      {stats.map(s => (
+        <div key={s.label} className="card dark:bg-gray-800 dark:border-gray-700 shadow-sm">
+          <div className="text-xs uppercase tracking-wide text-secondary dark:text-gray-400 mb-1">{s.label}</div>
+          <div className="text-3xl font-bold text-primary-dark dark:text-white mb-1">{s.value}</div>
+          {s.sub && <div className="text-xs text-secondary dark:text-gray-400">{s.sub}</div>}
         </div>
       ))}
     </div>

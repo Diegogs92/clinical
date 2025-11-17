@@ -107,21 +107,8 @@ export const createPayment = (data: Omit<Payment, 'id' | 'createdAt' | 'updatedA
 export const updatePayment = (id: string, partial: Partial<Payment>) => updateDocById<Payment>('payments', id, partial);
 export const deletePayment = (id: string) => deleteById('payments', id);
 
-// Util para seed rapido en mockMode
+// Util para seed rapido en mockMode (actualmente deshabilitado)
 export async function seedMockData(userId: string) {
-  if (!mockMode) return;
-  if (mem.patients.size) return; // evitar duplicado
-  await createPatient({
-    userId,
-    firstName: 'Juan',
-    lastName: 'Pérez',
-    dni: '12345678',
-    phone: '+54 11 5555 1111',
-    email: 'juan.perez@example.com',
-    notes: 'Paciente demo',
-    insuranceId: undefined,
-    insuranceNumber: undefined,
-    birthDate: '1985-05-10',
-    address: 'Calle Falsa 123'
-  });
+  // Función deshabilitada - no se cargan datos de prueba
+  return;
 }
