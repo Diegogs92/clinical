@@ -130,7 +130,7 @@ export default function PatientFileUpload({ patientId, onUpload }: Props) {
                 </div>
                 <button
                   onClick={() => removeFile(file.id)}
-                  className="flex-shrink-0 text-red-500 hover:text-red-700 dark:hover:text-red-400 transition-colors ml-2"
+                  className="flex-shrink-0 text-red-500 hover:text-red-700 dark:hover:text-red-400 hover:scale-110 transition-all ml-2"
                   aria-label="Eliminar archivo"
                 >
                   <X className="w-5 h-5" />

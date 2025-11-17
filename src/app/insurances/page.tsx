@@ -27,7 +27,7 @@ export default function InsurancesPage() {
         <div className="space-y-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <h1 className="text-2xl font-bold text-primary-dark dark:text-white">Obras Sociales / Prepagas</h1>
-            <Link href="/insurances/new" className="btn-primary">Nueva</Link>
+            <Link href="/insurances/new" className="btn-primary hover:shadow-lg hover:scale-105 transition-all">Nueva</Link>
           </div>
           <div className="card overflow-x-auto">
             <table className="min-w-full text-sm">
@@ -42,12 +42,12 @@ export default function InsurancesPage() {
               </thead>
               <tbody className="text-gray-900 dark:text-gray-100">
                 {insurances.map(i => (
-                  <tr key={i.id} className="border-t border-secondary-lighter dark:border-gray-700 hover:bg-secondary-lighter/40 dark:hover:bg-gray-700">
+                  <tr key={i.id} className="border-t border-secondary-lighter dark:border-gray-700 hover:bg-secondary-lighter/40 dark:hover:bg-gray-700 transition-colors">
                     <td className="p-2 font-medium">{i.name}</td>
                     <td className="p-2">{i.type}</td>
                     <td className="p-2">{i.phone}</td>
                     <td className="p-2">{i.email}</td>
-                    <td className="p-2"><Link href={`/insurances/${i.id}`} className="text-primary-dark dark:text-blue-400 hover:underline">Editar</Link></td>
+                    <td className="p-2"><Link href={`/insurances/${i.id}`} className="text-primary-dark dark:text-blue-400 hover:underline hover:text-primary transition-colors">Editar</Link></td>
                   </tr>
                 ))}
                 {insurances.length === 0 && (

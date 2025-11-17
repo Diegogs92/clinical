@@ -59,7 +59,7 @@ export class ErrorBoundary extends Component<Props, State> {
             )}
             <button
               onClick={() => window.location.reload()}
-              className="btn-primary"
+              className="btn-primary hover:shadow-lg hover:scale-105 transition-all"
             >
               Recargar página
             </button>

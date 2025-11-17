@@ -173,7 +173,7 @@ export default function AppointmentForm({ appointmentId }: Props) {
         <label className="block text-sm font-medium text-primary-dark mb-1">Notas</label>
         <textarea rows={4} className="input-field" {...register('notes')} />
       </div>
-      <button disabled={loading} className="btn-primary">{loading ? 'Guardando...' : (appointmentId ? 'Actualizar' : 'Crear Turno')}</button>
+      <button disabled={loading} className="btn-primary hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">{loading ? 'Guardando...' : (appointmentId ? 'Actualizar' : 'Crear Turno')}</button>
     </form>
   );
 }

@@ -125,7 +125,7 @@ export default function PatientHistoryPage() {
             </div>
             <button
               onClick={() => setShowForm(true)}
-              className="btn-primary flex items-center gap-2"
+              className="btn-primary flex items-center gap-2 hover:shadow-lg hover:scale-105 transition-all"
               aria-label="Agregar registro"
             >
               <Plus className="w-4 h-4" />
@@ -148,7 +148,7 @@ export default function PatientHistoryPage() {
               </p>
               <button
                 onClick={() => setShowForm(true)}
-                className="btn-primary inline-flex items-center gap-2"
+                className="btn-primary inline-flex items-center gap-2 hover:shadow-lg hover:scale-105 transition-all"
               >
                 <Plus className="w-4 h-4" />
                 Agregar Primer Registro
@@ -250,14 +250,14 @@ export default function PatientHistoryPage() {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="btn-secondary flex-1"
+                  className="btn-secondary flex-1 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
                   disabled={submitting}
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="btn-primary flex-1"
+                  className="btn-primary flex-1 hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   disabled={submitting}
                 >
                   {submitting ? 'Guardando...' : 'Guardar Registro'}

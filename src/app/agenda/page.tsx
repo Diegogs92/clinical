@@ -30,7 +30,7 @@ export default function AgendaPage() {
         <div className="space-y-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <h1 className="text-2xl font-bold text-primary-dark">Agenda</h1>
-            <Link href="/agenda/new" className="btn-primary">Nuevo Turno</Link>
+            <Link href="/agenda/new" className="btn-primary hover:shadow-lg hover:scale-105 transition-all">Nuevo Turno</Link>
           </div>
           <CalendarView appointments={appointments} />
         </div>

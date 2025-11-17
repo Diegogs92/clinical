@@ -4,10 +4,10 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
-import { createAppointment } from '@/lib/appointments';
+import { createAppointment, updateAppointment } from '@/lib/appointments';
 import { useEffect, useState } from 'react';
 import { getPatientsByUser } from '@/lib/patients';
-import { Patient } from '@/types';
+import { Patient, Appointment } from '@/types';
 
 const schema = z.object({
   patientId: z.string().min(1, 'Selecciona un paciente'),
@@ -21,13 +21,26 @@ const schema = z.object({
 
 export type AppointmentFormValues = z.infer<typeof schema>;
 
-export default function AppointmentForm({ onCreated, onCancel }: { onCreated?: (appt?: any) => void; onCancel?: () => void }) {
+interface Props {
+  initialData?: Appointment;
+  onCreated?: (appt?: any) => void;
+  onCancel?: () => void;
+}
+
+export default function AppointmentForm({ initialData, onCreated, onCancel }: Props) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([]);
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<AppointmentFormValues>({
+  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<AppointmentFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { duration: 30, type: 'Consulta' },
+    defaultValues: {
+      duration: initialData?.duration || 30,
+      type: initialData?.type || 'Consulta',
+      patientId: initialData?.patientId || '',
+      date: initialData?.date ? initialData.date.split('T')[0] : '',
+      startTime: initialData?.startTime || '',
+      notes: initialData?.notes || '',
+    },
   });
 
   useEffect(() => {
@@ -58,22 +71,30 @@ export default function AppointmentForm({ onCreated, onCancel }: { onCreated?: (
         startTime: values.startTime,
         endTime: `${String(endDate.getHours()).padStart(2,'0')}:${String(endDate.getMinutes()).padStart(2,'0')}`,
         duration: values.duration,
-        status: 'scheduled',
+        status: initialData?.status || 'scheduled',
         type: values.type,
         notes: values.notes,
         userId: user.uid,
-        createdAt: '',
+        createdAt: initialData?.createdAt || '',
         updatedAt: '',
       } as any;
 
-      const id = await createAppointment(payload);
-      const created = { ...payload, id };
-
-      reset();
-      onCreated?.(created);
+      if (initialData) {
+        // Update existing appointment
+        await updateAppointment(initialData.id, payload);
+        const updated = { ...payload, id: initialData.id };
+        reset();
+        onCreated?.(updated);
+      } else {
+        // Create new appointment
+        const id = await createAppointment(payload);
+        const created = { ...payload, id };
+        reset();
+        onCreated?.(created);
+      }
     } catch (e) {
       console.error(e);
-      alert('Error al crear turno');
+      alert(initialData ? 'Error al actualizar turno' : 'Error al crear turno');
     } finally {
       setLoading(false);
     }
@@ -116,8 +137,10 @@ export default function AppointmentForm({ onCreated, onCancel }: { onCreated?: (
         <textarea rows={3} className="input-field" {...register('notes')} />
       </div>
       <div className="flex items-center justify-end gap-2 pt-2">
-        <button type="button" onClick={onCancel} className="btn-secondary">Cancelar</button>
-        <button disabled={loading} className="btn-primary">{loading ? 'Guardando...' : 'Crear Turno'}</button>
+        <button type="button" onClick={onCancel} className="btn-secondary hover:bg-gray-300 dark:hover:bg-gray-600 transition-all">Cancelar</button>
+        <button disabled={loading} className="btn-primary hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+          {loading ? 'Guardando...' : (initialData ? 'Actualizar Turno' : 'Crear Turno')}
+        </button>
       </div>
     </form>
   );

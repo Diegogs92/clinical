@@ -86,7 +86,7 @@ export default function PatientList() {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <Link href="/patients/new" className="btn-primary inline-block text-center">+ Nuevo Paciente</Link>
+        <Link href="/patients/new" className="btn-primary inline-block text-center hover:shadow-lg hover:scale-105 transition-all">+ Nuevo Paciente</Link>
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-full border border-secondary-lighter dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg">
@@ -102,15 +102,15 @@ export default function PatientList() {
           </thead>
           <tbody className="text-sm text-gray-900 dark:text-gray-100">
             {filtered.map(p => (
-              <tr key={p.id} className="border-t border-secondary-lighter dark:border-gray-700 hover:bg-secondary-lighter/40 dark:hover:bg-gray-700">
+              <tr key={p.id} className="border-t border-secondary-lighter dark:border-gray-700 hover:bg-secondary-lighter/40 dark:hover:bg-gray-700 transition-colors">
                 <td className="p-2 font-medium">{p.lastName}</td>
                 <td className="p-2">{p.firstName}</td>
                 <td className="p-2">{p.dni}</td>
                 <td className="p-2">{p.phone}</td>
                 <td className="p-2">{p.email}</td>
                 <td className="p-2 flex gap-2">
-                  <Link href={`/patients/${p.id}`} className="text-primary-dark dark:text-blue-400 hover:underline flex items-center gap-1"><Edit className="w-4 h-4" /> Editar</Link>
-                  <button onClick={() => handleDelete(p.id)} className="text-red-600 dark:text-red-400 hover:underline flex items-center gap-1"><Trash2 className="w-4 h-4" /> Borrar</button>
+                  <Link href={`/patients/${p.id}`} className="text-primary-dark dark:text-blue-400 hover:underline hover:scale-110 transition-all flex items-center gap-1"><Edit className="w-4 h-4" /> Editar</Link>
+                  <button onClick={() => handleDelete(p.id)} className="text-red-600 dark:text-red-400 hover:underline hover:scale-110 transition-all flex items-center gap-1"><Trash2 className="w-4 h-4" /> Borrar</button>
                 </td>
               </tr>
             ))}

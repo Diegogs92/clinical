@@ -190,7 +190,7 @@ export default function PatientForm({ patientId }: Props) {
         />
       )}
 
-      <button disabled={loading} className="btn-primary">
+      <button disabled={loading} className="btn-primary hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
         {loading ? 'Guardando...' : (patientId ? 'Actualizar Paciente' : 'Crear Paciente')}
       </button>
     </form>
