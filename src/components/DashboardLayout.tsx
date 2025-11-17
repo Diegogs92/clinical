@@ -23,9 +23,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-800 border-r border-secondary-lighter dark:border-gray-700 p-4 hidden md:flex md:flex-col">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <Image src="/logo.svg" alt="Clnical" width={40} height={40} className="rounded-lg" />
+            <Image src="/logo.svg" alt="Clinical" width={40} height={40} className="rounded-lg" />
             <div>
-              <div className="text-primary-dark dark:text-white font-bold">Clnical</div>
+              <div className="text-primary-dark dark:text-white font-bold">Clinical</div>
               <div className="text-xs text-secondary dark:text-gray-400">Gestión Profesional</div>
             </div>
           </div>
@@ -69,8 +69,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="md:ml-64 min-h-screen">
         <header className="bg-white dark:bg-gray-800 border-b border-secondary-lighter dark:border-gray-700 p-4 flex items-center justify-between md:hidden sticky top-0 z-10">
           <div className="flex items-center gap-3">
-            <Image src="/logo.svg" alt="Clnical" width={32} height={32} className="rounded-lg" />
-            <div className="text-primary-dark dark:text-white font-bold">Clnical</div>
+            <Image src="/logo.svg" alt="Clinical" width={32} height={32} className="rounded-lg" />
+            <div className="text-primary-dark dark:text-white font-bold">Clinical</div>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
