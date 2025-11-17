@@ -2,44 +2,22 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
-import { LogIn, Loader2, Mail } from 'lucide-react';
+import { LogIn, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
-  const { signInWithGoogle, signInWithEmail, registerWithEmail, error } = useAuth();
-  const [loadingGoogle, setLoadingGoogle] = useState(false);
-  const [loadingEmail, setLoadingEmail] = useState(false);
-  const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const { signInWithGoogle, error } = useAuth();
+  const [loading, setLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
 
   const handleGoogleSignIn = async () => {
-    setLoadingGoogle(true);
+    setLoading(true);
     setLocalError(null);
     try {
       await signInWithGoogle();
     } catch (err) {
       setLocalError('Error al iniciar sesión con Google');
     } finally {
-      setLoadingGoogle(false);
-    }
-  };
-
-  const handleEmailSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoadingEmail(true);
-    setLocalError(null);
-    try {
-      if (isRegisterMode) {
-        await registerWithEmail(email, password, displayName);
-      } else {
-        await signInWithEmail(email, password);
-      }
-    } catch (err) {
-      setLocalError(isRegisterMode ? 'Error al registrar' : 'Error al iniciar sesión');
-    } finally {
-      setLoadingEmail(false);
+      setLoading(false);
     }
   };
 
@@ -64,7 +42,7 @@ export default function LoginPage() {
           </h2>
           
           <p className="text-secondary text-center mb-6">
-            Accede con Google o con tu correo electrónico
+            Inicia sesión con tu cuenta de Google para acceder al sistema
           </p>
 
           {(error || localError) && (
@@ -73,74 +51,15 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleEmailSubmit} className="space-y-4 mb-6">
-            {isRegisterMode && (
-              <div>
-                <label className="block text-sm font-medium text-primary-dark mb-1">Nombre</label>
-                <input
-                  type="text"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full border border-secondary-lighter rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="Tu nombre" required
-                />
-              </div>
-            )}
-            <div>
-              <label className="block text-sm font-medium text-primary-dark mb-1">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full border border-secondary-lighter rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="correo@example.com" required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-primary-dark mb-1">Contraseña</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-secondary-lighter rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="******" required
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={loadingEmail}
-              className="w-full flex items-center justify-center gap-3 bg-primary text-white font-semibold py-3 px-6 rounded-lg hover:bg-primary-dark transition disabled:opacity-50"
-            >
-              {loadingEmail ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>{isRegisterMode ? 'Creando cuenta...' : 'Ingresando...'}</span>
-                </>
-              ) : (
-                <>
-                  <Mail className="w-5 h-5" />
-                  <span>{isRegisterMode ? 'Registrarme' : 'Ingresar'}</span>
-                </>
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsRegisterMode(m => !m)}
-              className="w-full text-sm text-primary-dark hover:underline"
-            >
-              {isRegisterMode ? 'Ya tengo cuenta, iniciar sesión' : 'Crear nueva cuenta'}
-            </button>
-          </form>
-
           <button
             onClick={handleGoogleSignIn}
-            disabled={loadingGoogle}
+            disabled={loading}
             className="w-full flex items-center justify-center gap-3 bg-white border-2 border-primary hover:bg-primary hover:text-white text-primary-dark font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loadingGoogle ? (
+            {loading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Conectando...</span>
+                <span>Iniciando sesión...</span>
               </>
             ) : (
               <>
@@ -158,19 +77,45 @@ export default function LoginPage() {
         {/* Features */}
         <div className="mt-8 grid grid-cols-2 gap-4 text-white text-sm">
           <div className="text-center">
-            <div className="font-semibold mb-1">🗓️ Agenda</div>
+            <div className="flex items-center justify-center gap-2 font-semibold mb-1">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
+                <line x1="3" y1="9" x2="21" y2="9" stroke="currentColor" strokeWidth="2"/>
+                <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="2"/>
+                <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2"/>
+              </svg>
+              Agenda
+            </div>
             <div className="text-secondary-lighter">Gestión de turnos</div>
           </div>
           <div className="text-center">
-            <div className="font-semibold mb-1">👥 Pacientes</div>
+            <div className="flex items-center justify-center gap-2 font-semibold mb-1">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2"/>
+                <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" stroke="currentColor" strokeWidth="2"/>
+              </svg>
+              Pacientes
+            </div>
             <div className="text-secondary-lighter">Fichas completas</div>
           </div>
           <div className="text-center">
-            <div className="font-semibold mb-1">💰 Honorarios</div>
+            <div className="flex items-center justify-center gap-2 font-semibold mb-1">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              Honorarios
+            </div>
             <div className="text-secondary-lighter">Control financiero</div>
           </div>
           <div className="text-center">
-            <div className="font-semibold mb-1">🏥 Obras Sociales</div>
+            <div className="flex items-center justify-center gap-2 font-semibold mb-1">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+                <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+              </svg>
+              Obras Sociales
+            </div>
             <div className="text-secondary-lighter">Autorizaciones</div>
           </div>
         </div>
