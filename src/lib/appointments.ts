@@ -1,16 +1,18 @@
 import { db, mockMode } from '@/lib/firebase';
 import { collection, addDoc, updateDoc, doc, deleteDoc, getDoc, getDocs, query, where, orderBy, Firestore } from 'firebase/firestore';
 import { Appointment, RecurrenceRule } from '@/types';
+import { loadFromLocalStorage, saveToLocalStorage } from './mockStorage';
 
 const APPOINTMENTS_COLLECTION = 'appointments';
 // In-memory mocks when mockMode is active
-const mockAppointments: Appointment[] = [];
+const mockAppointments: Appointment[] = loadFromLocalStorage<Appointment>('appointments');
 
 export async function createAppointment(data: Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>) {
   const now = new Date().toISOString();
   if (mockMode || !db) {
     const id = `mock-ap-${Date.now()}`;
     mockAppointments.push({ ...(data as Appointment), id, createdAt: now, updatedAt: now });
+    saveToLocalStorage('appointments', mockAppointments);
     return id;
   }
   const colRef = collection(db as Firestore, APPOINTMENTS_COLLECTION);
@@ -21,7 +23,10 @@ export async function createAppointment(data: Omit<Appointment, 'id' | 'createdA
 export async function updateAppointment(id: string, data: Partial<Appointment>) {
   if (mockMode || !db) {
     const idx = mockAppointments.findIndex(a => a.id === id);
-    if (idx !== -1) mockAppointments[idx] = { ...mockAppointments[idx], ...data, updatedAt: new Date().toISOString() };
+    if (idx !== -1) {
+      mockAppointments[idx] = { ...mockAppointments[idx], ...data, updatedAt: new Date().toISOString() };
+      saveToLocalStorage('appointments', mockAppointments);
+    }
     return;
   }
   const docRef = doc(db as Firestore, APPOINTMENTS_COLLECTION, id);
@@ -31,7 +36,10 @@ export async function updateAppointment(id: string, data: Partial<Appointment>) 
 export async function deleteAppointment(id: string) {
   if (mockMode || !db) {
     const idx = mockAppointments.findIndex(a => a.id === id);
-    if (idx !== -1) mockAppointments.splice(idx, 1);
+    if (idx !== -1) {
+      mockAppointments.splice(idx, 1);
+      saveToLocalStorage('appointments', mockAppointments);
+    }
     return;
   }
   const docRef = doc(db as Firestore, APPOINTMENTS_COLLECTION, id);
@@ -60,13 +68,16 @@ export async function getAppointmentsByUser(userId: string): Promise<Appointment
 }
 
 // Utility to expand recurrence (client-side only for now)
-export function expandRecurrence(base: Appointment): Appointment[] {
+export function expandRecurrence(base: Appointment, maxOccurrences: number = 100): Appointment[] {
   if (!base.isRecurrent || !base.recurrenceRule) return [base];
   const rule: RecurrenceRule = base.recurrenceRule;
   const occurrences: Appointment[] = [];
   const startDate = new Date(base.date);
   let count = 0;
-  const max = rule.count || 10; // safeguard
+
+  // Use rule.count if provided, otherwise use maxOccurrences as safeguard
+  const max = rule.count || maxOccurrences;
+
   while (count < max) {
     const d = new Date(startDate);
     switch (rule.frequency) {
@@ -75,8 +86,11 @@ export function expandRecurrence(base: Appointment): Appointment[] {
       case 'biweekly': d.setDate(startDate.getDate() + count * 14 * rule.interval); break;
       case 'monthly': d.setMonth(startDate.getMonth() + count * rule.interval); break;
     }
-    const iso = d.toISOString();
+
+    // Check if we've passed the end date
     if (rule.endDate && d > new Date(rule.endDate)) break;
+
+    const iso = d.toISOString().split('T')[0]; // Keep only date part
     occurrences.push({ ...base, id: `${base.id}-${count}`, date: iso });
     count++;
   }

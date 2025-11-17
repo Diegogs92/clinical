@@ -14,6 +14,7 @@ import {
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db, mockMode } from '@/lib/firebase';
 import { UserProfile } from '@/types';
+import { logger } from '@/lib/logger';
 
 interface AuthContextType {
   user: User | null;
@@ -61,12 +62,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log('[AuthContext] onAuthStateChanged:', user?.email, user?.uid);
+      logger.log('[AuthContext] onAuthStateChanged:', user?.email, user?.uid);
       setUser(user);
 
       if (user) {
         if (!db) {
-          console.error('[AuthContext] Firestore no inicializado');
+          logger.error('[AuthContext] Firestore no inicializado');
           setLoading(false);
           return;
         }
@@ -74,10 +75,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const profileRef = doc(db!, 'userProfiles', user.uid);
           const profileSnap = await getDoc(profileRef);
           if (profileSnap.exists()) {
-            console.log('[AuthContext] Perfil encontrado');
+            logger.log('[AuthContext] Perfil encontrado');
             setUserProfile(profileSnap.data() as UserProfile);
           } else {
-            console.log('[AuthContext] Creando nuevo perfil');
+            logger.log('[AuthContext] Creando nuevo perfil');
             const newProfile: UserProfile = {
               uid: user.uid,
               email: user.email || '',
@@ -88,11 +89,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               updatedAt: new Date().toISOString(),
             };
             await setDoc(profileRef, newProfile);
-            console.log('[AuthContext] Perfil creado exitosamente');
+            logger.log('[AuthContext] Perfil creado exitosamente');
             setUserProfile(newProfile);
           }
         } catch (error) {
-          console.error('[AuthContext] Error al manejar perfil:', error);
+          logger.error('[AuthContext] Error al manejar perfil:', error);
           setError('Error al crear perfil de usuario');
         }
       } else {

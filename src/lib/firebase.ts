@@ -36,7 +36,9 @@ if (!mockMode) {
     } catch {/* ignorar si falla */}
   }
 } else {
-  console.info('[Firebase] Modo mock activado - se usarán stores en memoria.');
+  if (process.env.NODE_ENV !== 'production') {
+    console.info('[Firebase] Modo mock activado - se usarán stores en memoria.');
+  }
 }
 
 export { app, auth, db, storage };

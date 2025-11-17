@@ -5,6 +5,7 @@ import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { Appointment } from '@/types';
+import { combineDateAndTime } from '@/lib/dateUtils';
 
 const locales = { 'es': es };
 const localizer = dateFnsLocalizer({
@@ -21,12 +22,18 @@ interface Props {
 }
 
 export default function CalendarView({ appointments, onSelect }: Props) {
-  const events: RBCEvent[] = appointments.map(a => ({
-    title: `${a.patientName} (${a.status})`,
-    start: new Date(a.startTime || a.date),
-    end: new Date(a.endTime || a.date),
-    resource: a,
-  }));
+  const events: RBCEvent[] = appointments.map(a => {
+    // Combine date with start/end times properly
+    const startDate = combineDateAndTime(a.date, a.startTime);
+    const endDate = combineDateAndTime(a.date, a.endTime);
+
+    return {
+      title: `${a.patientName} (${a.status})`,
+      start: startDate,
+      end: endDate,
+      resource: a,
+    };
+  });
 
   return (
     <div className="card">

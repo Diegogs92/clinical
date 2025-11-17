@@ -58,7 +58,7 @@ service cloud.firestore {
     function signedIn() { return request.auth != null; }
     function isOwner(userId) { return signedIn() && request.auth.uid == userId; }
 
-    match /users/{userId} {
+    match /userProfiles/{userId} {
       allow read, write: if isOwner(userId);
     }
     match /patients/{id} {
@@ -79,15 +79,44 @@ service cloud.firestore {
     }
     match /insurance-fees/{id} {
       allow read: if signedIn();
-      allow write: if signedIn();
+      allow write: if signedIn() && request.resource.data.userId == request.auth.uid;
     }
     match /payments/{id} {
       allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
       allow read, update, delete: if isOwner(resource.data.userId);
     }
+    match /medicalHistory/{id} {
+      allow create: if signedIn();
+      allow read, update, delete: if signedIn();
+    }
   }
 }
 \`\`\`
+
+#### 2.3 Índices Compuestos de Firestore
+
+**IMPORTANTE:** Debes crear los siguientes índices compuestos en Firestore para que las consultas funcionen correctamente:
+
+1. **Appointments (turnos):**
+   - Colección: `appointments`
+   - Campos: `userId` (Ascending), `date` (Ascending)
+   - [Crear índice en Firebase Console](https://console.firebase.google.com/project/_/firestore/indexes)
+
+2. **Payments (pagos):**
+   - Colección: `payments`
+   - Campos: `userId` (Ascending), `date` (Descending)
+
+3. **MedicalHistory (historial médico):**
+   - Colección: `medicalHistory`
+   - Campos: `patientId` (Ascending), `date` (Descending)
+
+**Cómo crear índices:**
+- Ve a Firebase Console > Firestore Database > Indexes
+- Clic en "Create Index"
+- Selecciona la colección y agrega los campos en el orden indicado
+- Haz clic en "Create"
+
+Alternativamente, cuando ejecutes la app por primera vez y se produzca un error de consulta, Firebase te mostrará un link directo para crear el índice necesario.
 
 ### 3. Variables de entorno
 
@@ -180,7 +209,18 @@ clinic-pro/
 
 ## Modo de desarrollo (Mock)
 
-Si las variables de Firebase no están configuradas, la app funciona en **modo mock** con datos simulados en memoria. Útil para desarrollo sin backend.
+Si las variables de Firebase no están configuradas, la app funciona en **modo mock** con datos simulados. Los datos se persist en en localStorage, lo que significa que se mantendrán entre recargas de página. Útil para desarrollo sin backend.
+
+### Mejoras de seguridad y calidad implementadas
+
+✅ **Validación de datos con Zod:** Todos los datos de Firestore se validan con schemas Zod antes de usarse
+✅ **Logging condicional:** Los console.logs solo aparecen en desarrollo, no en producción
+✅ **Manejo correcto de fechas:** Las fechas y horas se combinan correctamente en el calendario
+✅ **Persistencia en mock mode:** Los datos mock se guardan en localStorage
+✅ **Error Boundaries:** Manejo de errores React para evitar crashes de la UI
+✅ **Status de autorizaciones:** Calcula correctamente 'expired' y 'exhausted'
+✅ **Upload de archivos:** UI completa para subir archivos de pacientes
+✅ **Historial médico:** CRUD completo para historiales clínicos por paciente
 
 ## Paleta de colores
 

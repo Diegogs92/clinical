@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Patient, Insurance } from '@/types';
 import { useToast } from '@/contexts/ToastContext';
+import PatientFileUpload from './PatientFileUpload';
 
 const patientSchema = z.object({
   firstName: z.string().min(1, 'Nombre requerido'),
@@ -179,6 +180,16 @@ export default function PatientForm({ patientId }: Props) {
         <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Notas</label>
         <textarea rows={4} className="input-field" {...register('notes')} />
       </div>
+
+      {patientId && initialPatient && (
+        <PatientFileUpload
+          patientId={patientId}
+          onUpload={(file) => {
+            toast.success(`Archivo "${file.name}" subido correctamente`);
+          }}
+        />
+      )}
+
       <button disabled={loading} className="btn-primary">
         {loading ? 'Guardando...' : (patientId ? 'Actualizar Paciente' : 'Crear Paciente')}
       </button>

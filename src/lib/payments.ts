@@ -1,17 +1,19 @@
 import { db, mockMode } from '@/lib/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, getDoc, query, where, orderBy, Firestore } from 'firebase/firestore';
 import { Payment } from '@/types';
+import { loadFromLocalStorage, saveToLocalStorage } from './mockStorage';
 
 const PAYMENTS_COLLECTION = 'payments';
 
 // Mock store
-const mockPayments: Payment[] = [];
+const mockPayments: Payment[] = loadFromLocalStorage<Payment>('payments');
 
 export async function createPayment(data: Omit<Payment,'id'|'createdAt'|'updatedAt'>) {
   const now = new Date().toISOString();
   if (mockMode || !db) {
     const id = `mock-pay-${Date.now()}`;
     mockPayments.push({ ...(data as Payment), id, createdAt: now, updatedAt: now });
+    saveToLocalStorage('payments', mockPayments);
     return id;
   }
   const colRef = collection(db as Firestore, PAYMENTS_COLLECTION);
@@ -22,7 +24,10 @@ export async function createPayment(data: Omit<Payment,'id'|'createdAt'|'updated
 export async function updatePayment(id: string, data: Partial<Payment>) {
   if (mockMode || !db) {
     const idx = mockPayments.findIndex(p => p.id === id);
-    if (idx !== -1) mockPayments[idx] = { ...mockPayments[idx], ...data, updatedAt: new Date().toISOString() };
+    if (idx !== -1) {
+      mockPayments[idx] = { ...mockPayments[idx], ...data, updatedAt: new Date().toISOString() };
+      saveToLocalStorage('payments', mockPayments);
+    }
     return;
   }
   const docRef = doc(db as Firestore, PAYMENTS_COLLECTION, id);
@@ -32,7 +37,10 @@ export async function updatePayment(id: string, data: Partial<Payment>) {
 export async function deletePayment(id: string) {
   if (mockMode || !db) {
     const idx = mockPayments.findIndex(p => p.id === id);
-    if (idx !== -1) mockPayments.splice(idx, 1);
+    if (idx !== -1) {
+      mockPayments.splice(idx, 1);
+      saveToLocalStorage('payments', mockPayments);
+    }
     return;
   }
   const docRef = doc(db as Firestore, PAYMENTS_COLLECTION, id);
