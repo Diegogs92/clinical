@@ -21,12 +21,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen bg-secondary-lighter/40 dark:bg-gray-900">
       <aside className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-800 border-r border-secondary-lighter dark:border-gray-700 p-4 hidden md:flex md:flex-col">
-        <div className="flex items-center gap-3 mb-8">
-          <Image src="/logo.svg" alt="ClinicPro" width={40} height={40} className="rounded-lg" />
-          <div>
-            <div className="text-primary-dark dark:text-white font-bold">ClinicPro</div>
-            <div className="text-xs text-secondary dark:text-gray-400">Gestión Profesional</div>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <Image src="/logo.svg" alt="ClinicPro" width={40} height={40} className="rounded-lg" />
+            <div>
+              <div className="text-primary-dark dark:text-white font-bold">ClinicPro</div>
+              <div className="text-xs text-secondary dark:text-gray-400">Gestión Profesional</div>
+            </div>
           </div>
+          <ThemeToggle />
         </div>
 
         <nav className="space-y-1">
@@ -48,7 +51,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         <div className="mt-auto pt-6 border-t border-secondary-lighter dark:border-gray-700">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-3 mb-4">
             {user?.photoURL && (
               <Image src={user.photoURL} alt="avatar" width={36} height={36} className="rounded-full" />
             )}
@@ -57,8 +60,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="text-secondary dark:text-gray-400 text-xs">Profesional</div>
             </div>
           </div>
-          <ThemeToggle />
-          <button onClick={signOut} className="mt-4 w-full flex items-center justify-center gap-2 btn-secondary">
+          <button onClick={signOut} className="w-full flex items-center justify-center gap-2 btn-secondary">
             <LogOut className="w-4 h-4" /> Cerrar sesión
           </button>
         </div>
