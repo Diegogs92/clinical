@@ -1,25 +1,43 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { LogIn, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
-  const { signInWithGoogle, error } = useAuth();
+  const { user, loading: authLoading, signInWithGoogle, error } = useAuth();
   const [loading, setLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      console.log('[LoginPage] Usuario autenticado, redirigiendo a dashboard');
+      router.push('/dashboard');
+    }
+  }, [user, authLoading, router]);
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
     setLocalError(null);
     try {
       await signInWithGoogle();
+      // El redirect se maneja en el useEffect
     } catch (err) {
       setLocalError('Error al iniciar sesión con Google');
     } finally {
       setLoading(false);
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary via-primary-dark to-secondary">
+        <Loader2 className="w-12 h-12 text-white animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary via-primary-dark to-secondary p-4">
