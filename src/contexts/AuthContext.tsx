@@ -61,26 +61,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log('[AuthContext] onAuthStateChanged:', user?.email, user?.uid);
       setUser(user);
 
       if (user) {
-        if (!db) return; // safety
-        const profileRef = doc(db!, 'userProfiles', user.uid);
-        const profileSnap = await getDoc(profileRef);
-        if (profileSnap.exists()) {
-          setUserProfile(profileSnap.data() as UserProfile);
-        } else {
-          const newProfile: UserProfile = {
-            uid: user.uid,
-            email: user.email || '',
-            displayName: user.displayName || '',
-            photoURL: user.photoURL || '',
-            defaultAppointmentDuration: 30,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
-          await setDoc(profileRef, newProfile);
-          setUserProfile(newProfile);
+        if (!db) {
+          console.error('[AuthContext] Firestore no inicializado');
+          setLoading(false);
+          return;
+        }
+        try {
+          const profileRef = doc(db!, 'userProfiles', user.uid);
+          const profileSnap = await getDoc(profileRef);
+          if (profileSnap.exists()) {
+            console.log('[AuthContext] Perfil encontrado');
+            setUserProfile(profileSnap.data() as UserProfile);
+          } else {
+            console.log('[AuthContext] Creando nuevo perfil');
+            const newProfile: UserProfile = {
+              uid: user.uid,
+              email: user.email || '',
+              displayName: user.displayName || '',
+              photoURL: user.photoURL || '',
+              defaultAppointmentDuration: 30,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            };
+            await setDoc(profileRef, newProfile);
+            console.log('[AuthContext] Perfil creado exitosamente');
+            setUserProfile(newProfile);
+          }
+        } catch (error) {
+          console.error('[AuthContext] Error al manejar perfil:', error);
+          setError('Error al crear perfil de usuario');
         }
       } else {
         setUserProfile(null);
