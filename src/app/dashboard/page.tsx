@@ -67,8 +67,6 @@ export default function DashboardPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <h1 className="flex items-center gap-2 text-2xl font-bold text-primary-dark dark:text-white"><CalendarDays className="w-6 h-6"/> Agenda</h1>
             <div className="flex gap-2">
-              <Link href="/patients" className="btn-primary hover:shadow-md">Ver Pacientes</Link>
-              <Link href="/patients/new" className="btn-secondary hover:shadow-md">Nuevo Paciente</Link>
               <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2 hover:shadow-md"><PlusCircle className="w-4 h-4"/> Nuevo Turno</button>
             </div>
           </div>

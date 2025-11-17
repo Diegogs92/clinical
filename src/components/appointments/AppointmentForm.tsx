@@ -5,10 +5,13 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { createAppointment } from '@/lib/appointments';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getPatientsByUser } from '@/lib/patients';
+import { Patient } from '@/types';
 
 const schema = z.object({
-  patientName: z.string().min(1, 'Paciente requerido'),
+  patientId: z.string().min(1, 'Selecciona un paciente'),
+  patientName: z.string().optional(),
   date: z.string().min(1, 'Fecha requerida'), // ISO date yyyy-MM-dd
   startTime: z.string().min(1, 'Hora inicio requerida'), // HH:mm
   duration: z.coerce.number().min(5).max(600).default(30),
@@ -21,10 +24,19 @@ export type AppointmentFormValues = z.infer<typeof schema>;
 export default function AppointmentForm({ onCreated, onCancel }: { onCreated?: () => void; onCancel?: () => void }) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [patients, setPatients] = useState<Patient[]>([]);
   const { register, handleSubmit, formState: { errors }, reset } = useForm<AppointmentFormValues>({
     resolver: zodResolver(schema),
     defaultValues: { duration: 30, type: 'Consulta' },
   });
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const list = await getPatientsByUser(user.uid);
+      setPatients(list);
+    })();
+  }, [user]);
 
   const onSubmit = async (values: AppointmentFormValues) => {
     if (!user) return;
@@ -37,9 +49,11 @@ export default function AppointmentForm({ onCreated, onCancel }: { onCreated?: (
       const endDate = new Date(startDate);
       endDate.setMinutes(endDate.getMinutes() + values.duration);
 
+      const selected = patients.find(p => p.id === (values.patientId as unknown as string));
+
       await createAppointment({
-        patientId: '', // opcional por ahora
-        patientName: values.patientName,
+        patientId: values.patientId as unknown as string,
+        patientName: selected ? `${selected.lastName} ${selected.firstName}` : (values.patientName || ''),
         date: startDate.toISOString(),
         startTime: values.startTime,
         endTime: `${String(endDate.getHours()).padStart(2,'0')}:${String(endDate.getMinutes()).padStart(2,'0')}`,
@@ -66,8 +80,13 @@ export default function AppointmentForm({ onCreated, onCancel }: { onCreated?: (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
       <div>
         <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Paciente</label>
-        <input className="input-field" placeholder="Nombre y apellido" {...register('patientName')} />
-        {errors.patientName && <p className="text-red-600 text-xs mt-1">{errors.patientName.message}</p>}
+        <select className="input-field" {...register('patientId')}>
+          <option value="">Selecciona un paciente</option>
+          {patients.map(p => (
+            <option key={p.id} value={p.id}>{p.lastName} {p.firstName} — DNI {p.dni}</option>
+          ))}
+        </select>
+        {errors.patientId && <p className="text-red-600 text-xs mt-1">{errors.patientId.message as string}</p>}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div>
