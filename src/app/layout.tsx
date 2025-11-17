@@ -8,7 +8,7 @@ import { ToastProvider } from '@/contexts/ToastContext';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'ClinicalPro - Gestión Profesional de Salud',
+  title: 'Clnical - Gestión Profesional de Salud',
   description: 'Sistema de gestión integral para profesionales de la salud',
   manifest: '/manifest.json',
   icons: {
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'ClinicalPro',
+    title: 'Clnical',
   },
   themeColor: '#08415C',
   viewport: {

@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { LogIn, Loader2 } from 'lucide-react';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const { user, loading: authLoading, signInWithGoogle, error } = useAuth();
@@ -44,10 +45,10 @@ export default function LoginPage() {
       <div className="max-w-md w-full">
         {/* Logo and Title */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full mb-4 shadow-lg">
-            <span className="text-4xl font-bold text-primary">C</span>
+          <div className="inline-flex items-center justify-center mb-4">
+            <Image src="/logo.svg" alt="Clnical" width={80} height={80} priority />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-2">ClinicalPro</h1>
+          <h1 className="text-4xl font-bold text-white mb-2">Clnical</h1>
           <p className="text-secondary-lighter text-lg">
             Sistema de Gestión para Profesionales de Salud
           </p>

@@ -6,12 +6,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getPatientsByUser, deletePatient } from '@/lib/patients';
 import { Patient } from '@/types';
 import { Trash2, Edit, Search, Loader2 } from 'lucide-react';
+import { useToast } from '@/contexts/ToastContext';
 
 export default function PatientList() {
   const { user } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const toast = useToast();
 
   useEffect(() => {
     if (!user) return;
@@ -52,9 +54,10 @@ export default function PatientList() {
     try {
       await deletePatient(id);
       setPatients(prev => prev.filter(p => p.id !== id));
+      toast.success('Paciente eliminado correctamente');
     } catch (e) {
       console.error(e);
-      alert('Error al eliminar paciente');
+      toast.error('Error al eliminar paciente');
     }
   };
 
