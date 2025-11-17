@@ -60,7 +60,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="text-secondary dark:text-gray-400 text-xs">Profesional</div>
             </div>
           </div>
-          <button onClick={signOut} className="w-full flex items-center justify-center gap-2 btn-secondary">
+          <button onClick={signOut} className="w-full flex items-center justify-center gap-2 btn-secondary hover:!bg-red-600 hover:!text-white">
             <LogOut className="w-4 h-4" /> Cerrar sesión
           </button>
         </div>
@@ -74,7 +74,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <button onClick={signOut} className="btn-secondary !py-1 !px-3 text-sm">
+            <button onClick={signOut} className="btn-secondary !py-1 !px-3 text-sm hover:!bg-red-600 hover:!text-white">
               <LogOut className="w-4 h-4" />
             </button>
           </div>
