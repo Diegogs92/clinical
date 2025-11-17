@@ -5,22 +5,26 @@ module.exports = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
         primary: {
-          light: '#94E8B4',
-          DEFAULT: '#72BDA3',
-          dark: '#4E6151',
+          light: '#7494EA',
+          DEFAULT: '#08415C',
+          dark: '#062d40',
         },
         secondary: {
-          DEFAULT: '#72BDA3',
-          light: '#94E8B4',
-          lighter: '#94E8B4',
-          dark: '#4E6151',
+          DEFAULT: '#388697',
+          light: '#70AE6E',
+          lighter: '#F4FAFF',
         },
         accent: {
-          DEFAULT: '#3B322C',
+          DEFAULT: '#7494EA',
+        },
+        background: {
+          light: '#F4FAFF',
+          dark: '#08415C',
         },
       },
     },
