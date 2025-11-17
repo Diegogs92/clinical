@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (user) {
         if (!db) return; // safety
-        const profileRef = doc(db!, 'users', user.uid);
+        const profileRef = doc(db!, 'userProfiles', user.uid);
         const profileSnap = await getDoc(profileRef);
         if (profileSnap.exists()) {
           setUserProfile(profileSnap.data() as UserProfile);
