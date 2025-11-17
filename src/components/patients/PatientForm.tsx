@@ -9,6 +9,7 @@ import { listInsurances } from '@/lib/insurances';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Patient, Insurance } from '@/types';
+import { useToast } from '@/contexts/ToastContext';
 
 const patientSchema = z.object({
   firstName: z.string().min(1, 'Nombre requerido'),
@@ -32,6 +33,7 @@ interface Props {
 export default function PatientForm({ patientId }: Props) {
   const { user } = useAuth();
   const router = useRouter();
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [initialPatient, setInitialPatient] = useState<Patient | null>(null);
   const [insurances, setInsurances] = useState<Insurance[]>([]);
@@ -105,8 +107,10 @@ export default function PatientForm({ patientId }: Props) {
 
       if (patientId && initialPatient) {
         await updatePatient(patientId, patientData);
+        toast.success('Paciente actualizado correctamente');
       } else {
         await createPatient(patientData);
+        toast.success('Paciente creado correctamente');
       }
       router.push('/patients');
     } catch (e) {

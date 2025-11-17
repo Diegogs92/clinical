@@ -28,6 +28,21 @@ export default function PatientList() {
     })();
   }, [user]);
 
+  // Re-cargar lista al volver el foco a la pestaña (ayuda tras crear/editar)
+  useEffect(() => {
+    const onFocus = async () => {
+      if (!user) return;
+      try {
+        const data = await getPatientsByUser(user.uid);
+        setPatients(data);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [user]);
+
   const filtered = patients.filter(p =>
     `${p.lastName} ${p.firstName}`.toLowerCase().includes(search.toLowerCase()) || p.dni.includes(search)
   );

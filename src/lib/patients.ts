@@ -1,5 +1,5 @@
 import { db, storage, mockMode } from '@/lib/firebase';
-import { collection, doc, addDoc, updateDoc, deleteDoc, getDoc, getDocs, query, where, orderBy, Firestore } from 'firebase/firestore';
+import { collection, doc, addDoc, updateDoc, deleteDoc, getDoc, getDocs, query, where, Firestore } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Patient, PatientFile } from '@/types';
 
@@ -51,12 +51,14 @@ export async function getPatient(id: string): Promise<Patient | null> {
 export async function getPatientsByUser(userId: string): Promise<Patient[]> {
   if (mockMode || !db) return mockPatients.filter(p => p.userId === userId).sort((a,b) => a.lastName.localeCompare(b.lastName));
   const colRef = collection(db as Firestore, PATIENTS_COLLECTION);
-  const q = query(colRef, where('userId', '==', userId), orderBy('lastName'));
+  const q = query(colRef, where('userId', '==', userId));
   const snap = await getDocs(q);
-  return snap.docs.map(d => {
+  const list = snap.docs.map(d => {
     const data = d.data() as Patient;
     return { ...data, id: d.id };
   });
+  // Ordenar en cliente para evitar requerir índices compuestos en Firestore
+  return list.sort((a, b) => a.lastName.localeCompare(b.lastName));
 }
 
 export async function uploadPatientFile(patientId: string, file: File): Promise<PatientFile> {
