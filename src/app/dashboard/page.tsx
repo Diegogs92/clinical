@@ -8,9 +8,10 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAppointmentsByUser, updateAppointment, deleteAppointment } from '@/lib/appointments';
-import { Appointment } from '@/types';
+import { getPatientsByUser } from '@/lib/patients';
+import { Appointment, Patient } from '@/types';
 import AppointmentForm from '@/components/appointments/AppointmentForm';
-import { CalendarDays, PlusCircle, Edit2, Trash2 } from 'lucide-react';
+import { CalendarDays, PlusCircle, Edit2, Trash2, Filter } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
@@ -21,9 +22,16 @@ export default function DashboardPage() {
   const [view, setView] = useState<'day' | 'week' | 'month' | 'year'>('week');
   const [baseDate, setBaseDate] = useState<string>(() => new Date().toISOString().slice(0,10));
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+
+  // Filtros
+  const [filterPatient, setFilterPatient] = useState<string>('');
+  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [filterType, setFilterType] = useState<string>('');
+
   const toast = useToast();
   const confirm = useConfirm();
 
@@ -32,8 +40,12 @@ export default function DashboardPage() {
     (async () => {
       setLoading(true);
       try {
-        const data = await getAppointmentsByUser(user.uid);
-        setAppointments(data);
+        const [appointmentsData, patientsData] = await Promise.all([
+          getAppointmentsByUser(user.uid),
+          getPatientsByUser(user.uid)
+        ]);
+        setAppointments(appointmentsData);
+        setPatients(patientsData);
       } finally {
         setLoading(false);
       }
@@ -61,11 +73,22 @@ export default function DashboardPage() {
         end.setFullYear(start.getFullYear() + 1);
         break;
     }
+
     return appointments.filter(a => {
       const d = new Date(a.date);
-      return d >= start && d < end;
+      const inDateRange = d >= start && d < end;
+      const matchesPatient = !filterPatient || a.patientId === filterPatient;
+      const matchesStatus = !filterStatus || a.status === filterStatus;
+      const matchesType = !filterType || a.type.toLowerCase().includes(filterType.toLowerCase());
+
+      return inDateRange && matchesPatient && matchesStatus && matchesType;
     }).sort((a, b) => a.date.localeCompare(b.date));
-  }, [appointments, baseDate, view]);
+  }, [appointments, baseDate, view, filterPatient, filterStatus, filterType]);
+
+  const uniqueTypes = useMemo(() => {
+    const types = new Set(appointments.map(a => a.type));
+    return Array.from(types).sort();
+  }, [appointments]);
 
   const handleEdit = (appt: Appointment) => {
     setEditingAppointment(appt);
@@ -121,6 +144,58 @@ export default function DashboardPage() {
                 ))}
               </div>
               <input type="date" value={baseDate} onChange={e=>setBaseDate(e.target.value)} className="input-field md:w-56" />
+            </div>
+
+            {/* Filtros */}
+            <div className="flex flex-col md:flex-row gap-3 mb-4 p-4 bg-secondary-lighter/30 dark:bg-gray-700/30 rounded-lg">
+              <div className="flex items-center gap-2 text-sm font-medium text-primary-dark dark:text-white">
+                <Filter className="w-4 h-4" />
+                Filtros:
+              </div>
+              <select
+                value={filterPatient}
+                onChange={e => setFilterPatient(e.target.value)}
+                className="input-field flex-1"
+              >
+                <option value="">Todos los pacientes</option>
+                {patients.map(p => (
+                  <option key={p.id} value={p.id}>{`${p.lastName} ${p.firstName}`}</option>
+                ))}
+              </select>
+              <select
+                value={filterStatus}
+                onChange={e => setFilterStatus(e.target.value)}
+                className="input-field flex-1"
+              >
+                <option value="">Todos los estados</option>
+                <option value="scheduled">Programado</option>
+                <option value="confirmed">Confirmado</option>
+                <option value="completed">Completado</option>
+                <option value="cancelled">Cancelado</option>
+                <option value="no-show">No asistió</option>
+              </select>
+              <select
+                value={filterType}
+                onChange={e => setFilterType(e.target.value)}
+                className="input-field flex-1"
+              >
+                <option value="">Todos los tipos</option>
+                {uniqueTypes.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+              {(filterPatient || filterStatus || filterType) && (
+                <button
+                  onClick={() => {
+                    setFilterPatient('');
+                    setFilterStatus('');
+                    setFilterType('');
+                  }}
+                  className="px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all whitespace-nowrap"
+                >
+                  Limpiar
+                </button>
+              )}
             </div>
 
             {loading ? (

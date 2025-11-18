@@ -2,7 +2,15 @@
   "permissions": {
     "allow": [
       "Bash(npm run build:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: implementar mejoras críticas de seguridad, performance y funcionalidad\n\nMejoras de Seguridad:\n- Validación Zod en todas las operaciones de Firestore\n- Logger condicional (solo desarrollo, no producción)\n- Reglas de Firestore actualizadas en README\n- Corrección de validación de status en autorizaciones\n\nNuevas Funcionalidades:\n- Historial médico completo con CRUD (/patients/[id]/history)\n- Upload de archivos de pacientes con validación\n- Error Boundary para manejo robusto de errores\n- Persistencia de datos mock en localStorage\n\nOptimizaciones:\n- Manejo correcto de fechas y horas en calendario\n- Expansión mejorada de citas recurrentes\n- Imports optimizados de date-fns\n\nInfraestructura:\n- Schemas Zod para validación (src/lib/schemas.ts)\n- Utilidades de fechas (src/lib/dateUtils.ts)\n- Storage mock persistente (src/lib/mockStorage.ts)\n- CRUD historial médico (src/lib/medicalHistory.ts)\n\nComponentes UI:\n- ErrorBoundary component\n- PatientFileUpload component integrado en PatientForm\n- Página completa de historial médico\n\nDocumentación:\n- README actualizado con índices de Firestore\n- Guía completa de cambios manuales\n- Resumen de implementación\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push)",
+      "Bash(cat:*)",
+      "Bash(where:*)",
+      "Bash(nul)",
+      "Bash(vercel:*)",
+      "Bash(git commit:*)",
+      "Bash(\"c:\\Users\\diego\\OneDrive\\Documentos\\clinic-pro\\src\\components\\ThemeToggle.tsx\")"
     ],
     "deny": [],
     "ask": []
