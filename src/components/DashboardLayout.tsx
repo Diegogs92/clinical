@@ -92,7 +92,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 }}
               />
               {navItems.map(({ href, label, icon: Icon }) => {
-                const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
+                 const active = pathname === href || (href !== '/dashboard' && pathname?.startsWith(href));
                 return (
                   <Link
                     key={href}
@@ -158,7 +158,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="md:hidden border-t border-gray-200/50 dark:border-gray-700/50 bg-white/95 dark:bg-[#18181b]/95 backdrop-blur-lg">
             <nav className="px-4 py-3 space-y-1">
               {navItems.map(({ href, label, icon: Icon }) => {
-                const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
+                const active = pathname === href || (href !== '/dashboard' && pathname?.startsWith(href));
                 return (
                   <Link
                     key={href}
