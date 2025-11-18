@@ -42,8 +42,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Convert appointment to calendar event
-    const startTime = new Date(`${appointment.date}T${appointment.time}`);
-    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000); // 1 hour duration
+    const startTime = new Date(appointment.date as unknown as string);
+    const durationMin = (appointment as any).duration ?? 60;
+    const endTime = new Date(startTime.getTime() + durationMin * 60 * 1000);
 
     const event = {
       summary: `Turno: ${appointment.patientName || 'Sin nombre'}`,
