@@ -8,7 +8,9 @@ export interface Patient {
   phone: string;
   birthDate?: string;
   address?: string;
-  insuranceId?: string; // Obra Social ID
+  insuranceType?: 'obra-social' | 'prepaga' | 'particular'; // Tipo de cobertura
+  insuranceName?: string; // Nombre de la obra social o prepaga (texto libre)
+  insuranceId?: string; // Obra Social ID (si existe en la base)
   insuranceNumber?: string;
   notes?: string;
   createdAt: string;

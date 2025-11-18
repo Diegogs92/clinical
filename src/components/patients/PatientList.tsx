@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPatientsByUser, deletePatient } from '@/lib/patients';
-import { Patient } from '@/types';
+import { getAppointmentsByUser } from '@/lib/appointments';
+import { listPayments } from '@/lib/payments';
+import { Patient, Appointment, Payment } from '@/types';
 import { Trash2, Edit, Search, Loader2 } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
@@ -12,18 +14,45 @@ import { useConfirm } from '@/contexts/ConfirmContext';
 export default function PatientList() {
   const { user } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const toast = useToast();
   const confirm = useConfirm();
+
+  // Helper function to count appointments for a patient
+  const getPatientAppointments = (patientId: string) => {
+    return appointments.filter(a => a.patientId === patientId);
+  };
+
+  // Helper function to calculate patient debt
+  const getPatientDebt = (patientId: string) => {
+    const patientPayments = payments.filter(p => p.patientId === patientId);
+    const pending = patientPayments.filter(p => p.status === 'pending');
+    return pending.reduce((sum, p) => sum + p.amount, 0);
+  };
+
+  // Helper function to calculate total paid
+  const getPatientPaid = (patientId: string) => {
+    const patientPayments = payments.filter(p => p.patientId === patientId);
+    const completed = patientPayments.filter(p => p.status === 'completed');
+    return completed.reduce((sum, p) => sum + p.amount, 0);
+  };
 
   useEffect(() => {
     if (!user) return;
     (async () => {
       setLoading(true);
       try {
-        const data = await getPatientsByUser(user.uid);
-        setPatients(data);
+        const [patientsData, appointmentsData, paymentsData] = await Promise.all([
+          getPatientsByUser(user.uid),
+          getAppointmentsByUser(user.uid),
+          listPayments(user.uid),
+        ]);
+        setPatients(patientsData);
+        setAppointments(appointmentsData);
+        setPayments(paymentsData);
       } catch (e) {
         console.error(e);
       } finally {
@@ -37,8 +66,14 @@ export default function PatientList() {
     const onFocus = async () => {
       if (!user) return;
       try {
-        const data = await getPatientsByUser(user.uid);
-        setPatients(data);
+        const [patientsData, appointmentsData, paymentsData] = await Promise.all([
+          getPatientsByUser(user.uid),
+          getAppointmentsByUser(user.uid),
+          listPayments(user.uid),
+        ]);
+        setPatients(patientsData);
+        setAppointments(appointmentsData);
+        setPayments(paymentsData);
       } catch (e) {
         console.error(e);
       }
@@ -96,27 +131,59 @@ export default function PatientList() {
               <th className="p-2">Nombre</th>
               <th className="p-2">DNI</th>
               <th className="p-2">Teléfono</th>
-              <th className="p-2">Email</th>
-              <th className="p-2">Acciones</th>
+              <th className="p-2">Turnos</th>
+              <th className="p-2">Pagado</th>
+              <th className="p-2">Deuda</th>
+              <th className="p-2 text-right">Acciones</th>
             </tr>
           </thead>
           <tbody className="text-sm text-gray-900 dark:text-gray-100">
-            {filtered.map(p => (
-              <tr key={p.id} className="border-t border-secondary-lighter dark:border-gray-700 hover:bg-secondary-lighter/40 dark:hover:bg-gray-700 transition-colors">
-                <td className="p-2 font-medium">{p.lastName}</td>
-                <td className="p-2">{p.firstName}</td>
-                <td className="p-2">{p.dni}</td>
-                <td className="p-2">{p.phone}</td>
-                <td className="p-2">{p.email}</td>
-                <td className="p-2 flex gap-2">
-                  <Link href={`/patients/${p.id}`} className="text-primary-dark dark:text-blue-400 hover:underline hover:scale-110 transition-all flex items-center gap-1"><Edit className="w-4 h-4" /> Editar</Link>
-                  <button onClick={() => handleDelete(p.id)} className="text-red-600 dark:text-red-400 hover:underline hover:scale-110 transition-all flex items-center gap-1"><Trash2 className="w-4 h-4" /> Borrar</button>
-                </td>
-              </tr>
-            ))}
+            {filtered.map(p => {
+              const patientAppts = getPatientAppointments(p.id);
+              const totalPaid = getPatientPaid(p.id);
+              const debt = getPatientDebt(p.id);
+
+              return (
+                <tr key={p.id} className="border-t border-secondary-lighter dark:border-gray-700 hover:bg-secondary-lighter/40 dark:hover:bg-gray-700 transition-colors">
+                  <td className="p-2 font-medium">{p.lastName}</td>
+                  <td className="p-2">{p.firstName}</td>
+                  <td className="p-2">{p.dni}</td>
+                  <td className="p-2">{p.phone}</td>
+                  <td className="p-2">
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs font-semibold">
+                      {patientAppts.length}
+                    </span>
+                  </td>
+                  <td className="p-2">
+                    {totalPaid > 0 ? (
+                      <span className="text-green-600 dark:text-green-400 font-semibold">
+                        ${totalPaid.toLocaleString()}
+                      </span>
+                    ) : (
+                      <span className="text-secondary dark:text-gray-500">-</span>
+                    )}
+                  </td>
+                  <td className="p-2">
+                    {debt > 0 ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded-full text-xs font-semibold">
+                        ${debt.toLocaleString()}
+                      </span>
+                    ) : (
+                      <span className="text-secondary dark:text-gray-500">-</span>
+                    )}
+                  </td>
+                  <td className="p-2">
+                    <div className="flex gap-2 justify-end">
+                      <Link href={`/patients/${p.id}`} className="text-primary-dark dark:text-blue-400 hover:underline hover:scale-110 transition-all flex items-center gap-1"><Edit className="w-4 h-4" /> Editar</Link>
+                      <button onClick={() => handleDelete(p.id)} className="text-red-600 dark:text-red-400 hover:underline hover:scale-110 transition-all flex items-center gap-1"><Trash2 className="w-4 h-4" /> Borrar</button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-4 text-center text-secondary dark:text-gray-400">Sin resultados</td>
+                <td colSpan={8} className="p-4 text-center text-secondary dark:text-gray-400">Sin resultados</td>
               </tr>
             )}
           </tbody>
