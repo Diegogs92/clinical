@@ -208,8 +208,8 @@ export default function DashboardPage() {
               <p className="text-secondary dark:text-gray-400">No hay turnos en el período seleccionado.</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full border border-secondary-lighter dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg">
-                  <thead className="bg-secondary-lighter dark:bg-gray-700">
+                <table className="min-w-full border border-secondary-lighter dark:border-gray-700 bg-white dark:bg-[#18181b] rounded-lg">
+                  <thead className="bg-secondary-lighter dark:bg-[#27272a]">
                     <tr className="text-left text-sm text-primary-dark dark:text-white">
                       <th className="p-2">Fecha</th>
                       <th className="p-2">Hora</th>
@@ -224,7 +224,7 @@ export default function DashboardPage() {
                       const d = new Date(a.date);
                       const fecha = d.toLocaleDateString();
                       return (
-                        <tr key={a.id} className="border-t border-secondary-lighter dark:border-gray-700 hover:bg-secondary-lighter/40 dark:hover:bg-gray-700 transition-colors">
+                        <tr key={a.id} className="border-t border-secondary-lighter dark:border-gray-700 hover:bg-secondary-lighter/40 dark:hover:bg-[#27272a] transition-colors">
                           <td className="p-2 font-medium">{fecha}</td>
                           <td className="p-2">{a.startTime} - {a.endTime}</td>
                           <td className="p-2">{a.patientName}</td>

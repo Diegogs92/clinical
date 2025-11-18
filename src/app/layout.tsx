@@ -5,6 +5,8 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ConfirmProvider } from '@/contexts/ConfirmContext';
+import { CalendarSyncProvider } from '@/contexts/CalendarSyncContext';
+import NextAuthProvider from '@/components/NextAuthProvider';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -51,18 +53,39 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             `,
           }}
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const stored = localStorage.getItem('theme');
+                  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  const shouldBeDark = stored === 'dark' || (!stored && prefersDark);
+                  window.__theme = shouldBeDark ? 'dark' : 'light';
+                  document.documentElement.classList.toggle('dark', shouldBeDark);
+                } catch (error) {
+                  console.error(error);
+                }
+              })();
+            `,
+          }}
+        />
       </head>
       <body className={inter.className}>
         <ErrorBoundary>
-          <ThemeProvider>
-            <AuthProvider>
-              <ToastProvider>
-                <ConfirmProvider>
-                  {children}
-                </ConfirmProvider>
-              </ToastProvider>
-            </AuthProvider>
-          </ThemeProvider>
+          <NextAuthProvider>
+            <ThemeProvider>
+              <AuthProvider>
+                <CalendarSyncProvider>
+                  <ToastProvider>
+                    <ConfirmProvider>
+                      {children}
+                    </ConfirmProvider>
+                  </ToastProvider>
+                </CalendarSyncProvider>
+              </AuthProvider>
+            </ThemeProvider>
+          </NextAuthProvider>
         </ErrorBoundary>
       </body>
     </html>

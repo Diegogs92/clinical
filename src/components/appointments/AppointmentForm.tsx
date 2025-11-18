@@ -8,6 +8,11 @@ import { createAppointment, updateAppointment } from '@/lib/appointments';
 import { useEffect, useState } from 'react';
 import { getPatientsByUser } from '@/lib/patients';
 import { Patient, Appointment } from '@/types';
+import { useCalendarSync } from '@/contexts/CalendarSyncContext';
+import { useToast } from '@/contexts/ToastContext';
+import Modal from '@/components/ui/Modal';
+import QuickPatientForm from '@/components/patients/QuickPatientForm';
+import { UserPlus } from 'lucide-react';
 
 const schema = z.object({
   patientId: z.string().min(1, 'Selecciona un paciente'),
@@ -31,6 +36,9 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [showQuickPatient, setShowQuickPatient] = useState(false);
+  const { syncAppointment, syncEnabled, isConnected } = useCalendarSync();
+  const toast = useToast();
   const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<AppointmentFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -83,12 +91,28 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         // Update existing appointment
         await updateAppointment(initialData.id, payload);
         const updated = { ...payload, id: initialData.id };
+        
+        // Sync with Google Calendar
+        if (syncEnabled && initialData.googleCalendarEventId) {
+          await syncAppointment(updated, 'update', initialData.googleCalendarEventId);
+        }
+        
         reset();
         onCreated?.(updated);
       } else {
         // Create new appointment
         const id = await createAppointment(payload);
         const created = { ...payload, id };
+        
+        // Sync with Google Calendar
+        if (syncEnabled) {
+          const eventId = await syncAppointment(created, 'create');
+          if (eventId) {
+            await updateAppointment(id, { googleCalendarEventId: eventId });
+            toast.success('Turno sincronizado con Google Calendar');
+          }
+        }
+        
         reset();
         onCreated?.(created);
       }
@@ -101,17 +125,35 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-      <div>
-        <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Paciente</label>
-        <select className="input-field" {...register('patientId')}>
-          <option value="">Selecciona un paciente</option>
-          {patients.map(p => (
-            <option key={p.id} value={p.id}>{p.lastName} {p.firstName} — DNI {p.dni}</option>
-          ))}
-        </select>
-        {errors.patientId && <p className="text-red-600 text-xs mt-1">{errors.patientId.message as string}</p>}
-      </div>
+    <>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-sm font-medium text-primary-dark dark:text-white">Paciente</label>
+            <button
+              type="button"
+              onClick={() => setShowQuickPatient(true)}
+              className="flex items-center gap-1 text-xs text-primary hover:text-primary-dark dark:text-primary-light dark:hover:text-white transition-colors"
+            >
+              <UserPlus className="w-3 h-3" />
+              Nuevo Paciente
+            </button>
+          </div>
+          <select className="input-field" {...register('patientId')}>
+            <option value="">Selecciona un paciente</option>
+            {patients.map(p => (
+              <option key={p.id} value={p.id}>{p.lastName} {p.firstName} — DNI {p.dni}</option>
+            ))}
+          </select>
+          {errors.patientId && <p className="text-red-600 text-xs mt-1">{errors.patientId.message as string}</p>}
+        </div>
+        
+        {syncEnabled && isConnected && (
+          <div className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+            <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+            Sincronización con Google Calendar activada
+          </div>
+        )}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div>
           <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Fecha</label>
@@ -143,5 +185,23 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         </button>
       </div>
     </form>
+    
+    <Modal
+      open={showQuickPatient}
+      onClose={() => setShowQuickPatient(false)}
+      title="Crear Nuevo Paciente"
+    >
+      <QuickPatientForm
+        onSuccess={async (newPatient) => {
+          const updatedList = await getPatientsByUser(user!.uid);
+          setPatients(updatedList);
+          setValue('patientId', newPatient.id);
+          setShowQuickPatient(false);
+          toast.success('Paciente creado y seleccionado correctamente');
+        }}
+        onCancel={() => setShowQuickPatient(false)}
+      />
+    </Modal>
+    </>
   );
 }

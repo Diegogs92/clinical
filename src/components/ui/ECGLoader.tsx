@@ -68,11 +68,6 @@ export default function ECGLoader({ className = "" }: { className?: string }) {
         </rect>
       </svg>
 
-      <div className="flex gap-1">
-        <div className="w-2 h-2 rounded-full bg-current animate-pulse" style={{ animationDelay: '0s' }} />
-        <div className="w-2 h-2 rounded-full bg-current animate-pulse" style={{ animationDelay: '0.2s' }} />
-        <div className="w-2 h-2 rounded-full bg-current animate-pulse" style={{ animationDelay: '0.4s' }} />
-      </div>
     </div>
   );
 }

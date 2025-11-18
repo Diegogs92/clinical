@@ -1,5 +1,12 @@
 "use client";
+
 import React, { createContext, useContext, useEffect, useState } from "react";
+
+declare global {
+  interface Window {
+    __theme?: "light" | "dark";
+  }
+}
 
 interface ThemeContextType {
   theme: "light" | "dark";
@@ -8,23 +15,43 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+const getPreferredTheme = () => {
+  if (typeof window === "undefined") return "light";
+  const stored = localStorage.getItem("theme");
+  if (stored === "dark") return "dark";
+  if (stored === "light") return "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+};
+
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setTheme] = useState<"light" | "dark">(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("theme") === "dark" ? "dark" : "light";
-    }
-    return "light";
+    if (typeof window === "undefined") return "light";
+    return window.__theme || getPreferredTheme();
   });
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      document.documentElement.classList.toggle("dark", theme === "dark");
-      localStorage.setItem("theme", theme);
+    if (typeof window === "undefined") return;
+    const preferred = getPreferredTheme();
+    if (preferred !== theme) {
+      setTheme(preferred);
     }
   }, [theme]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    localStorage.setItem("theme", theme);
+    window.__theme = theme;
+  }, [theme]);
+
   const toggleTheme = () => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+    setTheme((prev) => {
+      const next = prev === "light" ? "dark" : "light";
+      if (typeof window !== "undefined") {
+        window.__theme = next;
+      }
+      return next;
+    });
   };
 
   return (

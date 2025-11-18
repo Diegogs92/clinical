@@ -59,7 +59,7 @@ export default function InsurancesPage() {
           </div>
           <div className="card overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead className="bg-secondary-lighter dark:bg-gray-700">
+              <thead className="bg-secondary-lighter dark:bg-[#27272a]">
                 <tr className="text-left text-primary-dark dark:text-white">
                   <th className="p-2">Nombre</th>
                   <th className="p-2">Tipo</th>
@@ -70,7 +70,7 @@ export default function InsurancesPage() {
               </thead>
               <tbody className="text-gray-900 dark:text-gray-100">
                 {insurances.map(i => (
-                  <tr key={i.id} className="border-t border-secondary-lighter dark:border-gray-700 hover:bg-secondary-lighter/40 dark:hover:bg-gray-700 transition-colors">
+                  <tr key={i.id} className="border-t border-secondary-lighter dark:border-gray-700 hover:bg-secondary-lighter/40 dark:hover:bg-[#27272a] transition-colors">
                     <td className="p-2 font-medium">{i.name}</td>
                     <td className="p-2 capitalize">{i.type === 'obra-social' ? 'Obra Social' : 'Prepaga'}</td>
                     <td className="p-2">{i.phone}</td>

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPatientsByUser, deletePatient } from '@/lib/patients';
 import { getAppointmentsByUser } from '@/lib/appointments';
@@ -11,6 +11,8 @@ import { Trash2, Edit, Search } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import ECGLoader from '@/components/ui/ECGLoader';
+import Modal from '@/components/ui/Modal';
+import PatientForm from './PatientForm';
 
 export default function PatientList() {
   const { user } = useAuth();
@@ -19,6 +21,7 @@ export default function PatientList() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [isNewPatientModalOpen, setIsNewPatientModalOpen] = useState(false);
   const toast = useToast();
   const confirm = useConfirm();
 
@@ -41,47 +44,38 @@ export default function PatientList() {
     return completed.reduce((sum, p) => sum + p.amount, 0);
   };
 
-  useEffect(() => {
+  const loadData = useCallback(async ({ showLoading = false } = {}) => {
     if (!user) return;
-    (async () => {
-      setLoading(true);
-      try {
-        const [patientsData, appointmentsData, paymentsData] = await Promise.all([
-          getPatientsByUser(user.uid),
-          getAppointmentsByUser(user.uid),
-          listPayments(user.uid),
-        ]);
-        setPatients(patientsData);
-        setAppointments(appointmentsData);
-        setPayments(paymentsData);
-      } catch (e) {
-        console.error(e);
-      } finally {
+    if (showLoading) setLoading(true);
+    try {
+      const [patientsData, appointmentsData, paymentsData] = await Promise.all([
+        getPatientsByUser(user.uid),
+        getAppointmentsByUser(user.uid),
+        listPayments(user.uid),
+      ]);
+      setPatients(patientsData);
+      setAppointments(appointmentsData);
+      setPayments(paymentsData);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      if (showLoading) {
         setLoading(false);
       }
-    })();
+    }
   }, [user]);
 
-  // Re-cargar lista al volver el foco a la pestaña (ayuda tras crear/editar)
   useEffect(() => {
-    const onFocus = async () => {
-      if (!user) return;
-      try {
-        const [patientsData, appointmentsData, paymentsData] = await Promise.all([
-          getPatientsByUser(user.uid),
-          getAppointmentsByUser(user.uid),
-          listPayments(user.uid),
-        ]);
-        setPatients(patientsData);
-        setAppointments(appointmentsData);
-        setPayments(paymentsData);
-      } catch (e) {
-        console.error(e);
-      }
+    loadData({ showLoading: true });
+  }, [loadData]);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      loadData();
     };
-    window.addEventListener('focus', onFocus);
-    return () => window.removeEventListener('focus', onFocus);
-  }, [user]);
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [loadData]);
 
   const filtered = patients.filter(p =>
     `${p.lastName} ${p.firstName}`.toLowerCase().includes(search.toLowerCase()) || p.dni.includes(search)
@@ -127,11 +121,30 @@ export default function PatientList() {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <Link href="/patients/new" className="btn-primary inline-block text-center hover:shadow-lg hover:scale-105 transition-all">+ Nuevo Paciente</Link>
+        <button
+          type="button"
+          onClick={() => setIsNewPatientModalOpen(true)}
+          className="btn-primary inline-block text-center hover:shadow-lg hover:scale-105 transition-all"
+        >
+          + Nuevo Paciente
+        </button>
       </div>
+      <Modal
+        open={isNewPatientModalOpen}
+        onClose={() => setIsNewPatientModalOpen(false)}
+        title="Nuevo paciente"
+        maxWidth="max-w-3xl"
+      >
+        <PatientForm
+          onSuccess={() => {
+            setIsNewPatientModalOpen(false);
+            loadData();
+          }}
+        />
+      </Modal>
       <div className="overflow-x-auto">
-        <table className="min-w-full border border-secondary-lighter dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg">
-          <thead className="bg-secondary-lighter dark:bg-gray-700">
+        <table className="min-w-full border border-secondary-lighter dark:border-gray-700 bg-white dark:bg-[#18181b] rounded-lg">
+          <thead className="bg-secondary-lighter dark:bg-[#27272a]">
             <tr className="text-left text-sm text-primary-dark dark:text-white">
               <th className="p-2">Apellido</th>
               <th className="p-2">Nombre</th>
@@ -150,7 +163,7 @@ export default function PatientList() {
               const debt = getPatientDebt(p.id);
 
               return (
-                <tr key={p.id} className="border-t border-secondary-lighter dark:border-gray-700 hover:bg-secondary-lighter/40 dark:hover:bg-gray-700 transition-colors">
+                <tr key={p.id} className="border-t border-secondary-lighter dark:border-gray-700 hover:bg-secondary-lighter/40 dark:hover:bg-[#27272a] transition-colors">
                   <td className="p-2 font-medium">{p.lastName}</td>
                   <td className="p-2">{p.firstName}</td>
                   <td className="p-2">{p.dni}</td>

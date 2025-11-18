@@ -1,9 +1,7 @@
-// Estructura base para NextAuth con Google y Google Calendar
-import NextAuth from "next-auth";
+import NextAuth, { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { google } from "googleapis";
 
-export const authOptions = {
+export const authOptions: AuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -12,20 +10,28 @@ export const authOptions = {
         params: {
           scope:
             "openid email profile https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events",
+          access_type: "offline",
+          prompt: "consent",
         },
       },
     }),
   ],
   callbacks: {
-    async signIn({ account, profile }) {
-      // Aquí puedes guardar el token de Google para usarlo con la API de Calendar
-      return true;
+    async jwt({ token, account }) {
+      // Guardar el access token en el JWT token
+      if (account) {
+        token.accessToken = account.access_token;
+        token.refreshToken = account.refresh_token;
+      }
+      return token;
     },
-    async session({ session, token, user }) {
-      // Puedes adjuntar el token de Google a la sesión
+    async session({ session, token }) {
+      // Adjuntar el access token a la sesión
+      session.accessToken = token.accessToken as string;
       return session;
     },
   },
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);

@@ -31,9 +31,9 @@ export type PatientFormValues = z.infer<typeof patientSchema>;
 
 interface Props {
   patientId?: string;
+  onSuccess?: () => void;
 }
-
-export default function PatientForm({ patientId }: Props) {
+export default function PatientForm({ patientId, onSuccess }: Props) {
   const { user } = useAuth();
   const router = useRouter();
   const toast = useToast();
@@ -130,7 +130,11 @@ export default function PatientForm({ patientId }: Props) {
         await createPatient(patientData);
         toast.success('Paciente creado correctamente');
       }
-      router.push('/patients');
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.push('/patients');
+      }
     } catch (e) {
       console.error('Error al guardar:', e);
       alert(`Error al guardar paciente: ${e instanceof Error ? e.message : 'Error desconocido'}`);

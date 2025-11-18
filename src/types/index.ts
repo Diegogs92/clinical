@@ -55,6 +55,7 @@ export interface Appointment {
   authorizationCode?: string;
   isRecurrent?: boolean;
   recurrenceRule?: RecurrenceRule;
+  googleCalendarEventId?: string; // ID del evento en Google Calendar
   createdAt: string;
   updatedAt: string;
   userId: string; // Professional ID

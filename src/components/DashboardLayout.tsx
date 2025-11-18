@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { CalendarDays, Users, Hospital, Wallet, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 const navItems = [
   { href: '/dashboard', label: 'Agenda', icon: CalendarDays },
@@ -19,11 +19,49 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const { user, userProfile, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sliderStyle, setSliderStyle] = useState({ left: 0, width: 0, opacity: 0 });
+  const navRef = useRef<HTMLDivElement>(null);
+
+  // Set initial slider position based on active link
+  useEffect(() => {
+    if (navRef.current) {
+      const activeLink = navRef.current.querySelector('.nav-link-active') as HTMLElement;
+      if (activeLink) {
+        setSliderStyle({
+          left: activeLink.offsetLeft,
+          width: activeLink.offsetWidth,
+          opacity: 1,
+        });
+      }
+    }
+  }, [pathname]);
+
+  const handleMouseEnter = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const target = e.currentTarget;
+    setSliderStyle({
+      left: target.offsetLeft,
+      width: target.offsetWidth,
+      opacity: 1,
+    });
+  };
+
+  const handleMouseLeave = () => {
+    if (navRef.current) {
+      const activeLink = navRef.current.querySelector('.nav-link-active') as HTMLElement;
+      if (activeLink) {
+        setSliderStyle({
+          left: activeLink.offsetLeft,
+          width: activeLink.offsetWidth,
+          opacity: 1,
+        });
+      }
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 dark:from-[#18181b] dark:via-[#18181b] dark:to-[#0a0a0b]">
       {/* Top Navigation Bar - iOS Style */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-[#18181b]/90 border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -36,18 +74,35 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
 
             {/* Desktop Navigation Pills */}
-            <nav className="hidden md:flex items-center gap-2 bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-full p-1.5 shadow-inner">
+            <nav 
+              ref={navRef}
+              className="hidden md:flex items-center relative bg-gray-100/80 dark:bg-[#27272a]/80 backdrop-blur-lg rounded-full p-1.5 shadow-inner"
+              onMouseLeave={handleMouseLeave}
+            >
+              {/* Animated Slider */}
+              <div
+                className="absolute bg-white dark:bg-[#3f3f46] rounded-full shadow-md transition-all duration-300 ease-out"
+                style={{
+                  left: `${sliderStyle.left}px`,
+                  width: `${sliderStyle.width}px`,
+                  height: 'calc(100% - 12px)',
+                  top: '6px',
+                  opacity: sliderStyle.opacity,
+                  pointerEvents: 'none',
+                }}
+              />
               {navItems.map(({ href, label, icon: Icon }) => {
                 const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
                 return (
                   <Link
                     key={href}
                     href={href}
+                    onMouseEnter={handleMouseEnter}
                     className={`
-                      flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300
+                      relative z-10 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200
                       ${active
-                        ? 'bg-white dark:bg-gray-700 text-primary dark:text-white shadow-md scale-105'
-                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-700/50'
+                        ? 'nav-link-active text-primary dark:text-white'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                       }
                     `}
                   >
@@ -89,7 +144,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="md:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#27272a] transition-colors"
                 aria-label="Toggle menu"
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -100,7 +155,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Mobile Menu Dropdown */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200/50 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg">
+          <div className="md:hidden border-t border-gray-200/50 dark:border-gray-700/50 bg-white/95 dark:bg-[#18181b]/95 backdrop-blur-lg">
             <nav className="px-4 py-3 space-y-1">
               {navItems.map(({ href, label, icon: Icon }) => {
                 const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
@@ -113,7 +168,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all
                       ${active
                         ? 'bg-primary text-white shadow-md'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#27272a]'
                       }
                     `}
                   >
