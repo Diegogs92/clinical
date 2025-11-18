@@ -16,6 +16,7 @@ import Modal from '@/components/ui/Modal';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import { translateAppointmentStatus } from '@/lib/translations';
+import ECGLoader from '@/components/ui/ECGLoader';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -199,7 +200,10 @@ export default function DashboardPage() {
             </div>
 
             {loading ? (
-              <p className="text-secondary dark:text-gray-400">Cargando turnos...</p>
+              <div className="flex flex-col items-center justify-center py-12 text-primary dark:text-white">
+                <ECGLoader />
+                <p className="mt-4 text-sm">Cargando turnos...</p>
+              </div>
             ) : filtered.length === 0 ? (
               <p className="text-secondary dark:text-gray-400">No hay turnos en el período seleccionado.</p>
             ) : (

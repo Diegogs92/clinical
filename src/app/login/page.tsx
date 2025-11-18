@@ -3,8 +3,9 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { LogIn, Loader2 } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 import Image from 'next/image';
+import ECGLoader from '@/components/ui/ECGLoader';
 
 export default function LoginPage() {
   const { user, loading: authLoading, signInWithGoogle, error } = useAuth();
@@ -35,7 +36,7 @@ export default function LoginPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary via-primary-dark to-secondary">
-        <Loader2 className="w-12 h-12 text-white animate-spin" />
+        <ECGLoader className="text-white" />
       </div>
     );
   }
@@ -73,13 +74,21 @@ export default function LoginPage() {
           <button
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 bg-white border-2 border-primary hover:bg-primary hover:text-white text-primary-dark font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-3 bg-white border-2 border-primary hover:bg-primary hover:text-white text-primary-dark font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
           >
             {loading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Iniciando sesión...</span>
-              </>
+              <span className="flex items-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 120 60" className="animate-pulse">
+                  <path
+                    d="M0,30 L15,30 L18,10 L21,50 L24,30 L30,30 L33,25 L36,35 L39,30 L120,30"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                Iniciando sesión...
+              </span>
             ) : (
               <>
                 <LogIn className="w-5 h-5" />

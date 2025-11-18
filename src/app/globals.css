@@ -26,30 +26,56 @@ body {
 
 @layer components {
   .btn-primary {
-    @apply bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md;
+    @apply bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 shadow-sm hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm;
   }
 
   .btn-secondary {
-    @apply bg-secondary hover:bg-secondary-light text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md dark:bg-gray-700 dark:hover:bg-gray-600;
+    @apply bg-secondary hover:bg-secondary-light text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 shadow-sm hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm dark:bg-gray-700 dark:hover:bg-gray-600;
   }
 
   .card {
-    @apply bg-white/60 dark:bg-gray-800/60 backdrop-blur-md rounded-xl shadow-lg p-6 border border-white/20 dark:border-white/10;
+    @apply bg-white/60 dark:bg-gray-800/60 backdrop-blur-md rounded-xl shadow-lg p-6 border border-white/20 dark:border-white/10 transition-all duration-300 hover:shadow-xl hover:border-white/30 dark:hover:border-white/20;
   }
 
   .input-field {
-    @apply w-full px-4 py-2 border border-white/30 dark:border-white/10 rounded-lg bg-white/70 dark:bg-gray-700/60 backdrop-blur-md text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all;
+    @apply w-full px-4 py-2 border border-white/30 dark:border-white/10 rounded-lg bg-white/70 dark:bg-gray-700/60 backdrop-blur-md text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 hover:border-primary/30 dark:hover:border-primary/30;
   }
-  
+
   .link {
-    @apply text-primary-dark dark:text-blue-400 hover:underline underline-offset-4 hover:text-primary dark:hover:text-blue-300 transition-colors;
+    @apply text-primary-dark dark:text-blue-400 hover:underline underline-offset-4 hover:text-primary dark:hover:text-blue-300 transition-all duration-300;
   }
-  
+
   .text-primary-dark {
     @apply dark:text-white;
   }
-  
+
   .text-secondary {
     @apply dark:text-gray-400;
   }
+}
+
+/* ECG Loading Animation */
+@keyframes ecg {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes pulse-line {
+  0%, 100% {
+    d: path('M0,50 L20,50 L25,20 L30,80 L35,50 L40,50 L45,40 L50,60 L55,50 L100,50');
+  }
+  50% {
+    d: path('M0,50 L20,50 L25,30 L30,70 L35,50 L40,50 L45,45 L50,55 L55,50 L100,50');
+  }
+}
+
+.ecg-loader {
+  width: 100px;
+  height: 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ecg-line {
+  animation: pulse-line 1.5s ease-in-out infinite;
 }

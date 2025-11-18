@@ -7,9 +7,10 @@ import { getPatientsByUser, deletePatient } from '@/lib/patients';
 import { getAppointmentsByUser } from '@/lib/appointments';
 import { listPayments } from '@/lib/payments';
 import { Patient, Appointment, Payment } from '@/types';
-import { Trash2, Edit, Search, Loader2 } from 'lucide-react';
+import { Trash2, Edit, Search } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
+import ECGLoader from '@/components/ui/ECGLoader';
 
 export default function PatientList() {
   const { user } = useAuth();
@@ -106,7 +107,12 @@ export default function PatientList() {
   };
 
   if (loading) {
-    return <div className="flex items-center gap-2 text-primary dark:text-white"><Loader2 className="w-5 h-5 animate-spin" /> Cargando pacientes...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-primary dark:text-white">
+        <ECGLoader />
+        <p className="mt-4 text-sm">Cargando pacientes...</p>
+      </div>
+    );
   }
 
   return (
