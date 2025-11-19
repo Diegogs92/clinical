@@ -62,9 +62,14 @@ export async function getAppointmentsByUser(userId: string): Promise<Appointment
     return mockAppointments.filter(a => a.userId === userId).sort((a,b) => a.date.localeCompare(b.date));
   }
   const colRef = collection(db as Firestore, APPOINTMENTS_COLLECTION);
-  const q = query(colRef, where('userId', '==', userId), orderBy('date'));
+
+  // Solo filtrar por userId, ordenar en cliente para evitar requerir índice compuesto
+  const q = query(colRef, where('userId', '==', userId));
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ ...d.data() as Appointment, id: d.id }));
+  const appointments = snap.docs.map(d => ({ ...d.data() as Appointment, id: d.id }));
+
+  // Ordenar por fecha en el cliente
+  return appointments.sort((a, b) => a.date.localeCompare(b.date));
 }
 
 // Utility to expand recurrence (client-side only for now)
