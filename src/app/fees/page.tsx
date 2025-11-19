@@ -41,10 +41,10 @@ export default function FeesPage() {
           </div>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="card overflow-x-auto">
-              <h2 className="font-semibold text-primary-dark mb-4">Últimos Cobros</h2>
+              <h2 className="font-semibold text-primary-dark dark:text-white mb-4">Últimos Cobros</h2>
               <table className="min-w-full text-sm">
-                <thead className="bg-secondary-lighter">
-                  <tr className="text-left text-primary-dark">
+                <thead className="bg-secondary-lighter/30 dark:bg-gray-700/50">
+                  <tr className="text-left text-primary-dark dark:text-white">
                     <th className="p-2">Paciente</th>
                     <th className="p-2">Monto</th>
                     <th className="p-2">Estado</th>
@@ -52,9 +52,9 @@ export default function FeesPage() {
                     <th className="p-2">Fecha</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="text-gray-900 dark:text-gray-100">
                   {payments.slice(0,10).map(p => (
-                    <tr key={p.id} className="border-t border-secondary-lighter">
+                    <tr key={p.id} className="border-t border-secondary-lighter dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                       <td className="p-2">{p.patientName}</td>
                       <td className="p-2">${p.amount.toLocaleString()}</td>
                       <td className="p-2">{p.status}</td>
@@ -62,31 +62,31 @@ export default function FeesPage() {
                       <td className="p-2">{new Date(p.date).toLocaleDateString()}</td>
                     </tr>
                   ))}
-                  {payments.length === 0 && <tr><td colSpan={5} className="p-4 text-center text-secondary">Sin registros</td></tr>}
+                  {payments.length === 0 && <tr><td colSpan={5} className="p-4 text-center text-secondary dark:text-gray-400">Sin registros</td></tr>}
                 </tbody>
               </table>
             </div>
             <div className="card overflow-x-auto">
-              <h2 className="font-semibold text-primary-dark mb-4">Pendientes</h2>
+              <h2 className="font-semibold text-primary-dark dark:text-white mb-4">Pendientes</h2>
               <table className="min-w-full text-sm">
-                <thead className="bg-secondary-lighter">
-                  <tr className="text-left text-primary-dark">
+                <thead className="bg-secondary-lighter/30 dark:bg-gray-700/50">
+                  <tr className="text-left text-primary-dark dark:text-white">
                     <th className="p-2">Paciente</th>
                     <th className="p-2">Monto</th>
                     <th className="p-2">Método</th>
                     <th className="p-2">Fecha</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="text-gray-900 dark:text-gray-100">
                   {pending.slice(0,10).map(p => (
-                    <tr key={p.id} className="border-t border-secondary-lighter">
+                    <tr key={p.id} className="border-t border-secondary-lighter dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                       <td className="p-2">{p.patientName}</td>
                       <td className="p-2">${p.amount.toLocaleString()}</td>
                       <td className="p-2">{p.method}</td>
                       <td className="p-2">{new Date(p.date).toLocaleDateString()}</td>
                     </tr>
                   ))}
-                  {pending.length === 0 && <tr><td colSpan={4} className="p-4 text-center text-secondary">Sin pendientes</td></tr>}
+                  {pending.length === 0 && <tr><td colSpan={4} className="p-4 text-center text-secondary dark:text-gray-400">Sin pendientes</td></tr>}
                 </tbody>
               </table>
             </div>

@@ -36,7 +36,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </div>
 
-            {/* Desktop Navigation - Simplificado */}
+            {/* Desktop Navigation - Con efecto hover deslizante */}
             <nav className="hidden md:flex items-center gap-1">
               {navItems.map(({ href, label, icon: Icon }) => {
                  const active = pathname === href || (href !== '/dashboard' && pathname?.startsWith(href));
@@ -45,15 +45,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     key={href}
                     href={href}
                     className={`
-                      flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200
+                      group relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
                       ${active
-                        ? 'bg-primary text-white'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                        ? 'text-primary dark:text-primary-light bg-primary/5 dark:bg-primary/10'
+                        : 'text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light hover:bg-primary/5 dark:hover:bg-primary/10'
                       }
                     `}
                   >
                     <Icon className="w-4 h-4" />
                     <span className="whitespace-nowrap">{label}</span>
+                    {/* Hover indicator deslizante */}
+                    <span className={`
+                      absolute bottom-0 left-0 h-0.5 bg-primary dark:bg-primary-light rounded-full transition-all duration-300 ease-out
+                      ${active ? 'w-full' : 'w-0 group-hover:w-full'}
+                    `} />
                   </Link>
                 );
               })}
