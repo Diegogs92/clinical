@@ -129,7 +129,7 @@ export default function PatientList() {
         open={isNewPatientModalOpen}
         onClose={() => setIsNewPatientModalOpen(false)}
         title="Nuevo paciente"
-        maxWidth="max-w-3xl"
+        maxWidth="max-w-2xl"
       >
         <PatientForm
           onSuccess={async () => {

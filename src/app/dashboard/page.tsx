@@ -327,7 +327,7 @@ export default function DashboardPage() {
             )}
           </div>
 
-          <Modal open={showForm} onClose={()=>{setShowForm(false); setEditingAppointment(null);}} title={editingAppointment ? 'Editar Turno' : 'Nuevo Turno'}>
+          <Modal open={showForm} onClose={()=>{setShowForm(false); setEditingAppointment(null);}} title={editingAppointment ? 'Editar Turno' : 'Nuevo Turno'} maxWidth="max-w-2xl">
             <AppointmentForm
               initialData={editingAppointment || undefined}
               onCreated={(appt?: Appointment) => {

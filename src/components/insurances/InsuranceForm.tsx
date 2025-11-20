@@ -77,55 +77,59 @@ export default function InsuranceForm({ insuranceId, onSuccess, onCancel }: Prop
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Nombre</label>
-        <input className="input-field" {...register('name')} />
-        {errors.name && <p className="text-red-600 text-xs">{errors.name.message}</p>}
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Tipo</label>
-        <select className="input-field" {...register('type')}>
-          <option value="obra-social">Obra Social</option>
-          <option value="prepaga">Prepaga</option>
-        </select>
-      </div>
-      <div className="grid md:grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-2.5">
+      <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Teléfono</label>
-          <input className="input-field" {...register('phone')} />
+          <label className="block text-xs font-medium text-primary-dark dark:text-white mb-0.5">Nombre</label>
+          <input className="input-field text-sm py-1.5" {...register('name')} />
+          {errors.name && <p className="text-red-600 text-[10px] mt-0.5">{errors.name.message}</p>}
         </div>
         <div>
-          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Email</label>
-          <input className="input-field" {...register('email')} />
-          {errors.email && <p className="text-red-600 text-xs">{errors.email.message}</p>}
+          <label className="block text-xs font-medium text-primary-dark dark:text-white mb-0.5">Tipo</label>
+          <select className="input-field text-sm py-1.5" {...register('type')}>
+            <option value="obra-social">Obra Social</option>
+            <option value="prepaga">Prepaga</option>
+          </select>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-xs font-medium text-primary-dark dark:text-white mb-0.5">Teléfono</label>
+          <input className="input-field text-sm py-1.5" {...register('phone')} />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-primary-dark dark:text-white mb-0.5">Email</label>
+          <input className="input-field text-sm py-1.5" {...register('email')} />
+          {errors.email && <p className="text-red-600 text-[10px] mt-0.5">{errors.email.message}</p>}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-xs font-medium text-primary-dark dark:text-white mb-0.5">Sitio Web</label>
+          <input className="input-field text-sm py-1.5" {...register('website')} />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-primary-dark dark:text-white mb-0.5">Dirección</label>
+          <input className="input-field text-sm py-1.5" {...register('address')} />
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Sitio Web</label>
-        <input className="input-field" {...register('website')} />
+        <label className="block text-xs font-medium text-primary-dark dark:text-white mb-0.5">Notas</label>
+        <textarea rows={2} className="input-field text-sm py-1.5 resize-none" {...register('notes')} />
       </div>
-      <div>
-        <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Dirección</label>
-        <input className="input-field" {...register('address')} />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Notas</label>
-        <textarea rows={4} className="input-field" {...register('notes')} />
-      </div>
-      <div className="flex gap-3 pt-2">
+      <div className="flex gap-2 pt-1.5">
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="btn-secondary flex-1 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
+            className="btn-secondary text-sm py-1.5 px-3 flex-1 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
           >
             Cancelar
           </button>
         )}
         <button
           disabled={loading}
-          className={`btn-primary hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 ${onCancel ? 'flex-1' : 'w-full'}`}
+          className={`btn-primary text-sm py-1.5 px-4 hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 ${onCancel ? 'flex-1' : 'w-full'}`}
         >
           {loading ? 'Guardando...' : (insuranceId ? 'Actualizar' : 'Crear')}
         </button>
