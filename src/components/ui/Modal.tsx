@@ -40,11 +40,11 @@ export default function Modal({ open, onClose, title, children, maxWidth = 'max-
       />
 
       {/* Modal Content */}
-      <div className={`relative w-full ${maxWidth} bg-white dark:bg-[#18181b] rounded-xl shadow-2xl p-6 border border-gray-200 dark:border-gray-700 transform transition-all duration-200 ${
+      <div className={`relative w-full ${maxWidth} bg-white dark:bg-elegant-900 rounded-xl shadow-2xl p-6 border border-elegant-200 dark:border-elegant-800 transform transition-all duration-200 ${
         open ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
       }`}>
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h3>
+          <h3 className="text-xl font-semibold text-elegant-900 dark:text-white">{title}</h3>
           <button
             onClick={onClose}
             className="icon-btn"

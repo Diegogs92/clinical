@@ -24,7 +24,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen bg-pearl dark:bg-navy-darkest">
       {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-50 bg-white/80 dark:bg-navy-dark/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-navy-light/20">
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-navy-dark/80 backdrop-blur-xl border-b border-elegant-200/50 dark:border-navy-light/20">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -36,7 +36,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
 
             {/* Desktop Navigation - Pill Style */}
-            <nav className="hidden md:flex items-center bg-pearl/50 dark:bg-navy-darkest/50 rounded-full px-2 py-1.5 backdrop-blur-md border border-gray-200/30 dark:border-navy-light/10">
+            <nav className="hidden md:flex items-center bg-elegant-50/50 dark:bg-navy-darkest/50 rounded-full px-2 py-1.5 backdrop-blur-md border border-elegant-200/30 dark:border-navy-light/10">
               {navItems.map(({ href, label, icon: Icon }) => {
                 const active = pathname === href || (href !== '/dashboard' && pathname?.startsWith(href));
                 return (
@@ -48,7 +48,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       transition-all duration-200
                       ${active
                         ? 'bg-white dark:bg-navy-light text-navy-dark dark:text-pearl shadow-sm'
-                        : 'text-navy-light dark:text-secondary hover:text-navy-dark dark:hover:text-pearl'
+                        : 'text-elegant-600 dark:text-elegant-300 hover:text-navy-dark dark:hover:text-pearl'
                       }
                     `}
                   >
@@ -71,7 +71,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     alt="avatar"
                     width={32}
                     height={32}
-                    className="rounded-full ring-2 ring-navy-light/20 dark:ring-secondary/20"
+                    className="rounded-full ring-2 ring-elegant-300/30 dark:ring-elegant-700/30"
                   />
                 )}
                 <button
@@ -86,7 +86,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-navy-light/20 transition-colors duration-200"
+                className="md:hidden p-2 rounded-lg hover:bg-elegant-100 dark:hover:bg-navy-light/20 transition-colors duration-200"
                 aria-label="Toggle menu"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -97,7 +97,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Mobile Menu Dropdown */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200/50 dark:border-navy-light/20 bg-white/95 dark:bg-navy-dark/95 backdrop-blur-xl">
+          <div className="md:hidden border-t border-elegant-200/50 dark:border-navy-light/20 bg-white/95 dark:bg-navy-dark/95 backdrop-blur-xl">
             <nav className="px-4 py-3 space-y-1">
               {navItems.map(({ href, label, icon: Icon }) => {
                 const active = pathname === href || (href !== '/dashboard' && pathname?.startsWith(href));
@@ -110,7 +110,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-200
                       ${active
                         ? 'bg-navy-dark dark:bg-navy-light text-white dark:text-pearl'
-                        : 'text-navy-light dark:text-secondary hover:bg-gray-100 dark:hover:bg-navy-light/20'
+                        : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-100 dark:hover:bg-navy-light/20'
                       }
                     `}
                   >
@@ -122,7 +122,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </nav>
 
             {/* Mobile User Section */}
-            <div className="px-4 py-3 border-t border-gray-200/50 dark:border-navy-light/20">
+            <div className="px-4 py-3 border-t border-elegant-200/50 dark:border-navy-light/20">
               <div className="flex items-center gap-3 mb-3">
                 {user?.photoURL && (
                   <Image
@@ -130,14 +130,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     alt="avatar"
                     width={40}
                     height={40}
-                    className="rounded-full ring-2 ring-navy-light/20 dark:ring-secondary/20"
+                    className="rounded-full ring-2 ring-elegant-300/30 dark:ring-elegant-700/30"
                   />
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-navy-dark dark:text-pearl truncate text-sm">
                     {userProfile?.displayName || user?.email?.split('@')[0]}
                   </div>
-                  <div className="text-xs text-secondary dark:text-secondary">Profesional</div>
+                  <div className="text-xs text-elegant-500 dark:text-elegant-400">Profesional</div>
                 </div>
               </div>
               <div className="flex items-center gap-2 mb-3">

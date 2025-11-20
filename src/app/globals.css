@@ -39,28 +39,28 @@ body {
   }
 
   .btn-secondary {
-    @apply bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-4 rounded-lg
+    @apply bg-elegant-100 hover:bg-elegant-200 text-elegant-700 font-medium py-2.5 px-4 rounded-lg
            transition-all duration-200 shadow-sm hover:shadow-md
-           dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200
-           focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-500
+           dark:bg-elegant-800 dark:hover:bg-elegant-700 dark:text-elegant-100
+           focus:outline-none focus:ring-2 focus:ring-elegant-300 dark:focus:ring-elegant-600
            active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
   }
 
   /* Cards - Smooth hover */
   .card {
-    @apply bg-white dark:bg-[#18181b] rounded-xl shadow-sm p-6
-           border border-gray-200 dark:border-gray-700
+    @apply bg-white dark:bg-elegant-900 rounded-xl shadow-sm p-6
+           border border-elegant-200 dark:border-elegant-800
            transition-all duration-200 hover:shadow-md;
   }
 
   /* Inputs - Con focus mejorado */
   .input-field {
-    @apply w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600
-           rounded-lg bg-white dark:bg-[#18181b]
-           text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
+    @apply w-full px-4 py-2.5 border border-elegant-300 dark:border-elegant-700
+           rounded-lg bg-white dark:bg-elegant-900
+           text-elegant-900 dark:text-white placeholder-elegant-400 dark:placeholder-elegant-500
            focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
-           transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500
-           disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed;
+           transition-all duration-200 hover:border-elegant-400 dark:hover:border-elegant-600
+           disabled:bg-elegant-50 dark:disabled:bg-elegant-950 disabled:cursor-not-allowed;
   }
 
   /* Links - Con underline smooth */
@@ -72,10 +72,10 @@ body {
 
   /* Icon buttons - Para acciones con iconos */
   .icon-btn {
-    @apply p-2 rounded-lg text-gray-600 dark:text-gray-400
-           hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white
+    @apply p-2 rounded-lg text-elegant-600 dark:text-elegant-400
+           hover:bg-elegant-100 dark:hover:bg-elegant-800 hover:text-elegant-900 dark:hover:text-white
            transition-all duration-200 active:scale-95
-           focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600;
+           focus:outline-none focus:ring-2 focus:ring-elegant-300 dark:focus:ring-elegant-700;
   }
 
   .icon-btn-danger {
@@ -94,11 +94,11 @@ body {
 
   /* Helpers de texto */
   .text-primary-dark {
-    @apply text-gray-900 dark:text-white;
+    @apply text-elegant-900 dark:text-white;
   }
 
   .text-secondary {
-    @apply text-gray-600 dark:text-gray-400;
+    @apply text-elegant-600 dark:text-elegant-400;
   }
 
   /* Badge / Pills */

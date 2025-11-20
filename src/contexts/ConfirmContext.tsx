@@ -43,12 +43,12 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
     <ConfirmContext.Provider value={{ confirm }}>
       {children}
       <Modal open={!!pending} onClose={() => close(false)} title={pending?.options.title || 'Confirmar acción'}>
-        <p className="text-base text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+        <p className="text-base text-elegant-600 dark:text-elegant-300 mb-6 leading-relaxed">
           {pending?.options.description || '¿Deseas continuar?'}
         </p>
         <div className="flex items-center justify-end gap-3">
           <button
-            className="px-4 py-2.5 rounded-lg font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-500"
+            className="px-4 py-2.5 rounded-lg font-medium text-elegant-700 dark:text-elegant-200 bg-elegant-100 dark:bg-elegant-800 hover:bg-elegant-200 dark:hover:bg-elegant-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-elegant-300 dark:focus:ring-elegant-600"
             onClick={() => close(false)}
           >
             {pending?.options.cancelText || 'Cancelar'}
