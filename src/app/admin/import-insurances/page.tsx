@@ -108,6 +108,9 @@ export default function ImportInsurancesPage() {
             userId: user.uid,
           };
 
+          if (!db) {
+            throw new Error('Database not initialized');
+          }
           await addDoc(collection(db, 'insurances'), insuranceData);
           imported++;
           setProgress(imported);
