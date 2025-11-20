@@ -22,6 +22,7 @@ const schema = z.object({
   startTime: z.string().min(1, 'Hora inicio requerida'), // HH:mm
   duration: z.coerce.number().min(5).max(600).default(30),
   type: z.string().default('Consulta'),
+  fee: z.coerce.number().optional(),
   notes: z.string().optional(),
 });
 
@@ -46,6 +47,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
     defaultValues: {
       duration: initialData?.duration || 30,
       type: initialData?.type || 'Consulta',
+      fee: initialData?.fee || undefined,
       patientId: initialData?.patientId || '',
       date: initialData?.date ? initialData.date.split('T')[0] : '',
       startTime: initialData?.startTime || '',
@@ -172,10 +174,14 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
           <input type="number" className="input-field text-sm py-1.5" {...register('duration', { valueAsNumber: true })} />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         <div>
           <label className="block text-xs font-medium text-primary-dark dark:text-white mb-0.5">Tipo</label>
           <input className="input-field text-sm py-1.5" placeholder="Consulta" {...register('type')} />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-primary-dark dark:text-white mb-0.5">Honorarios</label>
+          <input type="number" className="input-field text-sm py-1.5" placeholder="0" {...register('fee', { valueAsNumber: true })} />
         </div>
         <div>
           <label className="block text-xs font-medium text-primary-dark dark:text-white mb-0.5">Notas</label>

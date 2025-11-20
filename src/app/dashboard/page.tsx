@@ -12,7 +12,7 @@ import { Appointment } from '@/types';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import AppointmentForm from '@/components/appointments/AppointmentForm';
-import { CalendarDays, PlusCircle, Edit2, Trash2, Filter } from 'lucide-react';
+import { CalendarDays, PlusCircle, Edit2, Trash2, Filter, DollarSign, FileText } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
@@ -214,6 +214,7 @@ export default function DashboardPage() {
                         <th className="p-3 font-bold text-navy-darkest dark:text-white">Hora</th>
                         <th className="p-3 font-bold text-navy-darkest dark:text-white">Paciente</th>
                         <th className="p-3 font-bold text-navy-darkest dark:text-white">Tipo</th>
+                        <th className="p-3 font-bold text-navy-darkest dark:text-white">Honorarios</th>
                         <th className="p-3 font-bold text-navy-darkest dark:text-white">Estado</th>
                         <th className="p-3 text-right font-bold text-navy-darkest dark:text-white">Acciones</th>
                       </tr>
@@ -229,6 +230,15 @@ export default function DashboardPage() {
                             <td className="p-2">{a.patientName}</td>
                             <td className="p-2">{a.type}</td>
                             <td className="p-2">
+                              {a.fee ? (
+                                <span className="font-semibold text-green-600 dark:text-green-400">
+                                  ${a.fee.toLocaleString()}
+                                </span>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
+                            </td>
+                            <td className="p-2">
                               <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
                                 a.status === 'confirmed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
                                 a.status === 'completed' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
@@ -241,6 +251,22 @@ export default function DashboardPage() {
                             </td>
                             <td className="p-2 text-right">
                               <div className="flex items-center justify-end gap-1">
+                                <button
+                                  onClick={() => {/* TODO: Implementar pagar */}}
+                                  className="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
+                                  aria-label="Registrar pago"
+                                  title="Registrar pago"
+                                >
+                                  <DollarSign className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => {/* TODO: Implementar registrar deuda */}}
+                                  className="p-1.5 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded transition-colors"
+                                  aria-label="Registrar deuda"
+                                  title="Registrar deuda"
+                                >
+                                  <FileText className="w-4 h-4" />
+                                </button>
                                 <button
                                   onClick={() => handleEdit(a)}
                                   className="icon-btn-primary"
