@@ -35,20 +35,20 @@ export default function FeesPage() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="card">
-              <div className="text-xs font-semibold text-navy-darkest dark:text-navy-darkest">Total Ingresos</div>
-              <div className="text-2xl font-bold text-navy-darkest dark:text-navy-darkest">${totalRevenue.toLocaleString()}</div>
+              <div className="text-xs font-semibold text-navy-darkest dark:text-white">Total Ingresos</div>
+              <div className="text-2xl font-bold text-navy-darkest dark:text-white">${totalRevenue.toLocaleString()}</div>
             </div>
             <div className="card">
-              <div className="text-xs font-semibold text-navy-darkest dark:text-navy-darkest">Pendientes</div>
-              <div className="text-2xl font-bold text-navy-darkest dark:text-navy-darkest">${pendingTotal.toLocaleString()}</div>
+              <div className="text-xs font-semibold text-navy-darkest dark:text-white">Pendientes</div>
+              <div className="text-2xl font-bold text-navy-darkest dark:text-white">${pendingTotal.toLocaleString()}</div>
             </div>
             <div className="card">
-              <div className="text-xs font-semibold text-navy-darkest dark:text-navy-darkest">Cobros</div>
-              <div className="text-2xl font-bold text-navy-darkest dark:text-navy-darkest">{payments.length}</div>
+              <div className="text-xs font-semibold text-navy-darkest dark:text-white">Cobros</div>
+              <div className="text-2xl font-bold text-navy-darkest dark:text-white">{payments.length}</div>
             </div>
             <div className="card">
-              <div className="text-xs font-semibold text-navy-darkest dark:text-navy-darkest">Pendientes Cobro</div>
-              <div className="text-2xl font-bold text-navy-darkest dark:text-navy-darkest">{pending.length}</div>
+              <div className="text-xs font-semibold text-navy-darkest dark:text-white">Pendientes Cobro</div>
+              <div className="text-2xl font-bold text-navy-darkest dark:text-white">{pending.length}</div>
             </div>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
@@ -64,7 +64,7 @@ export default function FeesPage() {
                     <th className="p-3 font-bold text-navy-darkest dark:text-white">Fecha</th>
                   </tr>
                 </thead>
-                <tbody className="text-navy-darkest dark:text-navy-darkest">
+                <tbody className="text-navy-darkest dark:text-white">
                   {payments.slice(0,10).map(p => (
                     <tr key={p.id} className="border-t border-elegant-100 dark:border-elegant-800 hover:bg-secondary-lighter/40 dark:hover:bg-[#27272a] transition-colors">
                       <td className="p-2">{p.patientName}</td>
@@ -89,7 +89,7 @@ export default function FeesPage() {
                     <th className="p-3 font-bold text-navy-darkest dark:text-white">Fecha</th>
                   </tr>
                 </thead>
-                <tbody className="text-navy-darkest dark:text-navy-darkest">
+                <tbody className="text-navy-darkest dark:text-white">
                   {pending.slice(0,10).map(p => (
                     <tr key={p.id} className="border-t border-elegant-100 dark:border-elegant-800 hover:bg-secondary-lighter/40 dark:hover:bg-[#27272a] transition-colors">
                       <td className="p-2">{p.patientName}</td>

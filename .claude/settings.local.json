@@ -13,7 +13,8 @@
       "Bash(\"c:\\Users\\diego\\OneDrive\\Documentos\\clinic-pro\\src\\components\\ThemeToggle.tsx\")",
       "Bash(npm run dev:*)",
       "Bash(echo:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []
