@@ -7,6 +7,7 @@ import { CalendarDays, Users, Hospital, Wallet, LogOut, Menu, X } from 'lucide-r
 import { useAuth } from '@/contexts/AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
 import GoogleCalendarToggle from '../components/GoogleCalendarToggle';
+import { Footer } from '../components/Footer';
 import { useState } from 'react';
 
 const navItems = [
@@ -22,7 +23,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-pearl dark:bg-navy-darkest">
+    <div className="min-h-screen bg-pearl dark:bg-navy-darkest flex flex-col">
       {/* Top Navigation Bar */}
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-navy-dark/80 backdrop-blur-xl border-b border-elegant-200/50 dark:border-navy-light/20">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -157,9 +158,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
+      <main className="flex-1 max-w-7xl mx-auto px-6 lg:px-8 py-8 w-full">
         {children}
       </main>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
