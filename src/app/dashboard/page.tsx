@@ -202,7 +202,7 @@ export default function DashboardPage() {
                 <p className="mt-4 text-sm">Cargando turnos...</p>
               </div>
             ) : filtered.length === 0 ? (
-              <p className="text-secondary dark:text-gray-400">No hay turnos en el período seleccionado.</p>
+              <p className="text-black dark:text-white">No hay turnos en el período seleccionado.</p>
             ) : (
               <>
                 {/* Vista Desktop: Tabla */}
@@ -218,7 +218,7 @@ export default function DashboardPage() {
                         <th className="p-3 text-right font-bold text-navy-darkest dark:text-white">Acciones</th>
                       </tr>
                     </thead>
-                    <tbody className="text-sm text-gray-900 dark:text-gray-100">
+                    <tbody className="text-sm text-black dark:text-white">
                       {filtered.map(a => {
                         const d = new Date(a.date);
                         const fecha = d.toLocaleDateString();

@@ -26,7 +26,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen bg-pearl dark:bg-navy-darkest flex flex-col">
       {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-40 bg-pearl/95 dark:bg-navy-dark/98 border-b border-elegant-200/50 dark:border-elegant-700/30">
+      <header className="sticky top-0 z-40 bg-pearl/95 dark:bg-navy-darkest/95 border-b border-elegant-200/50 dark:border-elegant-700/30">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -78,7 +78,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Mobile Menu Dropdown */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-elegant-200/50 dark:border-navy-light/20 bg-white/95 dark:bg-navy-dark/95 backdrop-blur-xl">
+          <div className="md:hidden border-t border-elegant-200/50 dark:border-navy-light/20 bg-white/95 dark:bg-navy-darkest/95 backdrop-blur-xl">
             <nav className="px-4 py-3 space-y-1">
               {navItems.map(({ href, label, icon: Icon }) => {
                 const active = pathname === href || (href !== '/dashboard' && pathname?.startsWith(href));

@@ -154,7 +154,7 @@ export default function PatientList() {
               <th className="p-3 text-right font-bold text-navy-darkest dark:text-white">Acciones</th>
             </tr>
           </thead>
-          <tbody className="text-sm text-gray-900 dark:text-gray-100">
+          <tbody className="text-sm text-black dark:text-white">
             {filtered.map(p => {
               const patientAppts = getPatientAppointments(p.id);
               const totalPaid = getPatientPaid(p.id);
@@ -200,7 +200,7 @@ export default function PatientList() {
             })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={8} className="p-4 text-center text-secondary dark:text-gray-400">Sin resultados</td>
+                <td colSpan={8} className="p-4 text-center text-black dark:text-white">Sin resultados</td>
               </tr>
             )}
           </tbody>
@@ -281,7 +281,7 @@ export default function PatientList() {
           );
         })}
         {filtered.length === 0 && (
-          <div className="p-8 text-center text-secondary dark:text-gray-400">
+          <div className="p-8 text-center text-black dark:text-white">
             Sin resultados
           </div>
         )}
