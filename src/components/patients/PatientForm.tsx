@@ -242,11 +242,27 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
             <label className="block text-xs font-medium text-primary-dark dark:text-white mb-0.5">
               {insuranceType === 'obra-social' ? 'Obra Social' : 'Prepaga'}
             </label>
-            <input
+            <select
               className="input-field text-sm py-1.5"
-              {...register('insuranceName')}
-              placeholder={insuranceType === 'obra-social' ? 'OSDE, Swiss Medical...' : 'Galeno, Omint...'}
-            />
+              {...register('insuranceId')}
+              onChange={(e) => {
+                const selectedInsurance = insurances.find(i => i.id === e.target.value);
+                if (selectedInsurance) {
+                  setValue('insuranceId', selectedInsurance.id);
+                  setValue('insuranceName', selectedInsurance.name);
+                }
+              }}
+            >
+              <option value="">Seleccionar {insuranceType === 'obra-social' ? 'obra social' : 'prepaga'}</option>
+              {insurances
+                .filter(i => i.type === insuranceType)
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map(insurance => (
+                  <option key={insurance.id} value={insurance.id}>
+                    {insurance.code ? `${insurance.code} - ` : ''}{insurance.acronym ? `${insurance.acronym} - ` : ''}{insurance.name}
+                  </option>
+                ))}
+            </select>
           </div>
           <div>
             <label className="block text-xs font-medium text-primary-dark dark:text-white mb-0.5">Nº de Afiliado</label>
