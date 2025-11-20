@@ -26,7 +26,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen bg-pearl dark:bg-navy-darkest flex flex-col">
       {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-50 bg-pearl/80 dark:bg-navy-dark/95 backdrop-blur-xl border-b border-elegant-200/50 dark:border-elegant-700/30">
+      <header className="sticky top-0 z-40 bg-pearl/80 dark:bg-navy-dark/95 backdrop-blur-xl border-b border-elegant-200/50 dark:border-elegant-700/30">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
