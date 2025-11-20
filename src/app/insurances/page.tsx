@@ -59,18 +59,18 @@ export default function InsurancesPage() {
           </div>
           <div className="card overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead className="bg-secondary-lighter dark:bg-[#27272a]">
-                <tr className="text-left text-primary-dark dark:text-white">
-                  <th className="p-2">Nombre</th>
-                  <th className="p-2">Tipo</th>
-                  <th className="p-2">Teléfono</th>
-                  <th className="p-2">Email</th>
-                  <th className="p-2 text-right">Acciones</th>
+              <thead className="bg-gradient-to-r from-primary/20 to-primary-light/20 dark:bg-gradient-to-r dark:from-primary/30 dark:to-primary-light/30">
+                <tr className="text-left">
+                  <th className="p-3 font-bold text-navy-darkest dark:text-white">Nombre</th>
+                  <th className="p-3 font-bold text-navy-darkest dark:text-white">Tipo</th>
+                  <th className="p-3 font-bold text-navy-darkest dark:text-white">Teléfono</th>
+                  <th className="p-3 font-bold text-navy-darkest dark:text-white">Email</th>
+                  <th className="p-3 text-right font-bold text-navy-darkest dark:text-white">Acciones</th>
                 </tr>
               </thead>
               <tbody className="text-gray-900 dark:text-gray-100">
                 {insurances.map(i => (
-                  <tr key={i.id} className="border-t border-secondary-lighter dark:border-gray-700 hover:bg-secondary-lighter/40 dark:hover:bg-[#27272a] transition-colors">
+                  <tr key={i.id} className="border-t border-elegant-100 dark:border-elegant-800 hover:bg-secondary-lighter/40 dark:hover:bg-[#27272a] transition-colors">
                     <td className="p-2 font-medium">{i.name}</td>
                     <td className="p-2 capitalize">{i.type === 'obra-social' ? 'Obra Social' : 'Prepaga'}</td>
                     <td className="p-2">{i.phone}</td>

@@ -207,7 +207,7 @@ export default function DashboardPage() {
               <>
                 {/* Vista Desktop: Tabla */}
                 <div className="hidden md:block overflow-x-auto">
-                  <table className="min-w-full border border-secondary-lighter dark:border-gray-700 bg-white dark:bg-[#18181b] rounded-lg">
+                  <table className="min-w-full bg-white dark:bg-[#18181b] rounded-lg">
                     <thead className="bg-gradient-to-r from-primary/20 to-primary-light/20 dark:bg-gradient-to-r dark:from-primary/30 dark:to-primary-light/30">
                       <tr className="text-left text-sm">
                         <th className="p-3 font-bold text-navy-darkest dark:text-white">Fecha</th>
@@ -223,7 +223,7 @@ export default function DashboardPage() {
                         const d = new Date(a.date);
                         const fecha = d.toLocaleDateString();
                         return (
-                          <tr key={a.id} className="border-t border-secondary-lighter dark:border-gray-700 hover:bg-secondary-lighter/40 dark:hover:bg-[#27272a] transition-colors">
+                          <tr key={a.id} className="border-t border-elegant-100 dark:border-elegant-800 hover:bg-secondary-lighter/40 dark:hover:bg-[#27272a] transition-colors">
                             <td className="p-2 font-medium">{fecha}</td>
                             <td className="p-2">{a.startTime} - {a.endTime}</td>
                             <td className="p-2">{a.patientName}</td>

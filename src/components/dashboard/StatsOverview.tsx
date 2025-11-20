@@ -19,7 +19,7 @@ export default function StatsOverview() {
       {stats.map(s => (
         <div key={s.label} className="card shadow-sm">
           <div className="text-xs uppercase tracking-wide text-secondary dark:text-gray-400 mb-1">{s.label}</div>
-          <div className="text-3xl font-bold text-primary-dark dark:text-white mb-1">{s.value}</div>
+          <div className="text-3xl font-bold text-black dark:text-white mb-1">{s.value}</div>
           {s.sub && <div className="text-xs text-secondary dark:text-gray-400">{s.sub}</div>}
         </div>
       ))}

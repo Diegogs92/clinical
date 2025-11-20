@@ -43,18 +43,18 @@ export default function FeesPage() {
             <div className="card overflow-x-auto">
               <h2 className="font-semibold text-primary-dark dark:text-white mb-4">Últimos Cobros</h2>
               <table className="min-w-full text-sm">
-                <thead className="bg-secondary-lighter/30 dark:bg-gray-700/50">
-                  <tr className="text-left text-primary-dark dark:text-white">
-                    <th className="p-2">Paciente</th>
-                    <th className="p-2">Monto</th>
-                    <th className="p-2">Estado</th>
-                    <th className="p-2">Método</th>
-                    <th className="p-2">Fecha</th>
+                <thead className="bg-gradient-to-r from-primary/20 to-primary-light/20 dark:bg-gradient-to-r dark:from-primary/30 dark:to-primary-light/30">
+                  <tr className="text-left">
+                    <th className="p-3 font-bold text-navy-darkest dark:text-white">Paciente</th>
+                    <th className="p-3 font-bold text-navy-darkest dark:text-white">Monto</th>
+                    <th className="p-3 font-bold text-navy-darkest dark:text-white">Estado</th>
+                    <th className="p-3 font-bold text-navy-darkest dark:text-white">Método</th>
+                    <th className="p-3 font-bold text-navy-darkest dark:text-white">Fecha</th>
                   </tr>
                 </thead>
                 <tbody className="text-gray-900 dark:text-gray-100">
                   {payments.slice(0,10).map(p => (
-                    <tr key={p.id} className="border-t border-secondary-lighter dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <tr key={p.id} className="border-t border-elegant-100 dark:border-elegant-800 hover:bg-secondary-lighter/40 dark:hover:bg-[#27272a] transition-colors">
                       <td className="p-2">{p.patientName}</td>
                       <td className="p-2">${p.amount.toLocaleString()}</td>
                       <td className="p-2">{p.status}</td>
@@ -69,17 +69,17 @@ export default function FeesPage() {
             <div className="card overflow-x-auto">
               <h2 className="font-semibold text-primary-dark dark:text-white mb-4">Pendientes</h2>
               <table className="min-w-full text-sm">
-                <thead className="bg-secondary-lighter/30 dark:bg-gray-700/50">
-                  <tr className="text-left text-primary-dark dark:text-white">
-                    <th className="p-2">Paciente</th>
-                    <th className="p-2">Monto</th>
-                    <th className="p-2">Método</th>
-                    <th className="p-2">Fecha</th>
+                <thead className="bg-gradient-to-r from-primary/20 to-primary-light/20 dark:bg-gradient-to-r dark:from-primary/30 dark:to-primary-light/30">
+                  <tr className="text-left">
+                    <th className="p-3 font-bold text-navy-darkest dark:text-white">Paciente</th>
+                    <th className="p-3 font-bold text-navy-darkest dark:text-white">Monto</th>
+                    <th className="p-3 font-bold text-navy-darkest dark:text-white">Método</th>
+                    <th className="p-3 font-bold text-navy-darkest dark:text-white">Fecha</th>
                   </tr>
                 </thead>
                 <tbody className="text-gray-900 dark:text-gray-100">
                   {pending.slice(0,10).map(p => (
-                    <tr key={p.id} className="border-t border-secondary-lighter dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <tr key={p.id} className="border-t border-elegant-100 dark:border-elegant-800 hover:bg-secondary-lighter/40 dark:hover:bg-[#27272a] transition-colors">
                       <td className="p-2">{p.patientName}</td>
                       <td className="p-2">${p.amount.toLocaleString()}</td>
                       <td className="p-2">{p.method}</td>

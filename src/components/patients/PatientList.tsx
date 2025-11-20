@@ -141,17 +141,17 @@ export default function PatientList() {
       </Modal>
       {/* Vista Desktop: Tabla */}
       <div className="hidden md:block overflow-x-auto">
-        <table className="min-w-full border border-secondary-lighter dark:border-gray-700 bg-white dark:bg-[#18181b] rounded-lg">
-          <thead className="bg-secondary-lighter dark:bg-[#27272a]">
-            <tr className="text-left text-sm text-primary-dark dark:text-white">
-              <th className="p-2">Apellido</th>
-              <th className="p-2">Nombre</th>
-              <th className="p-2">DNI</th>
-              <th className="p-2">Teléfono</th>
-              <th className="p-2">Turnos</th>
-              <th className="p-2">Pagado</th>
-              <th className="p-2">Deuda</th>
-              <th className="p-2 text-right">Acciones</th>
+        <table className="min-w-full bg-white dark:bg-[#18181b] rounded-lg">
+          <thead className="bg-gradient-to-r from-primary/20 to-primary-light/20 dark:bg-gradient-to-r dark:from-primary/30 dark:to-primary-light/30">
+            <tr className="text-left text-sm">
+              <th className="p-3 font-bold text-navy-darkest dark:text-white">Apellido</th>
+              <th className="p-3 font-bold text-navy-darkest dark:text-white">Nombre</th>
+              <th className="p-3 font-bold text-navy-darkest dark:text-white">DNI</th>
+              <th className="p-3 font-bold text-navy-darkest dark:text-white">Teléfono</th>
+              <th className="p-3 font-bold text-navy-darkest dark:text-white">Turnos</th>
+              <th className="p-3 font-bold text-navy-darkest dark:text-white">Pagado</th>
+              <th className="p-3 font-bold text-navy-darkest dark:text-white">Deuda</th>
+              <th className="p-3 text-right font-bold text-navy-darkest dark:text-white">Acciones</th>
             </tr>
           </thead>
           <tbody className="text-sm text-gray-900 dark:text-gray-100">
@@ -161,7 +161,7 @@ export default function PatientList() {
               const debt = getPatientDebt(p.id);
 
               return (
-                <tr key={p.id} className="border-t border-secondary-lighter dark:border-gray-700 hover:bg-secondary-lighter/40 dark:hover:bg-[#27272a] transition-colors">
+                <tr key={p.id} className="border-t border-elegant-100 dark:border-elegant-800 hover:bg-secondary-lighter/40 dark:hover:bg-[#27272a] transition-colors">
                   <td className="p-2 font-medium">{p.lastName}</td>
                   <td className="p-2">{p.firstName}</td>
                   <td className="p-2">{p.dni}</td>
