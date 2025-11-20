@@ -23,15 +23,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#18181b] flex">
-      {/* Sidebar - Desktop */}
-      <aside className="hidden md:flex flex-col w-20 bg-white dark:bg-[#27272a] border-r border-gray-200 dark:border-gray-700">
+      {/* Sidebar - Desktop (expandible on hover) */}
+      <aside className="hidden md:flex flex-col w-20 hover:w-64 bg-white dark:bg-[#27272a] border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-out group">
         {/* Logo */}
-        <div className="flex items-center justify-center h-20 border-b border-gray-200 dark:border-gray-700">
-          <Image src="/logo.svg" alt="Clinical" width={36} height={36} className="rounded-xl" />
+        <div className="flex items-center h-20 border-b border-gray-200 dark:border-gray-700 px-3 overflow-hidden">
+          <Image src="/logo.svg" alt="Clinical" width={36} height={36} className="rounded-xl flex-shrink-0" />
+          <div className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+            <div className="text-primary-dark dark:text-white font-bold text-lg">Clinical</div>
+            <div className="text-xs text-secondary dark:text-gray-400">Gestión Pro</div>
+          </div>
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex-1 flex flex-col items-center gap-2 py-6 px-3">
+        <nav className="flex-1 flex flex-col gap-2 py-6 px-3">
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || (href !== '/dashboard' && pathname?.startsWith(href));
             return (
@@ -39,40 +43,73 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 key={href}
                 href={href}
                 className={`
-                  group relative flex items-center justify-center w-14 h-14 rounded-2xl
+                  relative flex items-center gap-3 h-14 rounded-2xl overflow-hidden
                   transition-all duration-200
                   ${active
                     ? 'bg-primary text-white shadow-lg shadow-primary/20'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-primary dark:hover:text-primary-light'
                   }
                 `}
-                title={label}
               >
-                <Icon className="w-6 h-6" />
+                <div className="flex items-center justify-center w-14 h-14 flex-shrink-0">
+                  <Icon className="w-6 h-6" />
+                </div>
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap font-medium">
+                  {label}
+                </span>
               </Link>
             );
           })}
         </nav>
 
         {/* Bottom Section */}
-        <div className="flex flex-col items-center gap-3 py-4 px-3 border-t border-gray-200 dark:border-gray-700">
-          <GoogleCalendarToggle />
-          <ThemeToggle />
+        <div className="flex flex-col gap-3 py-4 px-3 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-3 h-10">
+            <div className="flex-shrink-0">
+              <GoogleCalendarToggle />
+            </div>
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+              Google Calendar
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3 h-10">
+            <div className="flex-shrink-0">
+              <ThemeToggle />
+            </div>
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+              Tema
+            </span>
+          </div>
+
           {user?.photoURL && (
-            <Image
-              src={user.photoURL}
-              alt="avatar"
-              width={40}
-              height={40}
-              className="rounded-full ring-2 ring-primary/20"
-            />
+            <div className="flex items-center gap-3 py-2">
+              <Image
+                src={user.photoURL}
+                alt="avatar"
+                width={40}
+                height={40}
+                className="rounded-full ring-2 ring-primary/20 flex-shrink-0"
+              />
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-hidden">
+                <div className="font-semibold text-sm text-primary-dark dark:text-white truncate">
+                  {userProfile?.displayName || user?.email?.split('@')[0]}
+                </div>
+                <div className="text-xs text-secondary dark:text-gray-400">Profesional</div>
+              </div>
+            </div>
           )}
+
           <button
             onClick={signOut}
-            className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors duration-200"
-            aria-label="Cerrar sesión"
+            className="flex items-center gap-3 h-10 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors duration-200"
           >
-            <LogOut className="w-5 h-5" />
+            <div className="flex items-center justify-center w-10 h-10 flex-shrink-0">
+              <LogOut className="w-5 h-5" />
+            </div>
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap font-medium">
+              Cerrar sesión
+            </span>
           </button>
         </div>
       </aside>
