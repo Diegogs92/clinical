@@ -134,7 +134,7 @@ export default function InsuranceForm({ insuranceId, onSuccess, onCancel }: Prop
           <button
             type="button"
             onClick={onCancel}
-            className="btn-secondary text-sm py-1.5 px-3 flex-1 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
+            className="btn-secondary text-sm py-1.5 px-3 flex-1 hover:bg-gray-300 dark:hover:bg-gray-600 hover:shadow-md hover:scale-105 transition-all duration-200 active:scale-[0.98]"
           >
             Cancelar
           </button>

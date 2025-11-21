@@ -139,7 +139,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
             <button
               type="button"
               onClick={() => setShowQuickPatient(true)}
-              className="flex items-center gap-1 text-[10px] text-primary hover:text-primary-dark dark:text-primary-light dark:hover:text-white transition-colors"
+              className="flex items-center gap-1 text-[10px] font-medium text-primary hover:text-primary-dark dark:text-primary-light dark:hover:text-white hover:scale-110 transition-all duration-200"
             >
               <UserPlus className="w-3 h-3" />
               Nuevo Paciente
@@ -191,7 +191,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         </div>
       </div>
       <div className="flex items-center justify-end gap-2 pt-1.5">
-        <button type="button" onClick={onCancel} className="btn-secondary text-sm py-1.5 px-3 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all">Cancelar</button>
+        <button type="button" onClick={onCancel} className="btn-secondary text-sm py-1.5 px-3 hover:bg-gray-300 dark:hover:bg-gray-600 hover:shadow-md hover:scale-105 transition-all duration-200 active:scale-[0.98]">Cancelar</button>
         <button disabled={loading} className="btn-primary text-sm py-1.5 px-4 hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
           {loading ? 'Guardando...' : (initialData ? 'Actualizar' : 'Crear')}
         </button>

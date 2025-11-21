@@ -11,6 +11,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import GlobalLoader from '@/components/GlobalLoader';
 import { PatientsProvider } from '@/contexts/PatientsContext';
 import { AppointmentsProvider} from '@/contexts/AppointmentsContext';
+import { PaymentsProvider } from '@/contexts/PaymentsContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -81,14 +82,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <AuthProvider>
               <PatientsProvider>
                 <AppointmentsProvider>
-                  <CalendarSyncProvider>
-                    <ToastProvider>
-                      <ConfirmProvider>
-                        <GlobalLoader />
-                        {children}
-                      </ConfirmProvider>
-                    </ToastProvider>
-                  </CalendarSyncProvider>
+                  <PaymentsProvider>
+                    <CalendarSyncProvider>
+                      <ToastProvider>
+                        <ConfirmProvider>
+                          <GlobalLoader />
+                          {children}
+                        </ConfirmProvider>
+                      </ToastProvider>
+                    </CalendarSyncProvider>
+                  </PaymentsProvider>
                 </AppointmentsProvider>
               </PatientsProvider>
             </AuthProvider>

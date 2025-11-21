@@ -2,26 +2,11 @@
 
 import ProtectedRoute from '@/components/ProtectedRoute';
 import DashboardLayout from '@/components/DashboardLayout';
-import { useAuth } from '@/contexts/AuthContext';
-import { useEffect, useState } from 'react';
-import { listPayments, listPendingPayments } from '@/lib/payments';
-import { Payment } from '@/types';
+import { usePayments } from '@/contexts/PaymentsContext';
 export const dynamic = 'force-dynamic';
 
 export default function FeesPage() {
-  const { user } = useAuth();
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [pending, setPending] = useState<Payment[]>([]);
-
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const all = await listPayments(user.uid);
-      const pend = await listPendingPayments(user.uid);
-      setPayments(all);
-      setPending(pend);
-    })();
-  }, [user]);
+  const { payments, pendingPayments: pending } = usePayments();
 
   const totalRevenue = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
   const pendingTotal = pending.reduce((sum, p) => sum + p.amount, 0);

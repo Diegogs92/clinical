@@ -57,7 +57,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 )}
                 <button
                   onClick={signOut}
-                  className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors duration-200"
+                  className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 hover:scale-110 hover:shadow-md transition-all duration-200 active:scale-[0.98]"
                   aria-label="Cerrar sesión"
                 >
                   <LogOut className="w-4 h-4" />
@@ -67,7 +67,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-lg hover:bg-elegant-100 dark:hover:bg-navy-light/20 text-elegant-700 dark:text-white transition-colors duration-200"
+                className="md:hidden p-2 rounded-lg hover:bg-elegant-100 dark:hover:bg-navy-light/20 text-elegant-700 dark:text-white hover:scale-110 hover:shadow-md transition-all duration-200 active:scale-[0.98]"
                 aria-label="Toggle menu"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -127,7 +127,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
               <button
                 onClick={signOut}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-medium hover:bg-red-100 dark:hover:bg-red-900/30 transition-all"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-medium hover:bg-red-100 dark:hover:bg-red-900/30 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 active:scale-[0.98]"
               >
                 <LogOut className="w-4 h-4" />
                 Cerrar sesión

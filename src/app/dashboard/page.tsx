@@ -20,11 +20,13 @@ import { translateAppointmentStatus } from '@/lib/translations';
 import ECGLoader from '@/components/ui/ECGLoader';
 import GlassViewSelector from '@/components/GlassViewSelector';
 import { createPayment } from '@/lib/payments';
+import { usePayments } from '@/contexts/PaymentsContext';
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { patients } = usePatients();
   const { appointments, loading: appointmentsLoading, refreshAppointments } = useAppointments();
+  const { refreshPayments, refreshPendingPayments } = usePayments();
   const [view, setView] = useState<'day' | 'week' | 'month' | 'year'>('week');
   const [baseDate, setBaseDate] = useState<string>(() => new Date().toISOString().slice(0,10));
   const [showForm, setShowForm] = useState(false);
@@ -134,6 +136,10 @@ export default function DashboardPage() {
         await refreshAppointments();
       }
 
+      // Refrescar pagos
+      await refreshPayments();
+      await refreshPendingPayments();
+
       toast.success('Pago registrado correctamente');
     } catch (error) {
       console.error('Error al registrar pago:', error);
@@ -169,6 +175,10 @@ export default function DashboardPage() {
         notes: 'Deuda registrada desde agenda',
         userId: user.uid,
       });
+
+      // Refrescar pagos pendientes
+      await refreshPendingPayments();
+      await refreshPayments();
 
       toast.success('Deuda registrada correctamente');
     } catch (error) {
@@ -207,7 +217,7 @@ export default function DashboardPage() {
             <div className="mb-4">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="md:hidden w-full flex items-center justify-between px-4 py-3 bg-secondary-lighter/30 dark:bg-gray-700/30 rounded-lg text-sm font-medium text-primary-dark dark:text-white mb-2"
+                className="md:hidden w-full flex items-center justify-between px-4 py-3 bg-secondary-lighter/30 dark:bg-gray-700/30 rounded-lg text-sm font-medium text-primary-dark dark:text-white mb-2 hover:shadow-md hover:scale-[1.02] transition-all duration-200 active:scale-[0.98]"
               >
                 <div className="flex items-center gap-2">
                   <Filter className="w-4 h-4" />
@@ -266,7 +276,7 @@ export default function DashboardPage() {
                       setFilterStatus('');
                       setFilterType('');
                     }}
-                    className="px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all whitespace-nowrap"
+                    className="px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg hover:shadow-md hover:scale-105 transition-all duration-200 whitespace-nowrap active:scale-[0.98]"
                   >
                     Limpiar
                   </button>

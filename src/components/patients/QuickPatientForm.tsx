@@ -176,7 +176,7 @@ export default function QuickPatientForm({ onSuccess, onCancel }: Props) {
       </div>
 
       <div className="flex gap-3 justify-end pt-2">
-        <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all">
+        <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg hover:shadow-md hover:scale-105 transition-all duration-200 active:scale-[0.98]">
           Cancelar
         </button>
         <button disabled={loading} type="submit" className="btn-primary hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">

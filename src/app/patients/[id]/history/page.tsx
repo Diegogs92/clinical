@@ -250,7 +250,7 @@ export default function PatientHistoryPage() {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="btn-secondary flex-1 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
+                  className="btn-secondary flex-1 hover:bg-gray-300 dark:hover:bg-gray-600 hover:shadow-md hover:scale-105 transition-all duration-200 active:scale-[0.98]"
                   disabled={submitting}
                 >
                   Cancelar

@@ -97,7 +97,7 @@ export default function InsurancesPage() {
                       <td className="p-2 text-right">
                         <button
                           onClick={() => handleEdit(i.id)}
-                          className="text-primary hover:text-primary-dark dark:text-primary-light dark:hover:text-white hover:scale-110 transition-all inline-flex items-center gap-1"
+                          className="text-primary hover:text-primary-dark dark:text-primary-light dark:hover:text-white hover:scale-110 hover:shadow-sm transition-all duration-200 inline-flex items-center gap-1 font-medium"
                         >
                           <Edit2 className="w-4 h-4" />
                           Editar

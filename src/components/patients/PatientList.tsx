@@ -191,8 +191,8 @@ export default function PatientList() {
                   </td>
                   <td className="p-2">
                     <div className="flex gap-2 justify-end">
-                      <Link href={`/patients/${p.id}`} className="text-primary-dark dark:text-blue-400 hover:underline hover:scale-110 transition-all flex items-center gap-1"><Edit className="w-4 h-4" /> Editar</Link>
-                      <button onClick={() => handleDelete(p.id)} className="text-red-600 dark:text-red-400 hover:underline hover:scale-110 transition-all flex items-center gap-1"><Trash2 className="w-4 h-4" /> Borrar</button>
+                      <Link href={`/patients/${p.id}`} className="text-primary-dark dark:text-blue-400 hover:underline hover:scale-110 hover:shadow-sm transition-all duration-200 flex items-center gap-1 font-medium"><Edit className="w-4 h-4" /> Editar</Link>
+                      <button onClick={() => handleDelete(p.id)} className="text-red-600 dark:text-red-400 hover:underline hover:scale-110 hover:shadow-sm transition-all duration-200 flex items-center gap-1 font-medium"><Trash2 className="w-4 h-4" /> Borrar</button>
                     </div>
                   </td>
                 </tr>
@@ -265,14 +265,14 @@ export default function PatientList() {
               <div className="flex items-center gap-2">
                 <Link
                   href={`/patients/${p.id}`}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-all"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark hover:shadow-lg hover:scale-105 transition-all duration-200 active:scale-[0.98]"
                 >
                   <Edit className="w-4 h-4" />
                   Editar
                 </Link>
                 <button
                   onClick={() => handleDelete(p.id)}
-                  className="flex items-center justify-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/30 transition-all"
+                  className="flex items-center justify-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/30 hover:shadow-lg hover:scale-105 transition-all duration-200 active:scale-[0.98]"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
