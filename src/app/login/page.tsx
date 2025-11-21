@@ -85,7 +85,7 @@ export default function LoginPage() {
             <Image src="/logo.svg" alt="Clinical" width={80} height={80} priority />
           </div>
           <h1 className="text-4xl font-bold text-white mb-2">Clinical</h1>
-          <p className="text-secondary-lighter text-lg">
+          <p className="text-white/90 text-lg font-medium drop-shadow-lg">
             Sistema de Gestión para Profesionales de Salud
           </p>
         </div>

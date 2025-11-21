@@ -97,7 +97,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setError('Error al crear perfil de usuario');
         }
       } else {
+        // Usuario cerró sesión, limpiar perfil y error
         setUserProfile(null);
+        setError(null);
       }
       setLoading(false);
     });
@@ -169,10 +171,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (mockMode) {
       setUser(null);
       setUserProfile(null);
+      setError(null);
       return;
     }
     if (!auth) return;
     try {
+      setError(null); // Limpiar error antes de cerrar sesión
       await firebaseSignOut(auth);
       setUserProfile(null);
     } catch (e: any) {
