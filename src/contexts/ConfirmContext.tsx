@@ -31,20 +31,6 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
     setPending(null);
   };
 
-  const toneClass = (tone: ConfirmOptions['tone'], confirmText?: string) => {
-    const resolvedTone =
-      tone ||
-      (confirmText && confirmText.toLowerCase().includes('registrar') ? 'success' : undefined);
-
-    console.log('[ConfirmContext] tone:', tone, 'confirmText:', confirmText, 'resolvedTone:', resolvedTone);
-
-    switch (resolvedTone) {
-      case 'danger': return 'btn-danger';
-      case 'success': return 'btn-success';
-      default: return 'btn-primary';
-    }
-  };
-
   return (
     <ConfirmContext.Provider value={{ confirm }}>
       {children}
@@ -60,7 +46,13 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
             {pending?.options.cancelText || 'Cancelar'}
           </button>
           <button
-            className={`${toneClass(pending?.options.tone, pending?.options.confirmText)} px-4 py-2.5 transition-all`}
+            className={
+              pending?.options.tone === 'danger'
+                ? 'inline-flex items-center justify-center gap-2 font-medium rounded-lg bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 shadow-md hover:shadow-lg transition-all duration-300'
+                : pending?.options.tone === 'success'
+                ? 'inline-flex items-center justify-center gap-2 font-medium rounded-lg bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 shadow-md hover:shadow-lg transition-all duration-300'
+                : 'btn-primary px-4 py-2.5'
+            }
             onClick={() => close(true)}
           >
             {pending?.options.confirmText || 'Confirmar'}
