@@ -42,22 +42,39 @@ input[type="tel"],
 }
 
 @layer components {
+  /* Botones base - unifican foco, hover y estados deshabilitados */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-medium rounded-lg
+           transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
+  }
+
   /* Botones - Smooth y con focus states mejorados */
   .btn-primary {
-    @apply bg-primary hover:bg-primary-hover text-white font-medium py-2.5 px-4 rounded-lg
-           transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5
-           focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
-           active:scale-[0.98] active:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed
-           disabled:active:scale-100 disabled:hover:translate-y-0;
+    @apply btn bg-primary hover:bg-primary-hover text-white py-2.5 px-4
+           shadow-md hover:shadow-lg hover:-translate-y-0.5
+           focus:ring-primary
+           active:scale-[0.98] active:shadow-sm disabled:hover:translate-y-0;
   }
 
   .btn-secondary {
-    @apply bg-elegant-100 hover:bg-elegant-200 text-elegant-700 font-medium py-2.5 px-4 rounded-lg
-           transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5
+    @apply btn bg-elegant-100 hover:bg-elegant-200 text-elegant-700 py-2.5 px-4
+           shadow-sm hover:shadow-md hover:-translate-y-0.5
            dark:bg-elegant-800 dark:hover:bg-elegant-700 dark:text-elegant-100
-           focus:outline-none focus:ring-2 focus:ring-elegant-300 dark:focus:ring-elegant-600
-           active:scale-[0.98] active:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed
-           disabled:active:scale-100 disabled:hover:translate-y-0;
+           focus:ring-elegant-300 dark:focus:ring-elegant-600
+           active:scale-[0.98] active:shadow-sm;
+  }
+
+  .btn-danger {
+    @apply btn bg-danger hover:bg-danger-dark text-white py-2.5 px-4
+           shadow-md hover:shadow-lg hover:-translate-y-0.5
+           focus:ring-danger/60 active:scale-[0.98] active:shadow-sm;
+  }
+
+  .btn-success {
+    @apply btn bg-green-600 hover:bg-green-700 text-white py-2.5 px-4
+           shadow-md hover:shadow-lg hover:-translate-y-0.5
+           focus:ring-green-500 active:scale-[0.98] active:shadow-sm;
   }
 
   /* Cards - Smooth hover con lift effect */
@@ -88,21 +105,21 @@ input[type="tel"],
 
   /* Icon buttons - Para acciones con iconos + efecto ripple */
   .icon-btn {
-    @apply p-2 rounded-lg text-elegant-600 dark:text-elegant-400
+    @apply inline-flex items-center justify-center p-2 rounded-lg text-elegant-600 dark:text-elegant-400
            hover:bg-elegant-100 dark:hover:bg-elegant-800 hover:text-elegant-900 dark:hover:text-white
            transition-all duration-300 active:scale-90 hover:scale-105
            focus:outline-none focus:ring-2 focus:ring-elegant-300 dark:focus:ring-elegant-700;
   }
 
   .icon-btn-danger {
-    @apply p-2 rounded-lg text-danger dark:text-danger-light
+    @apply inline-flex items-center justify-center p-2 rounded-lg text-danger dark:text-danger-light
            hover:bg-danger/10 dark:hover:bg-danger/20 hover:text-danger-dark dark:hover:text-danger
            transition-all duration-300 active:scale-90 hover:scale-105
            focus:outline-none focus:ring-2 focus:ring-danger/30 dark:focus:ring-danger/50;
   }
 
   .icon-btn-primary {
-    @apply p-2 rounded-lg text-primary dark:text-primary-light
+    @apply inline-flex items-center justify-center p-2 rounded-lg text-primary dark:text-primary-light
            hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary-dark dark:hover:text-white
            transition-all duration-300 active:scale-90 hover:scale-105
            focus:outline-none focus:ring-2 focus:ring-primary/30 dark:focus:ring-primary/50;

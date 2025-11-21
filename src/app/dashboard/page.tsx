@@ -423,14 +423,14 @@ export default function DashboardPage() {
                         <div className="flex items-center gap-2 pt-3 border-t border-secondary-lighter dark:border-gray-700">
                           <button
                             onClick={() => handleEdit(a)}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-all duration-200 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                            className="btn-primary flex-1 text-sm"
                           >
                             <Edit2 className="w-4 h-4" />
                             Editar
                           </button>
                           <button
                             onClick={() => handleDelete(a)}
-                            className="px-4 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/30 transition-all duration-200 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-red-300"
+                            className="btn-danger px-4 py-2.5"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
