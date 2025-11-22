@@ -17,7 +17,7 @@ export default function Modal({
   onClose,
   title,
   children,
-  maxWidth = 'max-w-3xl',
+  maxWidth = 'max-w-2xl',
 }: ModalProps) {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -37,7 +37,7 @@ export default function Modal({
 
   const modalContent = (
     <div
-      className={`fixed inset-0 z-[9998] flex items-center justify-center px-4 py-6 bg-black/50 backdrop-blur-sm transition-opacity duration-200 ${
+      className={`fixed inset-0 z-[9998] flex items-center justify-center px-3 py-6 bg-black/50 backdrop-blur-sm transition-opacity duration-200 ${
         open ? 'opacity-100' : 'opacity-0'
       }`}
       onTransitionEnd={() => {
@@ -47,11 +47,11 @@ export default function Modal({
       <div className="absolute inset-0" onClick={onClose} aria-label="Cerrar modal" />
 
       <div
-        className={`relative w-full ${maxWidth} bg-white/95 dark:bg-elegant-900/95 rounded-3xl shadow-2xl border border-elegant-200/70 dark:border-elegant-800/70 backdrop-blur p-6 transition-all duration-200 ${
+        className={`relative w-full ${maxWidth} bg-white/95 dark:bg-elegant-900/95 rounded-3xl shadow-2xl border border-elegant-200/70 dark:border-elegant-800/70 backdrop-blur p-5 transition-all duration-200 ${
           open ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-2'
         }`}
       >
-        <div className="flex items-start justify-between gap-4 pb-4 border-b border-elegant-200/70 dark:border-elegant-800/70">
+        <div className="flex items-start justify-between gap-4 pb-3 border-b border-elegant-200/70 dark:border-elegant-800/70">
           <div className="space-y-1">
             {title && (
               <h3 className="text-lg font-semibold text-elegant-900 dark:text-white leading-tight">

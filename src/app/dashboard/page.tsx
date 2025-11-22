@@ -110,12 +110,9 @@ export default function DashboardPage() {
       return;
     }
 
-    const confirmed = await confirm({
-      title: 'Registrar pago',
-      description: `¿Confirmar el pago de $${appt.fee.toLocaleString()} de ${appt.patientName}?`,
-      confirmText: 'Registrar',
-      tone: 'success'
-    });
+    const confirmed = typeof window !== 'undefined'
+      ? window.confirm(`¿Confirmar el pago de $${appt.fee.toLocaleString()} de ${appt.patientName}?`)
+      : false;
     if (!confirmed) return;
 
     try {
@@ -131,13 +128,11 @@ export default function DashboardPage() {
         userId: user.uid,
       });
 
-      // Marcar el turno como completado si estaba pendiente
       if (appt.status !== 'completed') {
         await updateAppointment(appt.id, { status: 'completed' });
         await refreshAppointments();
       }
 
-      // Refrescar pagos
       await refreshPayments();
       await refreshPendingPayments();
 
@@ -155,12 +150,9 @@ export default function DashboardPage() {
       return;
     }
 
-    const confirmed = await confirm({
-      title: 'Registrar deuda',
-      description: `¿Registrar como deuda pendiente $${appt.fee.toLocaleString()} de ${appt.patientName}?`,
-      confirmText: 'Registrar',
-      tone: 'danger'
-    });
+    const confirmed = typeof window !== 'undefined'
+      ? window.confirm(`¿Registrar como deuda pendiente $${appt.fee.toLocaleString()} de ${appt.patientName}?`)
+      : false;
     if (!confirmed) return;
 
     try {
@@ -177,7 +169,6 @@ export default function DashboardPage() {
         userId: user.uid,
       });
 
-      // Refrescar pagos pendientes
       await refreshPendingPayments();
       await refreshPayments();
 
