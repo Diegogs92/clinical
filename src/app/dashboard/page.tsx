@@ -110,9 +110,12 @@ export default function DashboardPage() {
       return;
     }
 
-    const confirmed = typeof window !== 'undefined'
-      ? window.confirm(`¿Confirmar el pago de $${appt.fee.toLocaleString()} de ${appt.patientName}?`)
-      : false;
+    const confirmed = await confirm({
+      title: 'Registrar pago',
+      description: `¿Confirmar el pago de $${appt.fee.toLocaleString()} de ${appt.patientName}?`,
+      confirmText: 'Registrar pago',
+      tone: 'success',
+    });
     if (!confirmed) return;
 
     try {
@@ -150,9 +153,12 @@ export default function DashboardPage() {
       return;
     }
 
-    const confirmed = typeof window !== 'undefined'
-      ? window.confirm(`¿Registrar como deuda pendiente $${appt.fee.toLocaleString()} de ${appt.patientName}?`)
-      : false;
+    const confirmed = await confirm({
+      title: 'Registrar deuda',
+      description: `¿Registrar como deuda pendiente $${appt.fee.toLocaleString()} de ${appt.patientName}?`,
+      confirmText: 'Registrar deuda',
+      tone: 'danger',
+    });
     if (!confirmed) return;
 
     try {

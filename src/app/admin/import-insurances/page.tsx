@@ -12,6 +12,7 @@ import { Upload } from 'lucide-react';
 export default function ImportInsurancesPage() {
   const { user } = useAuth();
   const toast = useToast();
+  const confirm = useConfirm();
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [total, setTotal] = useState(0);

@@ -71,10 +71,14 @@ export default function AgendaPage() {
       toast.error('Este turno no tiene honorarios asignados');
       return;
     }
-    const message = status === 'completed'
-      ? `Confirmar pago de $${appt.fee.toLocaleString()} de ${appt.patientName}?`
-      : `Registrar deuda pendiente de $${appt.fee.toLocaleString()} de ${appt.patientName}?`;
-    const confirmed = typeof window !== 'undefined' ? window.confirm(message) : false;
+    const confirmed = await confirm({
+      title: status === 'completed' ? 'Registrar pago' : 'Registrar deuda',
+      description: status === 'completed'
+        ? `¿Confirmar el pago de $${appt.fee.toLocaleString()} de ${appt.patientName}?`
+        : `¿Registrar como deuda pendiente $${appt.fee.toLocaleString()} de ${appt.patientName}?`,
+      confirmText: status === 'completed' ? 'Registrar pago' : 'Registrar deuda',
+      tone: status === 'completed' ? 'success' : 'danger',
+    });
     if (!confirmed) return;
 
     try {
