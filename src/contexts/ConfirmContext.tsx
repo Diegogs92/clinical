@@ -41,7 +41,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
   }, [pending]);
 
   const TONE_CLASSES: Record<string, string> = {
-    danger: 'btn-danger',
+    danger: 'bg-white text-danger border border-danger/40 hover:bg-danger/10 hover:text-danger-dark dark:bg-transparent dark:text-danger-light dark:border-danger/50 dark:hover:bg-danger/10',
     success: 'btn-success',
     default: 'btn-primary'
   };
