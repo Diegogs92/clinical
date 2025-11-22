@@ -191,6 +191,7 @@ export default function AgendaPage() {
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <button
+                  type="button"
                   onClick={() => handlePayment(selected, 'completed')}
                   className="btn-primary text-sm"
                   disabled={!selected.fee}
@@ -199,14 +200,16 @@ export default function AgendaPage() {
                   Pago
                 </button>
                 <button
+                  type="button"
                   onClick={() => handlePayment(selected, 'pending')}
-                  className="btn-secondary text-sm"
+                  className="btn-danger text-sm"
                   disabled={!selected.fee}
                 >
                   <FileText className="w-4 h-4" />
                   Deuda
                 </button>
                 <button
+                  type="button"
                   onClick={() => {
                     handleEdit(selected);
                     setSelected(null);
@@ -217,6 +220,7 @@ export default function AgendaPage() {
                   Editar
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleDelete(selected)}
                   className="btn-danger text-sm"
                 >
