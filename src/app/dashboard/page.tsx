@@ -12,10 +12,9 @@ import { Appointment } from '@/types';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import AppointmentForm from '@/components/appointments/AppointmentForm';
-import { CalendarDays, PlusCircle, Edit2, Trash2, Filter, DollarSign, FileText, ChevronDown } from 'lucide-react';
+import { CalendarDays, PlusCircle, Edit2, Trash2, Filter, DollarSign, ChevronDown } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { useToast } from '@/contexts/ToastContext';
-import { useConfirm } from '@/contexts/ConfirmContext';
 import { translateAppointmentStatus } from '@/lib/translations';
 import ECGLoader from '@/components/ui/ECGLoader';
 import GlassViewSelector from '@/components/GlassViewSelector';
@@ -32,6 +31,12 @@ export default function DashboardPage() {
   const [baseDate, setBaseDate] = useState<string>(() => format(new Date(), 'yyyy-MM-dd'));
   const [showForm, setShowForm] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+  const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; appointment?: Appointment; mode: 'total' | 'partial'; amount: string }>({
+    open: false,
+    appointment: undefined,
+    mode: 'total',
+    amount: '',
+  });
 
   // Filtros
   const [filterPatient, setFilterPatient] = useState<string>('');
@@ -40,7 +45,6 @@ export default function DashboardPage() {
   const [showFilters, setShowFilters] = useState(false);
 
   const toast = useToast();
-  const confirm = useConfirm();
 
   const filtered = useMemo(() => {
     const start = new Date(`${baseDate}T00:00:00`);
@@ -80,6 +84,7 @@ export default function DashboardPage() {
     return Array.from(types).sort();
   }, [appointments]);
 
+
   const handleEdit = (appt: Appointment) => {
     setEditingAppointment(appt);
     setShowForm(true);
@@ -88,7 +93,7 @@ export default function DashboardPage() {
   const handleDelete = async (appt: Appointment) => {
     const confirmed = await confirm({
       title: 'Eliminar turno',
-      description: `¿Estás seguro de eliminar el turno de ${appt.patientName}? Esta acción no se puede deshacer.`,
+      description: `?Est?s seguro de eliminar el turno de ${appt.patientName}? Esta acci?n no se puede deshacer.`,
       confirmText: 'Eliminar',
       tone: 'danger'
     });
@@ -103,88 +108,57 @@ export default function DashboardPage() {
     }
   };
 
-  const handlePayment = async (appt: Appointment) => {
-    if (!user) return;
+  const openPaymentDialog = (appt: Appointment) => {
     if (!appt.fee) {
       toast.error('Este turno no tiene honorarios asignados');
       return;
     }
-
-    const confirmed = await confirm({
-      title: 'Registrar pago',
-      description: `¿Confirmar el pago de $${appt.fee.toLocaleString()} de ${appt.patientName}?`,
-      confirmText: 'Registrar pago',
-      tone: 'success',
+    setPaymentDialog({
+      open: true,
+      appointment: appt,
+      mode: 'total',
+      amount: appt.fee.toString(),
     });
-    if (!confirmed) return;
+  };
+
+  const submitPayment = async () => {
+    const appt = paymentDialog.appointment;
+    if (!user || !appt) return;
+    const amountNum = Number(paymentDialog.amount);
+    if (!amountNum || amountNum <= 0) {
+      toast.error('Ingresa un monto v?lido');
+      return;
+    }
+    const isTotal = appt.fee ? amountNum >= appt.fee : true;
+    const status: 'completed' | 'pending' = isTotal ? 'completed' : 'pending';
 
     try {
       await createPayment({
         appointmentId: appt.id,
         patientId: appt.patientId,
         patientName: appt.patientName,
-        amount: appt.fee,
-        method: 'cash', // Por defecto efectivo, se puede cambiar después
-        status: 'completed',
+        amount: amountNum,
+        method: 'cash',
+        status,
         date: new Date().toISOString(),
         consultationType: appt.type,
         userId: user.uid,
       });
 
-      if (appt.status !== 'completed') {
+      if (isTotal && appt.status !== 'completed') {
         await updateAppointment(appt.id, { status: 'completed' });
         await refreshAppointments();
       }
 
       await refreshPayments();
       await refreshPendingPayments();
-
-      toast.success('Pago registrado correctamente');
+      toast.success(isTotal ? 'Pago registrado correctamente' : 'Pago parcial registrado');
+      setPaymentDialog({ open: false, appointment: undefined, mode: 'total', amount: '' });
     } catch (error) {
       console.error('Error al registrar pago:', error);
       toast.error('Error al registrar el pago');
     }
   };
-
-  const handleDebt = async (appt: Appointment) => {
-    if (!user) return;
-    if (!appt.fee) {
-      toast.error('Este turno no tiene honorarios asignados');
-      return;
-    }
-
-    const confirmed = await confirm({
-      title: 'Registrar deuda',
-      description: `¿Registrar como deuda pendiente $${appt.fee.toLocaleString()} de ${appt.patientName}?`,
-      confirmText: 'Registrar deuda',
-      tone: 'danger',
-    });
-    if (!confirmed) return;
-
-    try {
-      await createPayment({
-        appointmentId: appt.id,
-        patientId: appt.patientId,
-        patientName: appt.patientName,
-        amount: appt.fee,
-        method: 'cash',
-        status: 'pending', // Estado pendiente para deuda
-        date: new Date().toISOString(),
-        consultationType: appt.type,
-        notes: 'Deuda registrada desde agenda',
-        userId: user.uid,
-      });
-
-      await refreshPendingPayments();
-      await refreshPayments();
-
-      toast.success('Deuda registrada correctamente');
-    } catch (error) {
-      console.error('Error al registrar deuda:', error);
-      toast.error('Error al registrar la deuda');
-    }
-  };
-
   return (
     <ProtectedRoute>
       <DashboardLayout>
@@ -338,22 +312,13 @@ export default function DashboardPage() {
                             <td className="text-right">
                               <div className="flex items-center justify-end gap-1">
                                 <button
-                                  onClick={() => handlePayment(a)}
+                                  onClick={() => openPaymentDialog(a)}
                                   disabled={!a.fee}
                                   className="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                   aria-label="Registrar pago"
                                   title="Registrar pago"
                                 >
                                   <DollarSign className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleDebt(a)}
-                                  disabled={!a.fee}
-                                  className="p-1.5 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                                  aria-label="Registrar deuda"
-                                  title="Registrar deuda"
-                                >
-                                  <FileText className="w-4 h-4" />
                                 </button>
                                 <button
                                   onClick={() => handleEdit(a)}
@@ -454,6 +419,71 @@ export default function DashboardPage() {
             />
           </Modal>
         </div>
+      <Modal
+        open={paymentDialog.open}
+        onClose={() => setPaymentDialog({ open: false, appointment: undefined, mode: 'total', amount: '' })}
+        title="Registrar pago"
+        maxWidth="max-w-md"
+      >
+        {paymentDialog.appointment && (
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <p className="text-sm text-elegant-600 dark:text-elegant-300">{paymentDialog.appointment.patientName}</p>
+              <p className="text-lg font-semibold text-primary-dark dark:text-white">
+                Honorarios: ${paymentDialog.appointment.fee?.toLocaleString()}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 bg-elegant-100 dark:bg-elegant-800/60 p-2 rounded-full">
+              <button
+                type="button"
+                className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'total' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
+                onClick={() => setPaymentDialog(p => ({ ...p, mode: 'total', amount: p.appointment?.fee?.toString() || '' }))}
+              >
+                Pago total
+              </button>
+              <button
+                type="button"
+                className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'partial' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
+                onClick={() => setPaymentDialog(p => ({ ...p, mode: 'partial', amount: '' }))}
+              >
+                Pago parcial
+              </button>
+            </div>
+
+            {paymentDialog.mode === 'partial' && (
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-elegant-600 dark:text-elegant-300">Monto a pagar</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={paymentDialog.amount}
+                  onChange={(e) => setPaymentDialog(p => ({ ...p, amount: e.target.value }))}
+                  className="input-field text-sm py-2"
+                  placeholder="Ingresar monto"
+                />
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                className="btn-secondary text-sm px-4 py-2"
+                onClick={() => setPaymentDialog({ open: false, appointment: undefined, mode: 'total', amount: '' })}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="btn-primary text-sm px-4 py-2"
+                onClick={submitPayment}
+              >
+                Registrar
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
       </DashboardLayout>
     </ProtectedRoute>
   );
