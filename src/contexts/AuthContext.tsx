@@ -21,6 +21,7 @@ interface AuthContextType {
   userProfile: UserProfile | null;
   loading: boolean;
   error: string | null;
+  googleAccessToken: string | null;
   signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   registerWithEmail: (email: string, password: string, displayName?: string) => Promise<void>;
@@ -34,6 +35,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [googleAccessToken, setGoogleAccessToken] = useState<string | null>(null);
+
+  // Cargar access token del localStorage al iniciar
+  useEffect(() => {
+    const savedToken = localStorage.getItem('google_access_token');
+    if (savedToken) {
+      setGoogleAccessToken(savedToken);
+    }
+  }, []);
 
   useEffect(() => {
     if (mockMode) {
@@ -115,12 +125,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
     try {
       const provider = new GoogleAuthProvider();
+      // Solicitar scopes de Google Calendar
+      provider.addScope('https://www.googleapis.com/auth/calendar');
+      provider.addScope('https://www.googleapis.com/auth/calendar.events');
       provider.setCustomParameters({
-        prompt: 'select_account'
+        prompt: 'select_account',
+        access_type: 'offline'
       });
 
-      logger.log('[AuthContext] Iniciando signInWithPopup');
-      await signInWithPopup(auth, provider);
+      logger.log('[AuthContext] Iniciando signInWithPopup con scopes de Calendar');
+      const result = await signInWithPopup(auth, provider);
+
+      // Obtener el access token de Google
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      if (credential?.accessToken) {
+        logger.log('[AuthContext] Access token obtenido');
+        setGoogleAccessToken(credential.accessToken);
+        // Guardar en localStorage para persistencia
+        localStorage.setItem('google_access_token', credential.accessToken);
+      }
     } catch (e: any) {
       logger.error('[AuthContext] Error en signInWithGoogle:', e);
       if (e.code === 'auth/unauthorized-domain') {
@@ -185,7 +208,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, userProfile, loading, error, signInWithGoogle, signInWithEmail, registerWithEmail, signOut }}>
+    <AuthContext.Provider value={{ user, userProfile, loading, error, googleAccessToken, signInWithGoogle, signInWithEmail, registerWithEmail, signOut }}>
       {children}
     </AuthContext.Provider>
   );
