@@ -38,14 +38,12 @@ export default function FeesPage() {
           </div>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="card overflow-x-auto">
-              <h2 className="font-semibold text-primary-dark dark:text-white mb-4">?ltimos Cobros</h2>
+              <h2 className="font-semibold text-primary-dark dark:text-white mb-4">Últimos Cobros</h2>
               <table className="table-skin">
                 <thead>
                   <tr>
                     <th>Paciente</th>
                     <th>Monto</th>
-                    <th>Estado</th>
-                    <th>M?todo</th>
                     <th>Fecha</th>
                   </tr>
                 </thead>
@@ -54,14 +52,12 @@ export default function FeesPage() {
                     <tr key={p.id}>
                       <td>{p.patientName}</td>
                       <td>${p.amount.toLocaleString()}</td>
-                      <td className="capitalize">{p.status}</td>
-                      <td>{p.method}</td>
                       <td>{new Date(p.date).toLocaleDateString()}</td>
                     </tr>
                   ))}
                   {payments.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="p-4 text-center text-black dark:text-white">Sin registros</td>
+                      <td colSpan={3} className="p-4 text-center text-black dark:text-white">Sin registros</td>
                     </tr>
                   )}
                 </tbody>
@@ -74,7 +70,6 @@ export default function FeesPage() {
                   <tr>
                     <th>Paciente</th>
                     <th>Monto</th>
-                    <th>M?todo</th>
                     <th>Fecha</th>
                   </tr>
                 </thead>
@@ -83,13 +78,12 @@ export default function FeesPage() {
                     <tr key={p.id}>
                       <td>{p.patientName}</td>
                       <td>${p.amount.toLocaleString()}</td>
-                      <td>{p.method}</td>
                       <td>{new Date(p.date).toLocaleDateString()}</td>
                     </tr>
                   ))}
                   {pending.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="p-4 text-center text-black dark:text-white">Sin pendientes</td>
+                      <td colSpan={3} className="p-4 text-center text-black dark:text-white">Sin pendientes</td>
                     </tr>
                   )}
                 </tbody>
