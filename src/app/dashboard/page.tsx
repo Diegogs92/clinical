@@ -237,26 +237,39 @@ export default function DashboardPage() {
   };
 
   const submitPayment = async () => {
+    console.log('[submitPayment] Iniciando...');
     const appt = paymentDialog.appointment;
-    if (!appt) return;
+    if (!appt) {
+      console.log('[submitPayment] No hay turno seleccionado');
+      return;
+    }
     if (!user) {
+      console.log('[submitPayment] No hay usuario autenticado');
       toast.error('Debes iniciar sesión para registrar pagos');
       return;
     }
 
+    console.log('[submitPayment] Turno:', appt);
+    console.log('[submitPayment] Monto ingresado:', paymentDialog.amount);
+
     const sanitized = paymentDialog.amount.replace(/\./g, '').replace(',', '.');
     const amountNum = Number(sanitized);
+    console.log('[submitPayment] Monto sanitizado:', amountNum);
+
     if (!Number.isFinite(amountNum) || amountNum <= 0) {
+      console.log('[submitPayment] Monto inválido');
       toast.error('Ingresa un monto válido');
       return;
     }
 
     const isTotal = appt.fee ? amountNum >= appt.fee : true;
     const status: 'completed' | 'pending' = isTotal ? 'completed' : 'pending';
+    console.log('[submitPayment] Es pago total?', isTotal, 'Status:', status);
 
     try {
       setSubmittingPayment(true);
-      await createPayment({
+      console.log('[submitPayment] Llamando a createPayment...');
+      const paymentId = await createPayment({
         appointmentId: appt.id,
         patientId: appt.patientId,
         patientName: appt.patientName,
@@ -267,20 +280,24 @@ export default function DashboardPage() {
         consultationType: appt.type,
         userId: user.uid,
       });
+      console.log('[submitPayment] Pago creado con ID:', paymentId);
 
       if (isTotal && appt.status !== 'completed') {
+        console.log('[submitPayment] Actualizando estado del turno...');
         await updateAppointment(appt.id, { status: 'completed' });
         await refreshAppointments();
       } else {
         await refreshAppointments();
       }
 
+      console.log('[submitPayment] Refrescando pagos...');
       await refreshPayments();
       await refreshPendingPayments();
+      console.log('[submitPayment] Todo completado exitosamente');
       toast.success(isTotal ? 'Pago registrado con éxito' : 'Pago parcial registrado con éxito');
       setPaymentDialog({ open: false, appointment: undefined, mode: 'total', amount: '' });
     } catch (error) {
-      console.error('Error al registrar pago:', error);
+      console.error('[submitPayment] Error al registrar pago:', error);
       toast.error('Error al registrar el pago');
     } finally {
       setSubmittingPayment(false);

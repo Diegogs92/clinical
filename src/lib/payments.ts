@@ -11,17 +11,23 @@ const getMockPayments = (): Payment[] => loadFromLocalStorage<Payment>('payments
 const saveMockPayments = (payments: Payment[]) => saveToLocalStorage('payments', payments);
 
 export async function createPayment(data: Omit<Payment,'id'|'createdAt'|'updatedAt'>) {
+  console.log('[createPayment] Iniciando creación de pago:', data);
   const now = new Date().toISOString();
   if (mockMode || !db) {
+    console.log('[createPayment] Modo mock activado');
     const id = `mock-pay-${Date.now()}`;
     const mockPayments = getMockPayments();
+    console.log('[createPayment] Pagos existentes:', mockPayments.length);
     const newPayment: Payment = { ...data, id, createdAt: now, updatedAt: now };
     mockPayments.push(newPayment);
     saveMockPayments(mockPayments);
+    console.log('[createPayment] Pago guardado, total ahora:', mockPayments.length);
     return id;
   }
+  console.log('[createPayment] Modo Firestore');
   const colRef = collection(db as Firestore, PAYMENTS_COLLECTION);
   const docRef = await addDoc(colRef, { ...data, createdAt: now, updatedAt: now });
+  console.log('[createPayment] Pago guardado en Firestore:', docRef.id);
   return docRef.id;
 }
 
@@ -68,7 +74,10 @@ export async function getPayment(id: string): Promise<Payment|null> {
 export async function listPayments(userId: string): Promise<Payment[]> {
   if (mockMode || !db) {
     const mockPayments = getMockPayments();
-    return sortByDateDesc(mockPayments.filter(p => p.userId === userId));
+    console.log('[listPayments] Mock mode - Total pagos:', mockPayments.length, 'Usuario:', userId);
+    const filtered = mockPayments.filter(p => p.userId === userId);
+    console.log('[listPayments] Pagos filtrados:', filtered.length);
+    return sortByDateDesc(filtered);
   }
 
   // Evitar indices compuestos: filtramos por usuario y ordenamos en cliente
