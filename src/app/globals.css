@@ -175,6 +175,30 @@ input[type="tel"],
            focus:outline-none focus:ring-2 focus:ring-primary/30 dark:focus:ring-primary/50;
   }
 
+  /* Action bubbles - Icon-only pills used in compact action bars */
+  .action-bubble {
+    @apply inline-flex items-center justify-center w-11 h-11 rounded-full border border-elegant-200
+           bg-white dark:bg-elegant-900 text-elegant-700 dark:text-elegant-200 shadow-sm
+           transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg active:scale-95
+           focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .action-bubble-primary {
+    @apply text-primary border-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 focus:ring-primary/30;
+  }
+
+  .action-bubble-success {
+    @apply text-green-600 border-green-200 hover:bg-green-50 dark:hover:bg-green-900/30 focus:ring-green-200;
+  }
+
+  .action-bubble-warning {
+    @apply text-warning-dark border-warning/30 hover:bg-warning/10 dark:hover:bg-warning/20 focus:ring-warning/30;
+  }
+
+  .action-bubble-danger {
+    @apply text-danger-dark border-danger/30 hover:bg-danger/10 dark:hover:bg-danger/20 focus:ring-danger/30;
+  }
+
   /* Helpers de texto */
   .text-primary-dark {
     @apply text-elegant-900 dark:text-white;

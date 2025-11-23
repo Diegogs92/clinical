@@ -189,24 +189,26 @@ export default function AgendaPage() {
                   </div>
                 )}
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="flex items-center justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => handlePayment(selected, 'completed')}
-                  className="btn-primary text-sm"
+                  className="action-bubble action-bubble-success"
                   disabled={!selected.fee}
+                  aria-label="Registrar pago"
+                  title="Registrar pago"
                 >
                   <DollarSign className="w-4 h-4" />
-                  Pago
                 </button>
                 <button
                   type="button"
                   onClick={() => handlePayment(selected, 'pending')}
-                  className="btn-danger text-sm"
+                  className="action-bubble action-bubble-warning"
                   disabled={!selected.fee}
+                  aria-label="Registrar deuda"
+                  title="Registrar deuda"
                 >
                   <FileText className="w-4 h-4" />
-                  Deuda
                 </button>
                 <button
                   type="button"
@@ -214,18 +216,20 @@ export default function AgendaPage() {
                     handleEdit(selected);
                     setSelected(null);
                   }}
-                  className="btn-secondary text-sm"
+                  className="action-bubble action-bubble-primary"
+                  aria-label="Editar turno"
+                  title="Editar turno"
                 >
                   <Edit2 className="w-4 h-4" />
-                  Editar
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDelete(selected)}
-                  className="btn-danger text-sm"
+                  className="action-bubble action-bubble-danger"
+                  aria-label="Borrar turno"
+                  title="Borrar turno"
                 >
                   <Trash2 className="w-4 h-4" />
-                  Borrar
                 </button>
               </div>
             </div>
