@@ -4,7 +4,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import DashboardLayout from '@/components/DashboardLayout';
 import CalendarView from '@/components/agenda/Calendar';
 import Link from 'next/link';
-import { Download, Edit2, Trash2, DollarSign, FileText } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { downloadCalendarIcs } from '@/lib/calendarSync';
 import { useToast } from '@/contexts/ToastContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
@@ -18,7 +18,6 @@ import AppointmentForm from '@/components/appointments/AppointmentForm';
 import { createPayment } from '@/lib/payments';
 import { usePayments } from '@/contexts/PaymentsContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { translateAppointmentStatus } from '@/lib/translations';
 export const dynamic = 'force-dynamic';
 
 export default function AgendaPage() {
@@ -28,7 +27,6 @@ export default function AgendaPage() {
   const toast = useToast();
   const confirm = useConfirm();
 
-  const [selected, setSelected] = useState<Appointment | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
 
@@ -58,7 +56,6 @@ export default function AgendaPage() {
     try {
       await deleteAppointment(appt.id);
       await refreshAppointments();
-      setSelected(null);
       toast.success('Turno eliminado');
     } catch (e) {
       toast.error('No se pudo eliminar el turno');
@@ -96,13 +93,12 @@ export default function AgendaPage() {
 
       if (status === 'completed' && appt.status !== 'completed') {
         await updateAppointment(appt.id, { status: 'completed' });
-        await refreshAppointments();
       }
 
+      await refreshAppointments();
       await refreshPayments();
       await refreshPendingPayments();
       toast.success(status === 'completed' ? 'Pago registrado' : 'Deuda registrada');
-      setSelected(null);
     } catch (error) {
       console.error(error);
       toast.error('No se pudo registrar la operación');
@@ -144,97 +140,16 @@ export default function AgendaPage() {
             </div>
           ) : (
             <div className="glass-panel p-4 sm:p-6 border border-elegant-200/60 dark:border-elegant-800/60 shadow-md">
-              <CalendarView appointments={appointments} onSelect={setSelected} />
+              <CalendarView
+                appointments={appointments}
+                onPay={(appt) => handlePayment(appt, 'completed')}
+                onDebt={(appt) => handlePayment(appt, 'pending')}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
             </div>
           )}
         </div>
-
-        <Modal
-          open={!!selected}
-          onClose={() => setSelected(null)}
-          title={selected ? selected.patientName : ''}
-          maxWidth="max-w-lg"
-        >
-          {selected && (
-            <div className="space-y-4">
-              <div className="space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-elegant-500">Fecha</span>
-                  <span className="font-semibold text-elegant-900 dark:text-white">{new Date(selected.date).toLocaleDateString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-elegant-500">Horario</span>
-                  <span className="font-semibold text-elegant-900 dark:text-white">{selected.startTime} - {selected.endTime}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-elegant-500">Tipo</span>
-                  <span className="font-semibold text-elegant-900 dark:text-white">{selected.type}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-elegant-500">Estado</span>
-                  <span className="inline-flex items-center gap-2">
-                    <span className="inline-flex px-2 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light">
-                      {translateAppointmentStatus(selected.status)}
-                    </span>
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-elegant-500">Honorarios</span>
-                  <span className="font-semibold text-green-600 dark:text-green-400">{selected.fee ? `$${selected.fee.toLocaleString()}` : '-'}</span>
-                </div>
-                {selected.notes && (
-                  <div className="pt-2">
-                    <p className="text-xs uppercase tracking-wide text-elegant-400 mb-1">Notas</p>
-                    <p className="text-sm text-elegant-700 dark:text-elegant-200">{selected.notes}</p>
-                  </div>
-                )}
-              </div>
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => handlePayment(selected, 'completed')}
-                  className="action-bubble action-bubble-success"
-                  disabled={!selected.fee}
-                  aria-label="Registrar pago"
-                  title="Registrar pago"
-                >
-                  <DollarSign className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handlePayment(selected, 'pending')}
-                  className="action-bubble action-bubble-warning"
-                  disabled={!selected.fee}
-                  aria-label="Registrar deuda"
-                  title="Registrar deuda"
-                >
-                  <FileText className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleEdit(selected);
-                    setSelected(null);
-                  }}
-                  className="action-bubble action-bubble-primary"
-                  aria-label="Editar turno"
-                  title="Editar turno"
-                >
-                  <Edit2 className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(selected)}
-                  className="action-bubble action-bubble-danger"
-                  aria-label="Borrar turno"
-                  title="Borrar turno"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          )}
-        </Modal>
 
         <Modal
           open={showForm}
