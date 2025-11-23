@@ -181,11 +181,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
           </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-3">
-          <div>
-            <label className="block text-xs font-semibold text-elegant-600 dark:text-elegant-300 mb-1">Tipo</label>
-            <input className="input-field text-sm py-2" placeholder="Consulta" {...register('type')} />
-          </div>
+        <div className="grid md:grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-semibold text-elegant-600 dark:text-elegant-300 mb-1">Honorarios</label>
             <input type="number" className="input-field text-sm py-2" placeholder="0" {...register('fee', { valueAsNumber: true })} />

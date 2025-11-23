@@ -2,6 +2,7 @@ import { db, mockMode } from '@/lib/firebase';
 import { collection, addDoc, updateDoc, doc, deleteDoc, getDoc, getDocs, query, where, orderBy, Firestore } from 'firebase/firestore';
 import { Appointment, RecurrenceRule } from '@/types';
 import { loadFromLocalStorage, saveToLocalStorage } from './mockStorage';
+import { deletePayment, listPaymentsByAppointment } from './payments';
 
 const APPOINTMENTS_COLLECTION = 'appointments';
 // In-memory mocks when mockMode is active
@@ -34,6 +35,11 @@ export async function updateAppointment(id: string, data: Partial<Appointment>) 
 }
 
 export async function deleteAppointment(id: string) {
+  // Primero eliminar los pagos asociados al turno
+  const payments = await listPaymentsByAppointment(id);
+  await Promise.all(payments.map(p => deletePayment(p.id)));
+
+  // Luego eliminar el turno
   if (mockMode || !db) {
     const idx = mockAppointments.findIndex(a => a.id === id);
     if (idx !== -1) {
