@@ -102,13 +102,16 @@ export async function listPendingPayments(userId: string): Promise<Payment[]> {
   return sortByDateDesc(payments.filter(p => p.status === 'pending'));
 }
 
-export async function listPaymentsByAppointment(appointmentId: string): Promise<Payment[]> {
+export async function listPaymentsByAppointment(appointmentId: string, userId: string): Promise<Payment[]> {
   if (mockMode || !db) {
     const mockPayments = getMockPayments();
     return mockPayments.filter(p => p.appointmentId === appointmentId);
   }
 
-  const q = query(collection(db as Firestore, PAYMENTS_COLLECTION), where('appointmentId','==',appointmentId));
+  // Traemos todos los pagos del usuario y filtramos por appointmentId en memoria para evitar requerir índice compuesto
+  const q = query(collection(db as Firestore, PAYMENTS_COLLECTION), where('userId','==',userId));
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ ...d.data() as Payment, id: d.id }));
+  const payments = snap.docs.map(d => ({ ...d.data() as Payment, id: d.id }));
+
+  return payments.filter(p => p.appointmentId === appointmentId);
 }

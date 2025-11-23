@@ -205,6 +205,8 @@ export default function DashboardPage() {
   };
 
   const handleDelete = async (appt: Appointment) => {
+    if (!user) return;
+
     const confirmed = await confirm({
       title: 'Eliminar turno',
       description: `¿Eliminar definitivamente el turno de ${appt.patientName}?`,
@@ -214,7 +216,7 @@ export default function DashboardPage() {
     if (!confirmed) return;
 
     try {
-      await deleteAppointment(appt.id);
+      await deleteAppointment(appt.id, user.uid);
       await refreshAppointments();
       await refreshPayments();
       await refreshPendingPayments();
