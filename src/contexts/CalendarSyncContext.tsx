@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Appointment } from '@/types';
 
 interface CalendarSyncContextType {
@@ -27,13 +27,13 @@ interface Props {
 }
 
 export function CalendarSyncProvider({ children }: Props) {
-  const { data: session } = useSession();
+  const { user } = useAuth();
   const [syncEnabled, setSyncEnabled] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    // Verificar si hay un access token disponible
-    if (session?.accessToken) {
+    // Si el usuario está autenticado, consideramos que está "conectado" para Google Calendar
+    if (user) {
       setIsConnected(true);
       // Cargar preferencia de sincronización del localStorage
       const saved = localStorage.getItem('calendar_sync_enabled');
@@ -42,7 +42,7 @@ export function CalendarSyncProvider({ children }: Props) {
       setIsConnected(false);
       setSyncEnabled(false);
     }
-  }, [session]);
+  }, [user]);
 
   const toggleSync = () => {
     const newValue = !syncEnabled;
