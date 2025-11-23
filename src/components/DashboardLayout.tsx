@@ -49,8 +49,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark shadow-lg shadow-primary/30">
-                <span className="text-white font-bold text-lg">C</span>
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl overflow-hidden">
+                <img src="/logo.svg" alt="Clinical Logo" className="w-full h-full object-cover" />
               </div>
               <div className="hidden sm:block">
                 <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
@@ -58,7 +58,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </h1>
                 {user && (
                   <p className="text-xs text-elegant-600 dark:text-elegant-400">
-                    {user.email}
+                    {user.displayName || user.email}
                   </p>
                 )}
               </div>
