@@ -10,7 +10,7 @@ import { Appointment } from '@/types';
 import { useCalendarSync } from '@/contexts/CalendarSyncContext';
 import { useToast } from '@/contexts/ToastContext';
 import Modal from '@/components/ui/Modal';
-import QuickPatientForm from '@/components/patients/QuickPatientForm';
+import PatientForm from '@/components/patients/PatientForm';
 import { UserPlus } from 'lucide-react';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
@@ -204,15 +204,14 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         open={showQuickPatient}
         onClose={() => setShowQuickPatient(false)}
         title="Crear nuevo paciente"
+        maxWidth="max-w-3xl"
       >
-        <QuickPatientForm
-          onSuccess={async (newPatient) => {
+        <PatientForm
+          onSuccess={async () => {
             await refreshPatients();
-            setValue('patientId', newPatient.id);
             setShowQuickPatient(false);
-            toast.success('Paciente creado y seleccionado correctamente');
+            toast.success('Paciente creado correctamente. Selecciónalo de la lista.');
           }}
-          onCancel={() => setShowQuickPatient(false)}
         />
       </Modal>
     </>
