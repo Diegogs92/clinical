@@ -140,6 +140,14 @@ export default function DashboardPage() {
       const end = combineDateAndTime(appt.date, appt.endTime);
       const past = end < now;
 
+      console.log(`[DEBUG paymentStateFor] Turno ${appt.patientName}:`, {
+        fee: appt.fee,
+        completed,
+        pending,
+        totalPaid,
+        remainingAmount
+      });
+
       if (completed >= (appt.fee || 0)) {
         return { color: 'text-green-600 dark:text-green-400', status: 'paid', remainingAmount: 0 };
       }
@@ -228,6 +236,7 @@ export default function DashboardPage() {
   };
 
   const openPaymentDialog = (appt: Appointment) => {
+    console.log('[DEBUG openPaymentDialog] Turno:', { id: appt.id, patientName: appt.patientName, fee: appt.fee });
     if (!appt.fee) {
       toast.error('Este turno no tiene honorarios asignados');
       return;
@@ -417,8 +426,8 @@ export default function DashboardPage() {
                             <td>{a.patientName}</td>
                             <td>
                               {a.fee ? (
-                                <span className={`font-semibold ${paymentStateFor(a).color}`}>
-                                  ${paymentStateFor(a).remainingAmount.toLocaleString()}
+                                <span className="font-semibold text-elegant-900 dark:text-white">
+                                  ${a.fee.toLocaleString()}
                                 </span>
                               ) : (
                                 <span className="text-gray-400">-</span>
@@ -439,9 +448,9 @@ export default function DashboardPage() {
                                 <button
                                   onClick={() => openPaymentDialog(a)}
                                   disabled={!a.fee}
-                                  className="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                  className={`p-1.5 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${paymentStateFor(a).status === 'paid' ? 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20' : paymentStateFor(a).status === 'partial' ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20' : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'}`}
                                   aria-label="Registrar pago"
-                                  title="Registrar pago"
+                                  title={a.fee && paymentStateFor(a).remainingAmount > 0 ? `Pendiente: $${paymentStateFor(a).remainingAmount.toLocaleString()}` : 'Pago completo'}
                                 >
                                   <DollarSign className="w-4 h-4" />
                                 </button>
@@ -506,13 +515,21 @@ export default function DashboardPage() {
                         <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300 mb-3">
                           <CalendarDays className="w-4 h-4" />
                           {a.fee ? (
-                            <span className={`font-semibold ${paymentStateFor(a).color}`}>${paymentStateFor(a).remainingAmount.toLocaleString()}</span>
+                            <span className="font-semibold text-elegant-900 dark:text-white">${a.fee.toLocaleString()}</span>
                           ) : (
                             <span className="text-gray-400">Sin honorarios</span>
                           )}
                         </div>
 
                         <div className="flex items-center gap-2 pt-3 border-t border-secondary-lighter dark:border-gray-700">
+                          <button
+                            onClick={() => openPaymentDialog(a)}
+                            disabled={!a.fee}
+                            className={`px-4 py-2.5 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${paymentStateFor(a).status === 'paid' ? 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20' : paymentStateFor(a).status === 'partial' ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20' : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'}`}
+                            title={a.fee && paymentStateFor(a).remainingAmount > 0 ? `Pendiente: $${paymentStateFor(a).remainingAmount.toLocaleString()}` : 'Pago completo'}
+                          >
+                            <DollarSign className="w-4 h-4" />
+                          </button>
                           <button
                             onClick={() => handleEdit(a)}
                             className="btn-primary flex-1 text-sm"
