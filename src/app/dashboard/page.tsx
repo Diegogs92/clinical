@@ -128,26 +128,28 @@ export default function DashboardPage() {
 
   const paymentStateFor = useMemo(() => {
     return (appt: Appointment) => {
-      if (!appt.fee) return { color: 'text-elegant-900 dark:text-white', status: 'none' };
+      if (!appt.fee) return { color: 'text-elegant-900 dark:text-white', status: 'none', remainingAmount: 0 };
       const completed = payments
         .filter(p => p.appointmentId === appt.id && p.status === 'completed')
         .reduce((sum, p) => sum + p.amount, 0);
       const pending = [...payments, ...pendingPayments]
         .filter(p => p.appointmentId === appt.id && p.status === 'pending')
         .reduce((sum, p) => sum + p.amount, 0);
+      const totalPaid = completed + pending;
+      const remainingAmount = Math.max(0, (appt.fee || 0) - totalPaid);
       const end = combineDateAndTime(appt.date, appt.endTime);
       const past = end < now;
 
       if (completed >= (appt.fee || 0)) {
-        return { color: 'text-green-600 dark:text-green-400', status: 'paid' };
+        return { color: 'text-green-600 dark:text-green-400', status: 'paid', remainingAmount: 0 };
       }
       if (completed > 0 || pending > 0) {
-        return { color: 'text-amber-500', status: 'partial' };
+        return { color: 'text-amber-500', status: 'partial', remainingAmount };
       }
       if (past) {
-        return { color: 'text-red-500', status: 'unpaid' };
+        return { color: 'text-red-500', status: 'unpaid', remainingAmount: appt.fee };
       }
-      return { color: 'text-elegant-900 dark:text-white', status: 'none' };
+      return { color: 'text-elegant-900 dark:text-white', status: 'none', remainingAmount: appt.fee };
     };
   }, [now, payments, pendingPayments]);
 
@@ -414,7 +416,7 @@ export default function DashboardPage() {
                             <td>
                               {a.fee ? (
                                 <span className={`font-semibold ${paymentStateFor(a).color}`}>
-                                  ${a.fee.toLocaleString()}
+                                  ${paymentStateFor(a).remainingAmount.toLocaleString()}
                                 </span>
                               ) : (
                                 <span className="text-gray-400">-</span>
@@ -502,7 +504,7 @@ export default function DashboardPage() {
                         <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300 mb-3">
                           <CalendarDays className="w-4 h-4" />
                           {a.fee ? (
-                            <span className={`font-semibold ${paymentStateFor(a).color}`}>${a.fee.toLocaleString()}</span>
+                            <span className={`font-semibold ${paymentStateFor(a).color}`}>${paymentStateFor(a).remainingAmount.toLocaleString()}</span>
                           ) : (
                             <span className="text-gray-400">Sin honorarios</span>
                           )}
