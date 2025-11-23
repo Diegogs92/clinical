@@ -238,12 +238,19 @@ export default function DashboardPage() {
 
   const submitPayment = async () => {
     const appt = paymentDialog.appointment;
-    if (!user || !appt) return;
-    const amountNum = Number(paymentDialog.amount);
-    if (!amountNum || amountNum <= 0) {
+    if (!appt) return;
+    if (!user) {
+      toast.error('Debes iniciar sesión para registrar pagos');
+      return;
+    }
+
+    const sanitized = paymentDialog.amount.replace(/\./g, '').replace(',', '.');
+    const amountNum = Number(sanitized);
+    if (!Number.isFinite(amountNum) || amountNum <= 0) {
       toast.error('Ingresa un monto válido');
       return;
     }
+
     const isTotal = appt.fee ? amountNum >= appt.fee : true;
     const status: 'completed' | 'pending' = isTotal ? 'completed' : 'pending';
 
@@ -263,6 +270,8 @@ export default function DashboardPage() {
 
       if (isTotal && appt.status !== 'completed') {
         await updateAppointment(appt.id, { status: 'completed' });
+        await refreshAppointments();
+      } else {
         await refreshAppointments();
       }
 
