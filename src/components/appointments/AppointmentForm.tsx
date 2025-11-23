@@ -20,7 +20,9 @@ const schema = z.object({
   patientName: z.string().optional(),
   date: z.string().min(1, 'Fecha requerida'), // ISO date yyyy-MM-dd
   startTime: z.string().min(1, 'Hora inicio requerida'), // HH:mm
-  duration: z.coerce.number().min(5).max(600).default(30),
+  duration: z.coerce.number().refine(val => [45, 60, 90, 120, 160].includes(val), {
+    message: 'Selecciona una duración válida'
+  }).default(45),
   type: z.string().default('Consulta'),
   fee: z.coerce.number().optional(),
   notes: z.string().optional(),
@@ -45,7 +47,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<AppointmentFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      duration: initialData?.duration || 30,
+      duration: initialData?.duration || 45,
       type: initialData?.type || 'Consulta',
       fee: initialData?.fee || undefined,
       patientId: initialData?.patientId || '',
@@ -177,7 +179,13 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
           </div>
           <div>
             <label className="block text-xs font-semibold text-elegant-600 dark:text-elegant-300 mb-1">Duración (min)</label>
-            <input type="number" className="input-field text-sm py-2" {...register('duration', { valueAsNumber: true })} />
+            <select className="input-field text-sm py-2" {...register('duration', { valueAsNumber: true })}>
+              <option value="45">45 min</option>
+              <option value="60">60 min</option>
+              <option value="90">90 min</option>
+              <option value="120">120 min</option>
+              <option value="160">160 min</option>
+            </select>
           </div>
         </div>
 
