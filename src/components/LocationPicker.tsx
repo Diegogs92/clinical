@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
-import { MapPin, Loader2 } from 'lucide-react';
+import { MapPin, Loader2, Search } from 'lucide-react';
 
 interface LocationPickerProps {
   latitude?: number;
@@ -19,13 +19,20 @@ const mapContainerStyle = {
 
 const libraries: ("places" | "geometry")[] = ["places"];
 
+interface PlaceSuggestion {
+  description: string;
+  place_id: string;
+}
+
 export default function LocationPicker({ latitude, longitude, address, onLocationChange }: LocationPickerProps) {
   const [center, setCenter] = useState<{ lat: number; lng: number } | null>(null);
   const [markerPosition, setMarkerPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [inputValue, setInputValue] = useState(address || '');
-  const autocompleteElementRef = useRef<any>(null);
-  const inputContainerRef = useRef<HTMLDivElement>(null);
+  const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
@@ -34,7 +41,6 @@ export default function LocationPicker({ latitude, longitude, address, onLocatio
     region: 'AR',
   });
 
-  // Debug: Log API key status
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) {
       console.error('⚠️ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY no está configurada');
@@ -52,67 +58,6 @@ export default function LocationPicker({ latitude, longitude, address, onLocatio
       getCurrentLocation();
     }
   }, []);
-
-  // Initialize new PlacesAutocomplete component
-  useEffect(() => {
-    if (isLoaded && inputContainerRef.current && !autocompleteElementRef.current) {
-      try {
-        // Load the new Places Library
-        const loadPlacesLibrary = async () => {
-          // @ts-ignore - using new Google Places API
-          await google.maps.importLibrary("places");
-
-          // Create the autocomplete element programmatically
-          const autocompleteInput = document.createElement('input');
-          autocompleteInput.type = 'text';
-          autocompleteInput.value = inputValue;
-          autocompleteInput.placeholder = 'Ej: Av. Corrientes 1234, CABA';
-          autocompleteInput.className = 'input-field text-sm relative z-[10000] w-full';
-
-          // Replace the input container content
-          if (inputContainerRef.current) {
-            inputContainerRef.current.innerHTML = '';
-            inputContainerRef.current.appendChild(autocompleteInput);
-          }
-
-          // Initialize autocomplete
-          const autocomplete = new google.maps.places.Autocomplete(autocompleteInput, {
-            componentRestrictions: { country: 'ar' },
-            fields: ['formatted_address', 'geometry', 'name'],
-            types: ['address'],
-          });
-
-          autocomplete.addListener('place_changed', () => {
-            const place = autocomplete.getPlace();
-            if (place.geometry?.location) {
-              const lat = place.geometry.location.lat();
-              const lng = place.geometry.location.lng();
-              const newPos = { lat, lng };
-              setCenter(newPos);
-              setMarkerPosition(newPos);
-              const formattedAddress = place.formatted_address || '';
-              setInputValue(formattedAddress);
-              onLocationChange(lat, lng, formattedAddress);
-            }
-          });
-
-          // Update state when user types
-          autocompleteInput.addEventListener('input', (e) => {
-            setInputValue((e.target as HTMLInputElement).value);
-          });
-
-          autocompleteElementRef.current = autocomplete;
-          console.log('✅ Places Autocomplete inicializado correctamente (nueva API)');
-        };
-
-        loadPlacesLibrary().catch((error) => {
-          console.error('❌ Error al cargar Places Library:', error);
-        });
-      } catch (error) {
-        console.error('❌ Error al inicializar autocomplete:', error);
-      }
-    }
-  }, [isLoaded, onLocationChange]);
 
   const getCurrentLocation = () => {
     if ('geolocation' in navigator) {
@@ -157,6 +102,98 @@ export default function LocationPicker({ latitude, longitude, address, onLocatio
     } catch (error) {
       console.error('Error reverse geocoding:', error);
       onLocationChange(lat, lng, '');
+    }
+  };
+
+  // Buscar sugerencias usando Places API Autocomplete Service (no deprecado)
+  const searchPlaces = async (input: string) => {
+    if (!input || input.length < 3) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) return;
+
+    setIsLoadingSuggestions(true);
+
+    try {
+      // Use the client-side AutocompleteService (no CORS issues)
+      if (isLoaded && window.google) {
+        const service = new google.maps.places.AutocompleteService();
+        service.getPlacePredictions(
+          {
+            input,
+            componentRestrictions: { country: 'ar' },
+            types: ['address'],
+          },
+          (predictions, status) => {
+            setIsLoadingSuggestions(false);
+            if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+              setSuggestions(
+                predictions.map((p) => ({
+                  description: p.description,
+                  place_id: p.place_id,
+                }))
+              );
+              setShowSuggestions(true);
+              console.log('✅ Sugerencias cargadas:', predictions.length);
+            } else {
+              setSuggestions([]);
+              setShowSuggestions(false);
+            }
+          }
+        );
+      }
+    } catch (error) {
+      console.error('Error searching places:', error);
+      setIsLoadingSuggestions(false);
+      setSuggestions([]);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+
+    // Debounce the search
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+
+    debounceTimeout.current = setTimeout(() => {
+      searchPlaces(value);
+    }, 300);
+  };
+
+  const handleSelectSuggestion = async (suggestion: PlaceSuggestion) => {
+    setInputValue(suggestion.description);
+    setShowSuggestions(false);
+    setSuggestions([]);
+
+    // Get place details using Place Details API
+    if (isLoaded && window.google) {
+      const service = new google.maps.places.PlacesService(document.createElement('div'));
+      service.getDetails(
+        {
+          placeId: suggestion.place_id,
+          fields: ['geometry', 'formatted_address'],
+        },
+        (place, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
+            const newPos = { lat, lng };
+            setCenter(newPos);
+            setMarkerPosition(newPos);
+            const formattedAddress = place.formatted_address || suggestion.description;
+            setInputValue(formattedAddress);
+            onLocationChange(lat, lng, formattedAddress);
+            console.log('✅ Lugar seleccionado:', formattedAddress);
+          }
+        }
+      );
     }
   };
 
@@ -209,8 +246,42 @@ export default function LocationPicker({ latitude, longitude, address, onLocatio
     <div className="space-y-2">
       <div className="relative z-[10000]">
         <label className="block text-xs font-medium mb-1">Buscar dirección</label>
-        <div ref={inputContainerRef} className="w-full">
-          {/* El input se creará dinámicamente aquí */}
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            {isLoadingSuggestions ? (
+              <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
+            ) : (
+              <Search className="w-4 h-4 text-gray-400" />
+            )}
+          </div>
+          <input
+            type="text"
+            value={inputValue}
+            onChange={handleInputChange}
+            onFocus={() => {
+              if (suggestions.length > 0) setShowSuggestions(true);
+            }}
+            className="input-field text-sm pl-10 relative z-[10000] w-full"
+            placeholder="Ej: Av. Corrientes 1234, CABA"
+            autoComplete="off"
+          />
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto z-[10001]">
+              {suggestions.map((suggestion) => (
+                <button
+                  key={suggestion.place_id}
+                  type="button"
+                  onClick={() => handleSelectSuggestion(suggestion)}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm border-b border-gray-200 dark:border-gray-700 last:border-b-0 transition-colors"
+                >
+                  <div className="flex items-start gap-2">
+                    <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-900 dark:text-gray-100">{suggestion.description}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
