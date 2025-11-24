@@ -47,7 +47,7 @@ export default function OfficesPage() {
   const toast = useToast();
   const confirm = useConfirm();
 
-  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<OfficeFormData>({
+  const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<OfficeFormData>({
     defaultValues: {
       name: '',
       address: '',
@@ -56,6 +56,8 @@ export default function OfficesPage() {
       colorId: '1',
     }
   });
+
+  const selectedColorId = watch('colorId');
 
   const handleEdit = (office: Office) => {
     setEditingOffice(office);
@@ -225,23 +227,54 @@ export default function OfficesPage() {
           </div>
         </div>
 
-        <Modal open={showModal} onClose={handleClose} title={editingOffice ? 'Editar Consultorio' : 'Nuevo Consultorio'} maxWidth="max-w-3xl">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-            <div>
-              <label className="block text-sm font-medium mb-1">Nombre *</label>
-              <input
-                type="text"
-                {...register('name', { required: 'El nombre es requerido' })}
-                className="input-field"
-                placeholder="Ej: Consultorio Centro"
-              />
-              {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
+        <Modal open={showModal} onClose={handleClose} title={editingOffice ? 'Editar' : 'Nuevo'} maxWidth="max-w-2xl">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-xs font-medium mb-1">Nombre *</label>
+                <input
+                  type="text"
+                  {...register('name', { required: 'Requerido' })}
+                  className="input-field text-sm"
+                  placeholder="Consultorio Centro"
+                />
+                {errors.name && <p className="text-red-500 text-xs mt-0.5">{errors.name.message}</p>}
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium mb-1">Color *</label>
+                <div className="grid grid-cols-4 gap-1">
+                  {CALENDAR_COLORS.map(color => (
+                    <label
+                      key={color.id}
+                      className={`flex items-center justify-center p-1 rounded border-2 cursor-pointer transition-all ${
+                        selectedColorId === color.id
+                          ? 'border-primary ring-2 ring-primary/30'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                      }`}
+                      title={color.name}
+                    >
+                      <input
+                        type="radio"
+                        value={color.id}
+                        {...register('colorId')}
+                        className="sr-only"
+                      />
+                      <div
+                        className="w-5 h-5 rounded-full"
+                        style={{ backgroundColor: color.color }}
+                      ></div>
+                    </label>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div>
               <LocationPicker
                 latitude={editingOffice?.latitude}
                 longitude={editingOffice?.longitude}
+                address={editingOffice?.address}
                 onLocationChange={(lat, lng, address) => {
                   setValue('latitude', lat.toString());
                   setValue('longitude', lng.toString());
@@ -252,42 +285,7 @@ export default function OfficesPage() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1">Dirección</label>
-              <input
-                type="text"
-                {...register('address', { required: 'La dirección es requerida' })}
-                className="input-field text-sm"
-                placeholder="Se autocompletará al seleccionar en el mapa"
-              />
-              {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address.message}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Color en Calendario *</label>
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                {CALENDAR_COLORS.map(color => (
-                  <label
-                    key={color.id}
-                    className="flex items-center gap-1.5 p-1.5 rounded-lg border-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                  >
-                    <input
-                      type="radio"
-                      value={color.id}
-                      {...register('colorId')}
-                      className="sr-only"
-                    />
-                    <div
-                      className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600"
-                      style={{ backgroundColor: color.color }}
-                    ></div>
-                    <span className="text-xs">{color.name}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-2 pt-1">
               <button type="button" onClick={handleClose} className="btn-secondary flex-1">
                 Cancelar
               </button>
