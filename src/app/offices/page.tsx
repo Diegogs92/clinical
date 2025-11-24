@@ -206,7 +206,7 @@ export default function OfficesPage() {
           </div>
         </div>
 
-        <Modal isOpen={showModal} onClose={handleClose} title={editingOffice ? 'Editar Consultorio' : 'Nuevo Consultorio'}>
+        <Modal open={showModal} onClose={handleClose} title={editingOffice ? 'Editar Consultorio' : 'Nuevo Consultorio'}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1">Nombre *</label>
