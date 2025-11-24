@@ -12,6 +12,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import { createOffice, updateOffice, deleteOffice } from '@/lib/offices';
 import { useForm } from 'react-hook-form';
+import LocationPicker from '@/components/LocationPicker';
 
 export const dynamic = 'force-dynamic';
 
@@ -249,53 +250,14 @@ export default function OfficesPage() {
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium">Ubicación (opcional)</label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if ('geolocation' in navigator) {
-                      navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                          setValue('latitude', position.coords.latitude.toString());
-                          setValue('longitude', position.coords.longitude.toString());
-                          toast.success('Ubicación obtenida');
-                        },
-                        (error) => {
-                          toast.error('No se pudo obtener la ubicación');
-                          console.error(error);
-                        }
-                      );
-                    } else {
-                      toast.error('Geolocalización no disponible');
-                    }
-                  }}
-                  className="text-xs text-primary hover:text-primary-dark font-medium"
-                >
-                  Usar ubicación actual
-                </button>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <input
-                    type="number"
-                    step="any"
-                    {...register('latitude')}
-                    className="input-field text-sm"
-                    placeholder="Latitud"
-                  />
-                </div>
-                <div>
-                  <input
-                    type="number"
-                    step="any"
-                    {...register('longitude')}
-                    className="input-field text-sm"
-                    placeholder="Longitud"
-                  />
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">Usa tu ubicación actual o ingresa las coordenadas manualmente</p>
+              <LocationPicker
+                latitude={editingOffice?.latitude}
+                longitude={editingOffice?.longitude}
+                onLocationChange={(lat, lng) => {
+                  setValue('latitude', lat.toString());
+                  setValue('longitude', lng.toString());
+                }}
+              />
             </div>
 
             <div>
