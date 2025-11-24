@@ -117,9 +117,13 @@ Si sigues teniendo problemas, necesito esta información:
 
 ## 🚀 Cambios Recientes en el Código
 
-Agregué logs de diagnóstico en el componente LocationPicker:
+**IMPORTANTE:** Migrado a API nativa de Google Maps Places Autocomplete debido a que `@react-google-maps/api` Autocomplete está deprecado para nuevos usuarios.
+
+Ahora usamos `new google.maps.places.Autocomplete()` directamente en lugar del componente wrapper de React.
+
+Logs de diagnóstico en el componente LocationPicker:
 - `✅ Google Maps API Key configurada` - La API key está presente
-- `✅ Autocomplete cargado correctamente` - El autocomplete se inicializó
+- `✅ Autocomplete nativo inicializado correctamente` - El autocomplete se inicializó con la nueva API
 - `❌ Error al cargar Google Maps:` - Hubo un error al cargar
 
 Estos mensajes aparecerán en la consola del navegador (F12 > Console).

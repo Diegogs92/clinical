@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { GoogleMap, useLoadScript, Marker, Autocomplete } from '@react-google-maps/api';
+import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
 import { MapPin, Loader2 } from 'lucide-react';
 
 interface LocationPickerProps {
@@ -23,6 +23,8 @@ export default function LocationPicker({ latitude, longitude, address, onLocatio
   const [center, setCenter] = useState<{ lat: number; lng: number } | null>(null);
   const [markerPosition, setMarkerPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [inputValue, setInputValue] = useState(address || '');
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   const { isLoaded, loadError } = useLoadScript({
@@ -50,6 +52,37 @@ export default function LocationPicker({ latitude, longitude, address, onLocatio
       getCurrentLocation();
     }
   }, []);
+
+  // Initialize autocomplete when Google Maps is loaded
+  useEffect(() => {
+    if (isLoaded && inputRef.current && !autocompleteRef.current) {
+      try {
+        const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
+          componentRestrictions: { country: 'ar' },
+          fields: ['formatted_address', 'geometry', 'name'],
+        });
+
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          if (place.geometry?.location) {
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
+            const newPos = { lat, lng };
+            setCenter(newPos);
+            setMarkerPosition(newPos);
+            const address = place.formatted_address || '';
+            setInputValue(address);
+            onLocationChange(lat, lng, address);
+          }
+        });
+
+        autocompleteRef.current = autocomplete;
+        console.log('✅ Autocomplete nativo inicializado correctamente');
+      } catch (error) {
+        console.error('❌ Error al inicializar autocomplete:', error);
+      }
+    }
+  }, [isLoaded, onLocationChange]);
 
   const getCurrentLocation = () => {
     if ('geolocation' in navigator) {
@@ -86,6 +119,7 @@ export default function LocationPicker({ latitude, longitude, address, onLocatio
 
       if (data.results && data.results[0]) {
         const address = data.results[0].formatted_address;
+        setInputValue(address);
         onLocationChange(lat, lng, address);
       } else {
         onLocationChange(lat, lng, '');
@@ -104,26 +138,6 @@ export default function LocationPicker({ latitude, longitude, address, onLocatio
       reverseGeocode(lat, lng);
     }
   }, []);
-
-  const onPlaceChanged = () => {
-    if (autocompleteRef.current) {
-      const place = autocompleteRef.current.getPlace();
-      if (place.geometry?.location) {
-        const lat = place.geometry.location.lat();
-        const lng = place.geometry.location.lng();
-        const newPos = { lat, lng };
-        setCenter(newPos);
-        setMarkerPosition(newPos);
-        const address = place.formatted_address || '';
-        onLocationChange(lat, lng, address);
-      }
-    }
-  };
-
-  const onAutocompleteLoad = (autocomplete: google.maps.places.Autocomplete) => {
-    autocompleteRef.current = autocomplete;
-    console.log('✅ Autocomplete cargado correctamente');
-  };
 
   if (loadError) {
     console.error('❌ Error al cargar Google Maps:', loadError);
@@ -165,21 +179,14 @@ export default function LocationPicker({ latitude, longitude, address, onLocatio
     <div className="space-y-2">
       <div className="relative z-[10000]">
         <label className="block text-xs font-medium mb-1">Buscar dirección</label>
-        <Autocomplete
-          onLoad={onAutocompleteLoad}
-          onPlaceChanged={onPlaceChanged}
-          options={{
-            componentRestrictions: { country: 'ar' },
-            fields: ['formatted_address', 'geometry', 'name'],
-          }}
-        >
-          <input
-            type="text"
-            defaultValue={address}
-            className="input-field text-sm relative z-[10000]"
-            placeholder="Ej: Av. Corrientes 1234, CABA"
-          />
-        </Autocomplete>
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          className="input-field text-sm relative z-[10000]"
+          placeholder="Ej: Av. Corrientes 1234, CABA"
+        />
       </div>
 
       <div>
