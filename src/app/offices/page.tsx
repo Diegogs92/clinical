@@ -225,8 +225,8 @@ export default function OfficesPage() {
           </div>
         </div>
 
-        <Modal open={showModal} onClose={handleClose} title={editingOffice ? 'Editar Consultorio' : 'Nuevo Consultorio'}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <Modal open={showModal} onClose={handleClose} title={editingOffice ? 'Editar Consultorio' : 'Nuevo Consultorio'} maxWidth="max-w-3xl">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
             <div>
               <label className="block text-sm font-medium mb-1">Nombre *</label>
               <input
@@ -239,34 +239,37 @@ export default function OfficesPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Dirección *</label>
-              <input
-                type="text"
-                {...register('address', { required: 'La dirección es requerida' })}
-                className="input-field"
-                placeholder="Ej: Av. Corrientes 1234, CABA"
-              />
-              {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address.message}</p>}
-            </div>
-
-            <div>
               <LocationPicker
                 latitude={editingOffice?.latitude}
                 longitude={editingOffice?.longitude}
-                onLocationChange={(lat, lng) => {
+                onLocationChange={(lat, lng, address) => {
                   setValue('latitude', lat.toString());
                   setValue('longitude', lng.toString());
+                  if (address) {
+                    setValue('address', address);
+                  }
                 }}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Color en Calendario *</label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <label className="block text-sm font-medium mb-1">Dirección</label>
+              <input
+                type="text"
+                {...register('address', { required: 'La dirección es requerida' })}
+                className="input-field text-sm"
+                placeholder="Se autocompletará al seleccionar en el mapa"
+              />
+              {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address.message}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Color en Calendario *</label>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 {CALENDAR_COLORS.map(color => (
                   <label
                     key={color.id}
-                    className="flex items-center gap-2 p-2 rounded-lg border-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    className="flex items-center gap-1.5 p-1.5 rounded-lg border-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
                     <input
                       type="radio"
@@ -275,16 +278,16 @@ export default function OfficesPage() {
                       className="sr-only"
                     />
                     <div
-                      className="w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600"
+                      className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600"
                       style={{ backgroundColor: color.color }}
                     ></div>
-                    <span className="text-sm">{color.name}</span>
+                    <span className="text-xs">{color.name}</span>
                   </label>
                 ))}
               </div>
             </div>
 
-            <div className="flex gap-3 pt-4">
+            <div className="flex gap-3 pt-2">
               <button type="button" onClick={handleClose} className="btn-secondary flex-1">
                 Cancelar
               </button>

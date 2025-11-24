@@ -31,7 +31,9 @@
       "Bash(del NUL 2)",
       "Bash(netstat:*)",
       "Bash(taskkill /F /PID 41944)",
-      "Bash(taskkill //F //PID 41944)"
+      "Bash(taskkill //F //PID 41944)",
+      "Bash(taskkill /F /PID 32436)",
+      "Bash(taskkill //F //PID 32436)"
     ],
     "deny": [],
     "ask": []

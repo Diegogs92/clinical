@@ -1,53 +1,41 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
-import { MapPin } from 'lucide-react';
+import { MapPin, Loader2 } from 'lucide-react';
 
 interface LocationPickerProps {
   latitude?: number;
   longitude?: number;
-  onLocationChange: (lat: number, lng: number) => void;
+  onLocationChange: (lat: number, lng: number, address: string) => void;
 }
 
 const mapContainerStyle = {
   width: '100%',
-  height: '400px',
+  height: '300px',
   borderRadius: '8px',
 };
 
-// Centro por defecto: Buenos Aires
-const defaultCenter = {
-  lat: -34.6037,
-  lng: -58.3816,
-};
-
 export default function LocationPicker({ latitude, longitude, onLocationChange }: LocationPickerProps) {
-  const [center, setCenter] = useState(() => {
+  const [center, setCenter] = useState<{ lat: number; lng: number } | null>(null);
+  const [markerPosition, setMarkerPosition] = useState<{ lat: number; lng: number } | null>(null);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+
+  // Obtener ubicación actual al montar el componente (solo si no hay coordenadas)
+  useEffect(() => {
     if (latitude && longitude) {
-      return { lat: latitude, lng: longitude };
+      const pos = { lat: latitude, lng: longitude };
+      setCenter(pos);
+      setMarkerPosition(pos);
+    } else {
+      // Obtener ubicación actual automáticamente
+      getCurrentLocation();
     }
-    return defaultCenter;
-  });
+  }, []);
 
-  const [markerPosition, setMarkerPosition] = useState(() => {
-    if (latitude && longitude) {
-      return { lat: latitude, lng: longitude };
-    }
-    return null;
-  });
-
-  const onMapClick = useCallback((e: google.maps.MapMouseEvent) => {
-    if (e.latLng) {
-      const lat = e.latLng.lat();
-      const lng = e.latLng.lng();
-      setMarkerPosition({ lat, lng });
-      onLocationChange(lat, lng);
-    }
-  }, [onLocationChange]);
-
-  const handleUseCurrentLocation = () => {
+  const getCurrentLocation = () => {
     if ('geolocation' in navigator) {
+      setIsLoadingLocation(true);
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const lat = position.coords.latitude;
@@ -55,45 +43,96 @@ export default function LocationPicker({ latitude, longitude, onLocationChange }
           const newPos = { lat, lng };
           setCenter(newPos);
           setMarkerPosition(newPos);
-          onLocationChange(lat, lng);
+          setIsLoadingLocation(false);
+          // Obtener dirección
+          reverseGeocode(lat, lng);
         },
         (error) => {
           console.error('Error getting location:', error);
-          alert('No se pudo obtener la ubicación actual');
+          // Fallback a una ubicación por defecto
+          const fallback = { lat: -34.6037, lng: -58.3816 };
+          setCenter(fallback);
+          setIsLoadingLocation(false);
         }
       );
-    } else {
-      alert('Geolocalización no disponible en este navegador');
     }
+  };
+
+  const reverseGeocode = async (lat: number, lng: number) => {
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) return;
+
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`
+      );
+      const data = await response.json();
+
+      if (data.results && data.results[0]) {
+        const address = data.results[0].formatted_address;
+        onLocationChange(lat, lng, address);
+      } else {
+        onLocationChange(lat, lng, '');
+      }
+    } catch (error) {
+      console.error('Error reverse geocoding:', error);
+      onLocationChange(lat, lng, '');
+    }
+  };
+
+  const onMapClick = useCallback((e: google.maps.MapMouseEvent) => {
+    if (e.latLng) {
+      const lat = e.latLng.lat();
+      const lng = e.latLng.lng();
+      setMarkerPosition({ lat, lng });
+      reverseGeocode(lat, lng);
+    }
+  }, []);
+
+  const handleUseCurrentLocation = () => {
+    getCurrentLocation();
   };
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
   if (!apiKey) {
     return (
-      <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg text-center">
-        <MapPin className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-        <p className="text-gray-600 dark:text-gray-400 mb-2">
+      <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-center">
+        <MapPin className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Google Maps API key no configurada
         </p>
-        <p className="text-xs text-gray-500">
-          Configura NEXT_PUBLIC_GOOGLE_MAPS_API_KEY en tu archivo .env.local
+      </div>
+    );
+  }
+
+  if (!center) {
+    return (
+      <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-center">
+        <Loader2 className="w-8 h-8 mx-auto mb-2 text-primary animate-spin" />
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Obteniendo ubicación...
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <label className="block text-sm font-medium">Ubicación en el mapa</label>
+    <div className="space-y-2">
+      <div className="flex items-center justify-between mb-1">
+        <label className="block text-sm font-medium">Ubicación</label>
         <button
           type="button"
           onClick={handleUseCurrentLocation}
-          className="text-xs text-primary hover:text-primary-dark font-medium flex items-center gap-1"
+          disabled={isLoadingLocation}
+          className="text-xs text-primary hover:text-primary-dark font-medium flex items-center gap-1 disabled:opacity-50"
         >
-          <MapPin className="w-3 h-3" />
-          Usar mi ubicación
+          {isLoadingLocation ? (
+            <Loader2 className="w-3 h-3 animate-spin" />
+          ) : (
+            <MapPin className="w-3 h-3" />
+          )}
+          Mi ubicación
         </button>
       </div>
 
@@ -101,11 +140,13 @@ export default function LocationPicker({ latitude, longitude, onLocationChange }
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
           center={center}
-          zoom={15}
+          zoom={16}
           onClick={onMapClick}
           options={{
             streetViewControl: false,
             mapTypeControl: false,
+            fullscreenControl: false,
+            zoomControl: true,
           }}
         >
           {markerPosition && <Marker position={markerPosition} />}
@@ -113,14 +154,8 @@ export default function LocationPicker({ latitude, longitude, onLocationChange }
       </LoadScript>
 
       <p className="text-xs text-gray-500">
-        Haz clic en el mapa para colocar un pin en la ubicación del consultorio
+        Haz clic en el mapa para seleccionar la ubicación
       </p>
-
-      {markerPosition && (
-        <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-2 rounded">
-          <strong>Coordenadas:</strong> {markerPosition.lat.toFixed(6)}, {markerPosition.lng.toFixed(6)}
-        </div>
-      )}
     </div>
   );
 }
