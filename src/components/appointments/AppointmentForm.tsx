@@ -54,6 +54,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       type: initialData?.type || 'Consulta',
       fee: initialData?.fee || undefined,
       patientId: initialData?.patientId || '',
+      officeId: initialData?.officeId || '',
       date: initialData?.date ? initialData.date.split('T')[0] : '',
       startTime: initialData?.startTime || '',
       notes: initialData?.notes || '',
@@ -75,6 +76,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       const payload = {
         patientId: values.patientId as unknown as string,
         patientName: selected ? `${selected.lastName} ${selected.firstName}` : (values.patientName || ''),
+        officeId: values.officeId,
         date: startDate.toISOString(),
         startTime: values.startTime,
         endTime: `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`,
@@ -89,7 +91,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       } as any;
 
       // Obtener el colorId del consultorio si existe
-      const office = offices.find(o => o.id === payload.officeId);
+      const office = values.officeId ? offices.find(o => o.id === values.officeId) : null;
       const officeColorId = office?.colorId;
 
       if (initialData) {
