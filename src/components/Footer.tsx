@@ -52,7 +52,7 @@ export function Footer() {
 
   return (
     <>
-      <footer className="mt-auto border-t border-elegant-200 dark:border-elegant-800 bg-pearl dark:bg-navy-dark">
+      <footer className="mt-auto border-t border-elegant-200 dark:border-elegant-800 bg-pearl dark:bg-navy-dark pb-24 md:pb-8">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-6">
           <div className="relative w-full flex items-center justify-center gap-4">
             <div className="absolute left-0">
@@ -85,7 +85,7 @@ export function Footer() {
                 onChange={(e) => setCommentText(e.target.value)}
                 rows={3}
                 required
-                placeholder="Escribe tu comentario aquí..."
+                placeholder="Escribe tu comentario aqui..."
                 className="w-full border border-elegant-300 dark:border-elegant-700 rounded-lg px-3 py-2 bg-white dark:bg-elegant-950 text-sm text-elegant-900 dark:text-white placeholder-elegant-400 dark:placeholder-elegant-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
               />
               <div className="flex justify-end gap-2">

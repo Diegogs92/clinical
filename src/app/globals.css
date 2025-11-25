@@ -30,9 +30,10 @@ body {
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Asegurar que los números sean negros */
+/* Asegurar que los numeros sean negros */
 input[type="number"],
 input[type="tel"],
 .text-number {
@@ -260,9 +261,28 @@ input[type="tel"],
     @apply border-t border-elegant-100 dark:border-elegant-800 hover:bg-secondary-lighter/30 dark:hover:bg-elegant-800/40 transition-colors;
   }
 
-  /* Superficie translúcida para secciones */
-  .glass-panel {
-    @apply bg-white/80 dark:bg-elegant-900/80 backdrop-blur-xl border border-elegant-200/60 dark:border-elegant-800/60 shadow-lg shadow-primary/5 rounded-2xl;
+  /* Superficie translucida para secciones */
+.glass-panel {
+  @apply bg-white/80 dark:bg-elegant-900/80 backdrop-blur-xl border border-elegant-200/60 dark:border-elegant-800/60 shadow-lg shadow-primary/5 rounded-2xl;
+}
+}
+
+@media (max-width: 768px) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+    background: radial-gradient(circle at 10% 10%, rgba(14, 165, 233, 0.15), transparent 35%),
+                radial-gradient(circle at 80% 0%, rgba(52, 211, 153, 0.12), transparent 30%),
+                linear-gradient(180deg, #f8fbff 0%, #f4f7fb 100%);
+  }
+
+  .card {
+    border-radius: 18px;
+    padding: 1.25rem;
+  }
+
+  .btn,
+  .input-field {
+    border-radius: 14px;
   }
 }
 

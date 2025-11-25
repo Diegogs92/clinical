@@ -45,7 +45,7 @@ export default function DashboardPage() {
   const [view, setView] = useState<'day' | 'week' | 'month' | 'year'>('week');
   const [showForm, setShowForm] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
-  const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; appointment?: Appointment; mode: 'total' | 'partial'; amount: string }>({
+  const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; appointment: Appointment; mode: 'total' | 'partial'; amount: string }>({
     open: false,
     appointment: undefined,
     mode: 'total',
@@ -58,6 +58,10 @@ export default function DashboardPage() {
   const [now, setNow] = useState<Date>(new Date());
 
   const toast = useToast();
+  const openNewAppointment = () => {
+    setEditingAppointment(null);
+    setShowForm(true);
+  };
 
   // Reloj en vivo
   useEffect(() => {
@@ -165,7 +169,7 @@ export default function DashboardPage() {
   const handleCancel = async (appt: Appointment) => {
     const confirmed = await confirm({
       title: 'Cancelar turno',
-      description: `¿Cancelar el turno de ${appt.patientName}?`,
+      description: `A?Cancelar el turno de ${appt.patientName}`,
       confirmText: 'Cancelar turno',
       tone: 'danger',
     });
@@ -176,16 +180,16 @@ export default function DashboardPage() {
     try {
       await updateAppointment(appt.id, { status: 'cancelled' });
 
-      // Sincronizar cancelación con Google Calendar
+      // Sincronizar cancelaciA?n con Google Calendar
       if (appt.googleCalendarEventId) {
         await syncAppointment({ ...appt, status: 'cancelled' }, 'delete', appt.googleCalendarEventId);
       }
 
       if (isToday && appt.fee) {
         const charge = await confirm({
-          title: '¿Cobraste honorarios?',
-          description: `¿Registrar honorarios de $${appt.fee.toLocaleString()} para este turno cancelado hoy?`,
-          confirmText: 'Sí, registrar',
+          title: 'A?Cobraste honorarios',
+          description: `A?Registrar honorarios de $${appt.fee.toLocaleString()} para este turno cancelado hoy`,
+          confirmText: 'SA, registrar',
           cancelText: 'No, omitir',
           tone: 'success',
         });
@@ -196,10 +200,10 @@ export default function DashboardPage() {
           patientName: appt.patientName,
           amount: appt.fee,
           method: 'cash',
-          status: charge ? 'completed' : 'pending',
+          status: charge  'completed' : 'pending',
           date: new Date().toISOString(),
           consultationType: appt.type,
-          userId: user?.uid || '',
+          userId: user.uid || '',
         });
       }
 
@@ -218,14 +222,14 @@ export default function DashboardPage() {
 
     const confirmed = await confirm({
       title: 'Eliminar turno',
-      description: `¿Eliminar definitivamente el turno de ${appt.patientName}?`,
+      description: `A?Eliminar definitivamente el turno de ${appt.patientName}`,
       confirmText: 'Eliminar',
       tone: 'danger',
     });
     if (!confirmed) return;
 
     try {
-      // Sincronizar eliminación con Google Calendar ANTES de eliminar de Firestore
+      // Sincronizar eliminaciA?n con Google Calendar ANTES de eliminar de Firestore
       if (appt.googleCalendarEventId) {
         await syncAppointment(appt, 'delete', appt.googleCalendarEventId);
       }
@@ -263,7 +267,7 @@ export default function DashboardPage() {
     }
     if (!user) {
       console.log('[submitPayment] No hay usuario autenticado');
-      toast.error('Debes iniciar sesión para registrar pagos');
+      toast.error('Debes iniciar sesiA?n para registrar pagos');
       return;
     }
 
@@ -275,14 +279,14 @@ export default function DashboardPage() {
     console.log('[submitPayment] Monto sanitizado:', amountNum);
 
     if (!Number.isFinite(amountNum) || amountNum <= 0) {
-      console.log('[submitPayment] Monto inválido');
-      toast.error('Ingresa un monto válido');
+      console.log('[submitPayment] Monto invA?lido');
+      toast.error('Ingresa un monto vA?lido');
       return;
     }
 
-    const isTotal = appt.fee ? amountNum >= appt.fee : true;
-    const status: 'completed' | 'pending' = isTotal ? 'completed' : 'pending';
-    console.log('[submitPayment] Es pago total?', isTotal, 'Status:', status);
+    const isTotal = appt.fee  amountNum >= appt.fee : true;
+    const status: 'completed' | 'pending' = isTotal  'completed' : 'pending';
+    console.log('[submitPayment] Es pago total', isTotal, 'Status:', status);
 
     try {
       setSubmittingPayment(true);
@@ -312,7 +316,7 @@ export default function DashboardPage() {
       await refreshPayments();
       await refreshPendingPayments();
       console.log('[submitPayment] Todo completado exitosamente');
-      toast.success(isTotal ? 'Pago registrado con éxito' : 'Pago parcial registrado con éxito');
+      toast.success(isTotal  'Pago registrado con A?xito' : 'Pago parcial registrado con A?xito');
       setPaymentDialog({ open: false, appointment: undefined, mode: 'total', amount: '' });
     } catch (error) {
       console.error('[submitPayment] Error al registrar pago:', error);
@@ -324,35 +328,42 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <DashboardLayout>
+      <DashboardLayout mobileAction={{ label: 'Nuevo turno', icon: PlusCircle, onPress: openNewAppointment }}>
         <div className="space-y-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Clock className="w-6 h-6 text-primary" />
+            <div className="w-full md:w-auto p-4 md:p-0 rounded-2xl border border-elegant-100/80 dark:border-elegant-800/70 bg-white/80 dark:bg-elegant-900/70 backdrop-blur-lg shadow-sm md:shadow-none md:border-0 md:bg-transparent flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 text-primary flex items-center justify-center">
+                <Clock className="w-6 h-6" />
+              </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.15em] text-elegant-500">Inicio</p>
                 <h1 className="text-2xl font-bold text-primary-dark dark:text-white">
                   {format(now, 'dd/MM/yyyy HH:mm')}
                 </h1>
+                <p className="text-xs text-elegant-500 dark:text-elegant-400">Agenda sincronizada en vivo</p>
               </div>
             </div>
-            <div className="flex gap-2">
-              <button onClick={() => { setEditingAppointment(null); setShowForm(true); }} className="btn-primary flex items-center gap-2 hover:shadow-lg hover:scale-105 transition-all">
-                <PlusCircle className="w-4 h-4" /> Nuevo Turno
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={openNewAppointment}
+                className="btn-primary flex items-center gap-2 hover:shadow-lg hover:scale-105 transition-all md:min-w-[180px]"
+              >
+                <PlusCircle className="w-4 h-4" /> Nuevo turno
               </button>
             </div>
           </div>
 
           <StatsOverview />
 
-          <div className="card">
-            <div className="flex flex-col gap-3 mb-4">
+          <div className="card relative overflow-hidden">
+            <div className="absolute inset-x-0 -top-24 h-40 bg-gradient-to-r from-primary/10 via-secondary/5 to-primary/10 blur-3xl pointer-events-none" />
+            <div className="relative flex flex-col gap-3 mb-4">
               <GlassViewSelector
                 options={[
-                  { value: 'day', label: 'Día' },
+                  { value: 'day', label: 'Dia' },
                   { value: 'week', label: 'Semana' },
                   { value: 'month', label: 'Mes' },
-                  { value: 'year', label: 'Año' }
+                  { value: 'year', label: 'Ano' }
                 ]}
                 value={view}
                 onChange={(v) => setView(v as 'day' | 'week' | 'month' | 'year')}
@@ -399,13 +410,13 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {appointmentsLoading ? (
+            {appointmentsLoading  (
               <div className="flex flex-col items-center justify-center py-12 text-primary dark:text-white">
                 <ECGLoader />
                 <p className="mt-4 text-sm">Cargando turnos...</p>
               </div>
-            ) : filtered.length === 0 ? (
-              <p className="text-black dark:text-white">No hay turnos en el período seleccionado.</p>
+            ) : filtered.length === 0  (
+              <p className="text-black dark:text-white">No hay turnos en el perAodo seleccionado.</p>
             ) : (
               <>
                 <div className="hidden md:block overflow-x-auto">
@@ -432,14 +443,14 @@ export default function DashboardPage() {
                             <td>{a.startTime} - {a.endTime}</td>
                             <td>{a.patientName}</td>
                             <td>
-                              {office ? (
+                              {office  (
                                 <span className="text-sm text-gray-600 dark:text-gray-400">{office.name}</span>
                               ) : (
                                 <span className="text-gray-400 text-xs">-</span>
                               )}
                             </td>
                             <td>
-                              {a.fee ? (
+                              {a.fee  (
                                 <span className="font-semibold text-elegant-900 dark:text-white">
                                   ${a.fee.toLocaleString()}
                                 </span>
@@ -449,9 +460,9 @@ export default function DashboardPage() {
                             </td>
                             <td>
                               <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                                a.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                                a.status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                                a.status === 'no-show' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' :
+                                a.status === 'completed'  'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                a.status === 'cancelled'  'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                                a.status === 'no-show'  'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' :
                                 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                               }`}>
                                 {translateAppointmentStatus(a.status)}
@@ -462,9 +473,9 @@ export default function DashboardPage() {
                                 <button
                                   onClick={() => openPaymentDialog(a)}
                                   disabled={!a.fee}
-                                  className={`p-1.5 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${paymentStateFor(a).status === 'paid' ? 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20' : paymentStateFor(a).status === 'partial' ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20' : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'}`}
+                                  className={`p-1.5 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${paymentStateFor(a).status === 'paid'  'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20' : paymentStateFor(a).status === 'partial'  'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20' : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'}`}
                                   aria-label="Registrar pago"
-                                  title={a.fee && paymentStateFor(a).remainingAmount > 0 ? `Pendiente: $${paymentStateFor(a).remainingAmount.toLocaleString()}` : 'Pago completo'}
+                                  title={a.fee && paymentStateFor(a).remainingAmount > 0  `Pendiente: $${paymentStateFor(a).remainingAmount.toLocaleString()}` : 'Pago completo'}
                                 >
                                   <DollarSign className="w-4 h-4" />
                                 </button>
@@ -502,66 +513,96 @@ export default function DashboardPage() {
                   {filtered.map(a => {
                     const d = new Date(a.date);
                     const fecha = d.toLocaleDateString();
+                    const office = offices.find(o => o.id === a.officeId);
+                    const paymentState = paymentStateFor(a);
+                    const paymentLabel =
+                      paymentState.status === 'paid'
+                         'Pagado'
+                        : paymentState.status === 'partial'
+                           `Pendiente $${paymentState.remainingAmount.toLocaleString()}`
+                          : a.fee
+                             `Por cobrar $${(paymentState.remainingAmount || a.fee).toLocaleString()}`
+                            : 'Sin honorarios';
+                    const paymentTone =
+                      paymentState.status === 'paid'
+                         'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'
+                        : paymentState.status === 'partial'
+                           'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'
+                          : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200';
                     return (
                       <div
                         key={a.id}
-                        className="bg-white dark:bg-[#18181b] border border-secondary-lighter dark:border-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-all"
+                        className="relative overflow-hidden bg-white/95 dark:bg-[#18181b] border border-secondary-lighter/80 dark:border-gray-700 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all"
                       >
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
+                        <div className="absolute inset-x-0 -top-14 h-20 bg-gradient-to-r from-primary/12 via-secondary/10 to-primary/12 blur-3xl pointer-events-none" />
+                        <div className="relative flex items-start justify-between gap-3">
+                          <div className="flex-1 space-y-1">
                             <h3 className="font-semibold text-primary-dark dark:text-white text-base">
                               {a.patientName}
                             </h3>
-                            <p className="text-sm text-secondary dark:text-gray-400 mt-1">
-                              {fecha} • {a.startTime} - {a.endTime}
+                            <p className="text-sm text-secondary dark:text-gray-400">
+                              {fecha} ? {a.startTime} - {a.endTime}
+                            </p>
+                            <p className="text-xs text-elegant-500 dark:text-elegant-400">
+                              {office  `Consultorio ${office.name}` : 'Consultorio sin asignar'}
                             </p>
                           </div>
-                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                            a.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                            a.status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                            a.status === 'no-show' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' :
-                            'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                          }`}>
-                            {translateAppointmentStatus(a.status)}
+                          <div className="flex flex-col items-end gap-2">
+                            <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                              a.status === 'completed'  'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                              a.status === 'cancelled'  'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                              a.status === 'no-show'  'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' :
+                              'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                            }`}>
+                              {translateAppointmentStatus(a.status)}
+                            </span>
+                            {a.fee && (
+                              <span className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-semibold ${paymentTone}`}>
+                                <DollarSign className="w-3.5 h-3.5" />
+                                {paymentLabel}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2 mt-3 text-xs text-elegant-600 dark:text-elegant-300">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-elegant-100 dark:bg-elegant-800/60">
+                            <CalendarDays className="w-3.5 h-3.5" />
+                            {a.fee  `$${a.fee.toLocaleString()}` : 'Sin honorarios'}
+                          </span>
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary dark:bg-primary/15 dark:text-primary-light">
+                            {a.type || 'Turno'}
                           </span>
                         </div>
-
-                        <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300 mb-3">
-                          <CalendarDays className="w-4 h-4" />
-                          {a.fee ? (
-                            <span className="font-semibold text-elegant-900 dark:text-white">${a.fee.toLocaleString()}</span>
-                          ) : (
-                            <span className="text-gray-400">Sin honorarios</span>
-                          )}
-                        </div>
-
-                        <div className="flex items-center gap-2 pt-3 border-t border-secondary-lighter dark:border-gray-700">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 border-t border-secondary-lighter dark:border-gray-700 mt-3">
                           <button
                             onClick={() => openPaymentDialog(a)}
                             disabled={!a.fee}
-                            className={`px-4 py-2.5 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${paymentStateFor(a).status === 'paid' ? 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20' : paymentStateFor(a).status === 'partial' ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20' : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'}`}
-                            title={a.fee && paymentStateFor(a).remainingAmount > 0 ? `Pendiente: $${paymentStateFor(a).remainingAmount.toLocaleString()}` : 'Pago completo'}
+                            className={`col-span-2 sm:col-span-2 btn-secondary justify-center text-sm disabled:opacity-40 ${paymentState.status === 'paid'  'bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-200' : paymentState.status === 'partial'  'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200' : 'text-danger'}`}
+                            title={a.fee && paymentState.remainingAmount > 0  `Pendiente: $${paymentState.remainingAmount.toLocaleString()}` : 'Pago completo'}
                           >
                             <DollarSign className="w-4 h-4" />
+                            {paymentState.status === 'paid'  'Pagado' : 'Registrar pago'}
                           </button>
                           <button
                             onClick={() => handleEdit(a)}
-                            className="btn-primary flex-1 text-sm"
+                            className="btn-primary justify-center text-sm"
                           >
                             <Edit2 className="w-4 h-4" />
                             Editar
                           </button>
                           <button
                             onClick={() => handleCancel(a)}
-                            className="btn-danger px-4 py-2.5"
+                            className="btn-secondary justify-center text-sm text-danger hover:text-danger-dark"
                           >
                             <Ban className="w-4 h-4" />
+                            Cancelar
                           </button>
                           <button
                             onClick={() => handleDelete(a)}
-                            className="btn-danger px-4 py-2.5"
+                            className="btn-danger justify-center text-sm"
                           >
                             <Trash2 className="w-4 h-4" />
+                            Eliminar
                           </button>
                         </div>
                       </div>
@@ -572,13 +613,13 @@ export default function DashboardPage() {
             )}
           </div>
 
-          <Modal open={showForm} onClose={()=>{setShowForm(false); setEditingAppointment(null);}} title={editingAppointment ? 'Editar Turno' : 'Nuevo Turno'} maxWidth="max-w-2xl">
+          <Modal open={showForm} onClose={()=>{setShowForm(false); setEditingAppointment(null);}} title={editingAppointment  'Editar Turno' : 'Nuevo Turno'} maxWidth="max-w-2xl">
             <AppointmentForm
               initialData={editingAppointment || undefined}
-              onCreated={(appt?: Appointment) => {
+              onCreated={(appt: Appointment) => {
                 setShowForm(false);
                 setEditingAppointment(null);
-                toast.success(editingAppointment ? 'Turno actualizado correctamente' : 'Turno creado correctamente');
+                toast.success(editingAppointment  'Turno actualizado correctamente' : 'Turno creado correctamente');
                 refreshAppointments();
               }}
               onCancel={()=>{setShowForm(false); setEditingAppointment(null);}}
@@ -596,21 +637,21 @@ export default function DashboardPage() {
             <div className="space-y-1">
               <p className="text-sm text-elegant-600 dark:text-elegant-300">{paymentDialog.appointment.patientName}</p>
               <p className="text-lg font-semibold text-primary-dark dark:text-white">
-                Honorarios: ${paymentDialog.appointment.fee?.toLocaleString()}
+                Honorarios: ${paymentDialog.appointment.fee.toLocaleString()}
               </p>
             </div>
 
             <div className="flex items-center gap-2 bg-elegant-100 dark:bg-elegant-800/60 p-2 rounded-full">
               <button
                 type="button"
-                className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'total' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
-                onClick={() => setPaymentDialog(p => ({ ...p, mode: 'total', amount: p.appointment?.fee?.toString() || '' }))}
+                className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'total'  'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
+                onClick={() => setPaymentDialog(p => ({ ...p, mode: 'total', amount: p.appointment.fee.toString() || '' }))}
               >
                 Pago total
               </button>
               <button
                 type="button"
-                className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'partial' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
+                className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'partial'  'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
                 onClick={() => setPaymentDialog(p => ({ ...p, mode: 'partial', amount: '' }))}
               >
                 Pago parcial
@@ -645,7 +686,7 @@ export default function DashboardPage() {
                 onClick={submitPayment}
                 disabled={submittingPayment}
               >
-                {submittingPayment ? 'Registrando...' : 'Registrar'}
+                {submittingPayment  'Registrando...' : 'Registrar'}
               </button>
             </div>
           </div>
@@ -655,3 +696,5 @@ export default function DashboardPage() {
     </ProtectedRoute>
   );
 }
+
+
