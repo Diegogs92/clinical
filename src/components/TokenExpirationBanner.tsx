@@ -16,11 +16,10 @@ export default function TokenExpirationBanner() {
 
   const handleReauth = async () => {
     try {
-      await signOut();
-      // Pequeño delay para que se complete el signOut
-      setTimeout(async () => {
-        await signInWithGoogle();
-      }, 500);
+      // Re-autenticar SIN cerrar sesión
+      // Solo renovamos el token de Google Calendar
+      await signInWithGoogle();
+      setDismissed(true); // Ocultar banner después de re-autenticar
     } catch (error) {
       console.error('Error al re-autenticar:', error);
     }
@@ -35,7 +34,7 @@ export default function TokenExpirationBanner() {
             <div>
               <p className="font-semibold text-sm">Tu sesión con Google Calendar expiró</p>
               <p className="text-xs opacity-90">
-                Los turnos no se sincronizarán con Google Calendar hasta que vuelvas a iniciar sesión
+                Haz clic en "Renovar Permisos" para seguir sincronizando turnos con Google Calendar
               </p>
             </div>
           </div>
@@ -44,7 +43,7 @@ export default function TokenExpirationBanner() {
               onClick={handleReauth}
               className="bg-white text-orange-600 hover:bg-orange-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap"
             >
-              Volver a Iniciar Sesión
+              Renovar Permisos
             </button>
             <button
               onClick={() => setDismissed(true)}
