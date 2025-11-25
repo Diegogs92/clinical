@@ -169,7 +169,7 @@ export default function DashboardPage() {
   const handleCancel = async (appt: Appointment) => {
     const confirmed = await confirm({
       title: 'Cancelar turno',
-      description: `A?Cancelar el turno de ${appt.patientName}`,
+      description: `Cancelar el turno de ${appt.patientName}?`,
       confirmText: 'Cancelar turno',
       tone: 'danger',
     });
@@ -180,16 +180,16 @@ export default function DashboardPage() {
     try {
       await updateAppointment(appt.id, { status: 'cancelled' });
 
-      // Sincronizar cancelaciA?n con Google Calendar
+      // Sincronizar cancelacion con Google Calendar
       if (appt.googleCalendarEventId) {
         await syncAppointment({ ...appt, status: 'cancelled' }, 'delete', appt.googleCalendarEventId);
       }
 
       if (isToday && appt.fee) {
         const charge = await confirm({
-          title: 'A?Cobraste honorarios',
-          description: `A?Registrar honorarios de $${appt.fee.toLocaleString()} para este turno cancelado hoy`,
-          confirmText: 'SA, registrar',
+          title: 'Cobraste honorarios?',
+          description: `Registrar honorarios de $${appt.fee.toLocaleString()} para este turno cancelado hoy?`,
+          confirmText: 'Si, registrar',
           cancelText: 'No, omitir',
           tone: 'success',
         });
@@ -200,7 +200,7 @@ export default function DashboardPage() {
           patientName: appt.patientName,
           amount: appt.fee,
           method: 'cash',
-          status: charge  'completed' : 'pending',
+          status: charge ? 'completed' : 'pending',
           date: new Date().toISOString(),
           consultationType: appt.type,
           userId: user.uid || '',
@@ -222,14 +222,14 @@ export default function DashboardPage() {
 
     const confirmed = await confirm({
       title: 'Eliminar turno',
-      description: `A?Eliminar definitivamente el turno de ${appt.patientName}`,
+      description: `Eliminar definitivamente el turno de ${appt.patientName}?`,
       confirmText: 'Eliminar',
       tone: 'danger',
     });
     if (!confirmed) return;
 
     try {
-      // Sincronizar eliminaciA?n con Google Calendar ANTES de eliminar de Firestore
+      // Sincronizar eliminacion con Google Calendar ANTES de eliminar de Firestore
       if (appt.googleCalendarEventId) {
         await syncAppointment(appt, 'delete', appt.googleCalendarEventId);
       }
@@ -267,7 +267,7 @@ export default function DashboardPage() {
     }
     if (!user) {
       console.log('[submitPayment] No hay usuario autenticado');
-      toast.error('Debes iniciar sesiA?n para registrar pagos');
+      toast.error('Debes iniciar sesion para registrar pagos');
       return;
     }
 
@@ -279,8 +279,8 @@ export default function DashboardPage() {
     console.log('[submitPayment] Monto sanitizado:', amountNum);
 
     if (!Number.isFinite(amountNum) || amountNum <= 0) {
-      console.log('[submitPayment] Monto invA?lido');
-      toast.error('Ingresa un monto vA?lido');
+      console.log('[submitPayment] Monto invalido');
+      toast.error('Ingresa un monto valido');
       return;
     }
 
@@ -316,7 +316,7 @@ export default function DashboardPage() {
       await refreshPayments();
       await refreshPendingPayments();
       console.log('[submitPayment] Todo completado exitosamente');
-      toast.success(isTotal  'Pago registrado con A?xito' : 'Pago parcial registrado con A?xito');
+      toast.success(isTotal ? 'Pago registrado con exito' : 'Pago parcial registrado con exito');
       setPaymentDialog({ open: false, appointment: undefined, mode: 'total', amount: '' });
     } catch (error) {
       console.error('[submitPayment] Error al registrar pago:', error);
