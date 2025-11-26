@@ -649,7 +649,7 @@ export default function DashboardPage() {
             <div className="space-y-1">
               <p className="text-sm text-elegant-600 dark:text-elegant-300">{paymentDialog.appointment.patientName}</p>
               <p className="text-lg font-semibold text-primary-dark dark:text-white">
-                Honorarios: ${paymentDialog.appointment.fee.toLocaleString()}
+                Honorarios: ${paymentDialog.appointment.fee?.toLocaleString()}
               </p>
             </div>
 
@@ -657,7 +657,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'total' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
-                onClick={() => setPaymentDialog(p => ({ ...p, mode: 'total', amount: p.appointment.fee.toString() || '' }))}
+                onClick={() => setPaymentDialog(p => ({ ...p, mode: 'total', amount: p.appointment?.fee?.toString() || '' }))}
               >
                 Pago total
               </button>
