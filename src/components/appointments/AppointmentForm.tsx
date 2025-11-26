@@ -142,21 +142,22 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-3">
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="block text-sm font-semibold text-primary-dark dark:text-white">Paciente</label>
+            <label className="block text-sm md:text-base font-semibold text-primary-dark dark:text-white">Paciente</label>
             <button
               type="button"
               onClick={() => setShowQuickPatient(true)}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary-dark dark:text-primary-light dark:hover:text-white transition"
+              className="inline-flex items-center gap-1.5 text-xs md:text-sm font-semibold text-primary hover:text-primary-dark dark:text-primary-light dark:hover:text-white transition touch-manipulation py-1.5 px-2 -mr-2"
             >
-              <UserPlus className="w-4 h-4" />
-              Nuevo paciente
+              <UserPlus className="w-4 h-4 md:w-3.5 md:h-3.5" />
+              <span className="hidden sm:inline">Nuevo paciente</span>
+              <span className="sm:hidden">Nuevo</span>
             </button>
           </div>
           <select
-            className="input-field text-sm py-2"
+            className="input-field text-base md:text-sm"
             value={watch('patientId')}
             onChange={handlePatientSelect}
           >
@@ -166,12 +167,12 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
             ))}
             <option value="__new">+ Crear nuevo paciente</option>
           </select>
-          {errors.patientId && <p className="text-red-600 text-xs mt-1">{errors.patientId.message as string}</p>}
+          {errors.patientId && <p className="text-red-600 text-xs md:text-[11px] mt-1">{errors.patientId.message as string}</p>}
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-primary-dark dark:text-white mb-1">Consultorio</label>
-          <select className="input-field text-sm py-2" {...register('officeId')}>
+          <label className="block text-sm md:text-base font-semibold text-primary-dark dark:text-white mb-1.5 md:mb-1">Consultorio</label>
+          <select className="input-field text-base md:text-sm" {...register('officeId')}>
             <option value="">Sin consultorio</option>
             {offices.map(office => (
               <option key={office.id} value={office.id}>{office.name} - {office.address}</option>
@@ -179,20 +180,20 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
           </select>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-elegant-600 dark:text-elegant-300 mb-1">Fecha</label>
-            <input type="date" className="input-field text-sm py-2" {...register('date')} />
-            {errors.date && <p className="text-red-600 text-[11px] mt-1">{errors.date.message}</p>}
+            <label className="block text-sm font-semibold text-elegant-600 dark:text-elegant-300 mb-1.5">Fecha</label>
+            <input type="date" className="input-field text-base md:text-sm" {...register('date')} />
+            {errors.date && <p className="text-red-600 text-xs md:text-[11px] mt-1">{errors.date.message}</p>}
           </div>
           <div>
-            <label className="block text-xs font-semibold text-elegant-600 dark:text-elegant-300 mb-1">Hora</label>
-            <input type="time" className="input-field text-sm py-2" {...register('startTime')} />
-            {errors.startTime && <p className="text-red-600 text-[11px] mt-1">{errors.startTime.message}</p>}
+            <label className="block text-sm font-semibold text-elegant-600 dark:text-elegant-300 mb-1.5">Hora</label>
+            <input type="time" className="input-field text-base md:text-sm" {...register('startTime')} />
+            {errors.startTime && <p className="text-red-600 text-xs md:text-[11px] mt-1">{errors.startTime.message}</p>}
           </div>
           <div>
-            <label className="block text-xs font-semibold text-elegant-600 dark:text-elegant-300 mb-1">Duración (min)</label>
-            <select className="input-field text-sm py-2" {...register('duration', { valueAsNumber: true })}>
+            <label className="block text-sm font-semibold text-elegant-600 dark:text-elegant-300 mb-1.5">Duración</label>
+            <select className="input-field text-base md:text-sm" {...register('duration', { valueAsNumber: true })}>
               <option value="45">45 min</option>
               <option value="60">60 min</option>
               <option value="90">90 min</option>
@@ -202,20 +203,20 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-elegant-600 dark:text-elegant-300 mb-1">Honorarios</label>
-            <input type="number" className="input-field text-sm py-2" placeholder="0" {...register('fee', { valueAsNumber: true })} />
+            <label className="block text-sm font-semibold text-elegant-600 dark:text-elegant-300 mb-1.5">Honorarios</label>
+            <input type="number" className="input-field text-base md:text-sm" placeholder="0" {...register('fee', { valueAsNumber: true })} />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-elegant-600 dark:text-elegant-300 mb-1">Notas</label>
-            <textarea rows={2} className="input-field text-sm py-2 resize-none" placeholder="Indicaciones, observaciones..." {...register('notes')} />
+            <label className="block text-sm font-semibold text-elegant-600 dark:text-elegant-300 mb-1.5">Notas</label>
+            <textarea rows={2} className="input-field text-base md:text-sm resize-none" placeholder="Indicaciones, observaciones..." {...register('notes')} />
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-2 pt-1">
-          <button type="button" onClick={onCancel} className="btn-secondary text-sm px-4 py-2">Cancelar</button>
-          <button disabled={loading} className="btn-primary text-sm px-5 py-2 disabled:opacity-50">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-2 md:pt-1">
+          <button type="button" onClick={onCancel} className="btn-secondary text-base md:text-sm px-4 py-3 md:py-2 touch-manipulation order-2 sm:order-1">Cancelar</button>
+          <button disabled={loading} className="btn-primary text-base md:text-sm px-5 py-3 md:py-2 disabled:opacity-50 touch-manipulation order-1 sm:order-2">
             {loading ? 'Guardando...' : (initialData ? 'Actualizar' : 'Crear')}
           </button>
         </div>
