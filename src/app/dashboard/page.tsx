@@ -45,7 +45,7 @@ export default function DashboardPage() {
   const [view, setView] = useState<'day' | 'week' | 'month' | 'year'>('week');
   const [showForm, setShowForm] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
-  const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; appointment: Appointment; mode: 'total' | 'partial'; amount: string }>({
+  const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; appointment?: Appointment; mode: 'total' | 'partial'; amount: string }>({
     open: false,
     appointment: undefined,
     mode: 'total',
