@@ -334,11 +334,11 @@ input[type="tel"],
   }
 
   .mobile-content {
-    padding-bottom: calc(env(safe-area-inset-bottom) + 7rem);
+    padding-bottom: calc(env(safe-area-inset-bottom) + 6rem);
   }
 
   .mobile-nav-guard {
-    padding-bottom: calc(env(safe-area-inset-bottom) + 92px);
+    padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
   }
 
   .card {
