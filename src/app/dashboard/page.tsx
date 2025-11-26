@@ -203,7 +203,7 @@ export default function DashboardPage() {
           status: charge ? 'completed' : 'pending',
           date: new Date().toISOString(),
           consultationType: appt.type,
-          userId: user.uid || '',
+          userId: user?.uid || '',
         });
       }
 
