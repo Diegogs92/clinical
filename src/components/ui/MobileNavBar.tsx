@@ -33,9 +33,9 @@ export default function MobileNavBar({ items, action }: MobileNavBarProps) {
 
       if (currentScrollY < 50) {
         setIsVisible(true);
-      } else if (currentScrollY > lastScrollY) {
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
         setIsVisible(false);
-      } else {
+      } else if (currentScrollY < lastScrollY) {
         setIsVisible(true);
       }
 
@@ -48,61 +48,88 @@ export default function MobileNavBar({ items, action }: MobileNavBarProps) {
 
   return (
     <div
-      className={`fixed inset-x-0 bottom-0 z-40 md:hidden pointer-events-none transition-transform duration-300 ${
-        isVisible ? 'translate-y-0' : 'translate-y-full'
+      className={`fixed inset-x-0 bottom-0 z-50 md:hidden transition-all duration-300 ease-out ${
+        isVisible ? 'translate-y-0' : 'translate-y-[calc(100%+1rem)]'
       }`}
     >
-      <div className="px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2">
-        <div className="relative overflow-hidden pointer-events-auto rounded-[28px] border border-elegant-200/60 dark:border-elegant-700/50 bg-white/98 dark:bg-elegant-900/98 backdrop-blur-3xl shadow-[0_-2px_40px_-4px_rgba(14,165,233,0.25)] dark:shadow-[0_-2px_40px_-4px_rgba(14,165,233,0.15)]">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-secondary/5" />
+      {/* Degradado superior para difuminar contenido */}
+      <div className="absolute inset-x-0 -top-8 h-8 bg-gradient-to-t from-white/80 via-white/40 to-transparent dark:from-elegant-950/80 dark:via-elegant-950/40 pointer-events-none" />
 
+      <div className="px-2.5 pb-safe pt-1">
+        {/* Container principal */}
+        <div className="relative">
+          {/* Botón FAB Central */}
           {action && (
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2">
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-10">
               <button
                 type="button"
                 onClick={action.onPress}
-                className="w-16 h-16 rounded-full bg-gradient-to-br from-primary via-primary to-primary-dark text-white shadow-[0_8px_32px_-8px_rgba(14,165,233,0.7)] border-[5px] border-white dark:border-elegant-900 flex items-center justify-center active:scale-90 transition-all duration-200 touch-manipulation hover:shadow-[0_12px_40px_-8px_rgba(14,165,233,0.8)]"
+                className="group relative w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary-dark text-white shadow-[0_10px_30px_-5px_rgba(14,165,233,0.6)] active:scale-90 transition-all duration-200 touch-manipulation flex items-center justify-center overflow-hidden"
                 aria-label={action.label}
-                title={action.label}
               >
-                <action.icon className="w-7 h-7 stroke-[2.5]" />
+                {/* Glow effect al presionar */}
+                <span className="absolute inset-0 bg-white/20 rounded-full scale-0 group-active:scale-100 transition-transform duration-200" />
+                <action.icon className="relative w-6 h-6 stroke-[2.5]" />
               </button>
             </div>
           )}
 
-          <div className="relative flex items-center justify-between gap-0.5 px-2 py-2">
-            {items.map(({ href, label, icon: Icon }) => {
-              const active = isActive(href);
-              return (
-                <button
-                  key={href}
-                  onClick={() => router.push(href)}
-                  className={`flex-1 flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-2xl transition-all duration-300 touch-manipulation min-h-[64px] ${
-                    active
-                      ? 'bg-gradient-to-b from-primary/20 via-primary/15 to-primary/10 text-primary-dark dark:text-primary-light shadow-md shadow-primary/20 scale-105'
-                      : 'text-elegant-500 dark:text-elegant-400 active:bg-elegant-50 dark:active:bg-elegant-800/40 active:scale-95 hover:bg-elegant-50/50 dark:hover:bg-elegant-800/20'
-                  }`}
-                  aria-label={label}
-                  aria-current={active ? 'page' : undefined}
-                >
-                  <div className={`relative transition-transform duration-300 ${active ? 'scale-110' : 'scale-100'}`}>
-                    <Icon className={`w-6 h-6 ${active ? 'stroke-[2.5]' : 'stroke-2'}`} />
+          {/* Navbar */}
+          <div className="relative bg-white/95 dark:bg-elegant-900/95 backdrop-blur-2xl rounded-[24px] border border-elegant-200/50 dark:border-elegant-700/50 shadow-[0_-8px_32px_-8px_rgba(0,0,0,0.12)] dark:shadow-[0_-8px_32px_-8px_rgba(0,0,0,0.4)] overflow-hidden">
+            {/* Sutil gradiente de fondo */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/[0.02] via-transparent to-secondary/[0.02]" />
+
+            {/* Items de navegación */}
+            <div className="relative grid grid-cols-5 gap-0 px-1 py-2">
+              {items.map(({ href, label, icon: Icon }) => {
+                const active = isActive(href);
+                return (
+                  <button
+                    key={href}
+                    onClick={() => router.push(href)}
+                    className={`group relative flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl transition-all duration-200 touch-manipulation min-h-[58px] ${
+                      active
+                        ? 'text-primary dark:text-primary-light'
+                        : 'text-elegant-500 dark:text-elegant-400 active:scale-95'
+                    }`}
+                    aria-label={label}
+                    aria-current={active ? 'page' : undefined}
+                  >
+                    {/* Fondo activo */}
                     {active && (
-                      <span className="absolute -inset-1 bg-primary/20 dark:bg-primary/30 rounded-full blur-sm -z-10 animate-pulse" aria-hidden="true" />
+                      <span className="absolute inset-0 bg-gradient-to-b from-primary/10 via-primary/5 to-transparent rounded-xl" />
                     )}
-                  </div>
-                  <span className={`text-[10.5px] font-bold leading-tight truncate max-w-full tracking-tight ${active ? 'text-primary-dark dark:text-primary-light' : ''}`}>
-                    {label}
-                  </span>
-                  {active && (
-                    <span className="absolute bottom-1 h-1 w-10 rounded-full bg-gradient-to-r from-primary/50 via-primary to-primary/50 shadow-sm shadow-primary/50" aria-hidden="true" />
-                  )}
-                </button>
-              );
-            })}
+
+                    {/* Icono */}
+                    <div className={`relative transition-transform duration-200 ${active ? 'scale-110' : 'group-active:scale-90'}`}>
+                      <Icon className={`w-5 h-5 ${active ? 'stroke-[2.5]' : 'stroke-[2]'}`} />
+                      {/* Glow sutil cuando está activo */}
+                      {active && (
+                        <span className="absolute inset-0 bg-primary/20 blur-md rounded-full -z-10" />
+                      )}
+                    </div>
+
+                    {/* Label */}
+                    <span className={`relative text-[10px] font-semibold leading-tight ${
+                      active ? 'text-primary dark:text-primary-light' : 'text-elegant-600 dark:text-elegant-400'
+                    }`}>
+                      {label}
+                    </span>
+
+                    {/* Indicador activo (dot) */}
+                    {active && (
+                      <span className="absolute bottom-0.5 w-1 h-1 rounded-full bg-primary dark:bg-primary-light" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Espacio para safe area */}
+      <div className="h-[env(safe-area-inset-bottom)]" />
     </div>
   );
 }
