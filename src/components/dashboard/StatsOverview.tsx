@@ -59,29 +59,29 @@ export default function StatsOverview() {
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4">
       {stats.map(s => (
         <div
           key={s.label}
-          className="relative overflow-hidden bg-white dark:bg-elegant-900 rounded-xl p-6 border border-elegant-200 dark:border-elegant-800 transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:-translate-y-1 cursor-pointer group"
+          className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-2xl p-4 md:p-6 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] md:hover:scale-105 hover:-translate-y-0.5 md:hover:-translate-y-1 cursor-pointer group backdrop-blur-lg"
         >
           <div className={`absolute inset-0 bg-gradient-to-br ${s.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
 
           <div className="relative z-10">
-            <div className="text-xs uppercase tracking-wide font-semibold text-elegant-600 dark:text-elegant-400 mb-2">
+            <div className="text-[10px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1.5 md:mb-2 truncate">
               {s.label}
             </div>
-            <div className="text-4xl font-bold text-black dark:text-white mb-2 transition-all duration-300 group-hover:scale-110">
+            <div className="text-2xl md:text-4xl font-bold text-black dark:text-white mb-1 md:mb-2 transition-all duration-300 group-hover:scale-110">
               {s.value}
             </div>
             {s.sub && (
-              <div className="text-xs text-elegant-500 dark:text-elegant-400 font-medium">
+              <div className="text-[10px] md:text-xs text-elegant-500 dark:text-elegant-400 font-medium truncate">
                 {s.sub}
               </div>
             )}
           </div>
 
-          <div className={`absolute -right-4 -bottom-4 w-24 h-24 bg-gradient-to-br ${s.color} rounded-full opacity-0 group-hover:opacity-20 transition-all duration-300 group-hover:scale-150`} />
+          <div className={`absolute -right-4 -bottom-4 w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br ${s.color} rounded-full opacity-0 group-hover:opacity-20 transition-all duration-300 group-hover:scale-150`} />
         </div>
       ))}
     </div>

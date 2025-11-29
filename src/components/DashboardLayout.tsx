@@ -52,19 +52,19 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-pearl via-white to-secondary-lighter/15 dark:from-elegant-950 dark:via-elegant-900 dark:to-elegant-950">
       <TokenExpirationBanner />
 
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 dark:bg-elegant-900/80 border-b border-elegant-200 dark:border-elegant-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-xl overflow-hidden">
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/90 dark:bg-elegant-900/90 border-b border-elegant-200/80 dark:border-elegant-800/80 shadow-sm">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14 md:h-16">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="flex items-center justify-center w-9 h-9 md:w-10 md:h-10 rounded-xl overflow-hidden">
                 <img src="/logo.svg" alt="Clinical Logo" className="w-full h-full object-cover" />
               </div>
-              <div className="hidden sm:block">
-                <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+              <div className="block">
+                <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
                   Clinical
                 </h1>
                 {user && (
-                  <p className="text-xs text-elegant-600 dark:text-elegant-400">
+                  <p className="hidden sm:block text-xs text-elegant-600 dark:text-elegant-400 truncate max-w-[150px] md:max-w-none">
                     {user.displayName || user.email}
                   </p>
                 )}
@@ -86,11 +86,11 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
               </div>
             </div>
 
-            <div className="md:hidden flex items-center gap-2">
+            <div className="md:hidden flex items-center gap-1.5">
               <ThemeToggle />
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="icon-btn"
+                className="icon-btn p-2"
                 aria-label={mobileMenuOpen ? 'Cerrar menu' : 'Abrir menu'}
                 title={mobileMenuOpen ? 'Cerrar menu' : 'Menu rapido'}
               >
@@ -101,14 +101,14 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-elegant-200 dark:border-elegant-800 bg-white/95 dark:bg-elegant-900/95 backdrop-blur-xl shadow-xl shadow-primary/10">
-            <div className="px-4 py-4 space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-semibold">
+          <div className="md:hidden border-t border-elegant-200 dark:border-elegant-800 bg-white/98 dark:bg-elegant-900/98 backdrop-blur-xl shadow-xl shadow-primary/10 animate-in slide-in-from-top duration-200">
+            <div className="px-3 py-3 space-y-2">
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-r from-primary/10 to-secondary/10">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center font-bold text-lg shadow-lg shadow-primary/30">
                   {user?.displayName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'C'}
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-primary-dark dark:text-white">Sesion activa</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-primary-dark dark:text-white">Sesión activa</p>
                   {user && (
                     <p className="text-xs text-elegant-600 dark:text-elegant-300 truncate">
                       {user.displayName || user.email}
@@ -122,7 +122,7 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
                     router.push('/dashboard');
                     setMobileMenuOpen(false);
                   }}
-                  className="btn-secondary w-full justify-center"
+                  className="btn-secondary w-full justify-center text-sm py-2.5"
                 >
                   Ir al inicio
                 </button>
@@ -131,9 +131,9 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
                     handleLogout();
                     setMobileMenuOpen(false);
                   }}
-                  className="btn-danger w-full justify-center"
+                  className="btn-danger w-full justify-center text-sm py-2.5"
                 >
-                  Cerrar sesion
+                  Cerrar sesión
                 </button>
               </div>
             </div>
@@ -141,7 +141,7 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
         )}
       </header>
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-28 md:pb-12">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 md:py-8 pb-32 md:pb-12">
         {children}
       </main>
 

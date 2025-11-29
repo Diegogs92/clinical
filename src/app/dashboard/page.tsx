@@ -330,20 +330,20 @@ export default function DashboardPage() {
     <ProtectedRoute>
       <DashboardLayout mobileAction={{ label: 'Nuevo turno', icon: PlusCircle, onPress: openNewAppointment }}>
         <div className="space-y-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="w-full md:w-auto p-4 md:p-0 rounded-2xl border border-elegant-100/80 dark:border-elegant-800/70 bg-white/80 dark:bg-elegant-900/70 backdrop-blur-lg shadow-sm md:shadow-none md:border-0 md:bg-transparent flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 text-primary flex items-center justify-center">
-                <Clock className="w-6 h-6" />
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
+            <div className="w-full md:w-auto p-3 md:p-0 rounded-2xl border border-elegant-100/80 dark:border-elegant-800/70 bg-white/90 dark:bg-elegant-900/90 backdrop-blur-lg shadow-sm md:shadow-none md:border-0 md:bg-transparent flex items-center gap-2.5 md:gap-3">
+              <div className="w-11 h-11 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 text-primary flex items-center justify-center shrink-0">
+                <Clock className="w-5 h-5 md:w-6 md:h-6" />
               </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.15em] text-elegant-500">Inicio</p>
-                <h1 className="text-2xl font-bold text-primary-dark dark:text-white">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] md:text-xs uppercase tracking-[0.1em] md:tracking-[0.15em] text-elegant-500">Inicio</p>
+                <h1 className="text-xl md:text-2xl font-bold text-primary-dark dark:text-white truncate">
                   {format(now, 'dd/MM/yyyy HH:mm')}
                 </h1>
-                <p className="text-xs text-elegant-500 dark:text-elegant-400">Agenda sincronizada en vivo</p>
+                <p className="text-[10px] md:text-xs text-elegant-500 dark:text-elegant-400 truncate">Agenda sincronizada</p>
               </div>
             </div>
-            <div className="flex gap-2 justify-end">
+            <div className="hidden md:flex gap-2 justify-end">
               <button
                 onClick={openNewAppointment}
                 className="btn-primary flex items-center gap-2 hover:shadow-lg hover:scale-105 transition-all md:min-w-[180px]"
@@ -515,7 +515,7 @@ export default function DashboardPage() {
                   </table>
                 </div>
 
-                <div className="md:hidden space-y-4">
+                <div className="md:hidden space-y-3">
                   {filtered.map(a => {
                     const d = new Date(a.date);
                     const fecha = d.toLocaleDateString();
@@ -525,97 +525,98 @@ export default function DashboardPage() {
                       paymentState.status === 'paid'
                         ? 'Pagado'
                         : paymentState.status === 'partial'
-                          ? `Pendiente $${paymentState.remainingAmount.toLocaleString()}`
+                          ? `$${paymentState.remainingAmount.toLocaleString()}`
                           : a.fee
-                            ? `Por cobrar $${(paymentState.remainingAmount || a.fee).toLocaleString()}`
+                            ? `$${(paymentState.remainingAmount || a.fee).toLocaleString()}`
                             : 'Sin honorarios';
                     const paymentTone =
                       paymentState.status === 'paid'
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200'
                         : paymentState.status === 'partial'
-                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'
-                          : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200';
+                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200'
+                          : 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-200';
                     return (
                       <div
                         key={a.id}
-                        className="relative overflow-hidden bg-white/95 dark:bg-[#18181b] border border-secondary-lighter/80 dark:border-gray-700 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all touch-manipulation"
+                        className="relative overflow-hidden bg-white/98 dark:bg-elegant-900/98 border border-elegant-200/80 dark:border-elegant-700/80 rounded-[20px] p-4 shadow-md hover:shadow-lg transition-all touch-manipulation backdrop-blur-sm active:scale-[0.99]"
                       >
-                        <div className="absolute inset-x-0 -top-14 h-20 bg-gradient-to-r from-primary/12 via-secondary/10 to-primary/12 blur-3xl pointer-events-none" />
-                        <div className="relative flex items-start justify-between gap-3">
-                          <div className="flex-1 space-y-1.5">
-                            <h3 className="font-semibold text-primary-dark dark:text-white text-lg">
-                              {a.patientName}
-                            </h3>
-                            <p className="text-sm text-secondary dark:text-gray-400">
-                              {fecha} · {a.startTime} - {a.endTime}
-                            </p>
-                            <p className="text-xs text-elegant-500 dark:text-elegant-400">
-                              {office ? `Consultorio ${office.name}` : 'Consultorio sin asignar'}
-                            </p>
+                        <div className="absolute inset-x-0 -top-10 h-16 bg-gradient-to-r from-primary/8 via-secondary/8 to-primary/8 blur-2xl pointer-events-none" />
+
+                        <div className="relative space-y-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-bold text-primary-dark dark:text-white text-base truncate">
+                                {a.patientName}
+                              </h3>
+                              <p className="text-xs text-elegant-600 dark:text-elegant-400 mt-0.5">
+                                {fecha} · {a.startTime} - {a.endTime}
+                              </p>
+                              {office && (
+                                <p className="text-[10px] text-elegant-500 dark:text-elegant-500 mt-0.5 truncate">
+                                  {office.name}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex flex-col items-end gap-1.5 shrink-0">
+                              <span className={`inline-block px-2 py-1 rounded-full text-[10px] font-bold ${
+                                a.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200' :
+                                a.status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200' :
+                                a.status === 'no-show' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700/50 dark:text-gray-200' :
+                                'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200'
+                              }`}>
+                                {translateAppointmentStatus(a.status)}
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex flex-col items-end gap-2">
-                            <span className={`inline-block px-2.5 py-1.5 rounded-full text-xs font-semibold ${
-                              a.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                              a.status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                              a.status === 'no-show' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' :
-                              'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                            }`}>
-                              {translateAppointmentStatus(a.status)}
-                            </span>
-                            {a.fee && (
-                              <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold ${paymentTone}`}>
-                                <DollarSign className="w-4 h-4" />
+
+                          <div className="flex items-center gap-2">
+                            {a.fee ? (
+                              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold flex-1 ${paymentTone}`}>
+                                <DollarSign className="w-3.5 h-3.5" />
                                 {paymentLabel}
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-elegant-100 dark:bg-elegant-800/60 text-elegant-600 dark:text-elegant-300 text-xs font-medium flex-1">
+                                Sin honorarios
+                              </span>
+                            )}
+                            {a.type && (
+                              <span className="inline-flex items-center px-2.5 py-1.5 rounded-xl bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light text-[10px] font-bold">
+                                {a.type}
                               </span>
                             )}
                           </div>
-                        </div>
-                        <div className="flex flex-wrap gap-2 mt-4 text-xs text-elegant-600 dark:text-elegant-300">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-elegant-100 dark:bg-elegant-800/60">
-                            <CalendarDays className="w-4 h-4" />
-                            {a.fee ? `$${a.fee.toLocaleString()}` : 'Sin honorarios'}
-                          </span>
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary dark:bg-primary/15 dark:text-primary-light">
-                            {a.type || 'Turno'}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-secondary-lighter dark:border-gray-700 mt-4">
-                          <button
-                            onClick={() => openPaymentDialog(a)}
-                            disabled={!a.fee}
-                            className={`col-span-2 sm:col-span-2 btn-secondary justify-center text-base py-3 disabled:opacity-40 touch-manipulation ${
-                              paymentState.status === 'paid'
-                                ? 'bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-200'
-                                : paymentState.status === 'partial'
-                                  ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200'
-                                  : 'text-danger'
-                            }`}
-                            title={a.fee && paymentState.remainingAmount > 0 ? `Pendiente: $${paymentState.remainingAmount.toLocaleString()}` : 'Pago completo'}
-                          >
-                            <DollarSign className="w-5 h-5" />
-                            {paymentState.status === 'paid' ? 'Pagado' : 'Registrar pago'}
-                          </button>
-                          <button
-                            onClick={() => handleEdit(a)}
-                            className="btn-primary justify-center text-base py-3 touch-manipulation"
-                          >
-                            <Edit2 className="w-5 h-5" />
-                            Editar
-                          </button>
-                          <button
-                            onClick={() => handleCancel(a)}
-                            className="btn-secondary justify-center text-base py-3 text-danger hover:text-danger-dark touch-manipulation"
-                          >
-                            <Ban className="w-5 h-5" />
-                            Cancelar
-                          </button>
-                          <button
-                            onClick={() => handleDelete(a)}
-                            className="btn-danger justify-center text-base py-3 touch-manipulation"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                            Eliminar
-                          </button>
+
+                          <div className="grid grid-cols-4 gap-1.5 pt-2.5 border-t border-elegant-200 dark:border-elegant-700">
+                            <button
+                              onClick={() => openPaymentDialog(a)}
+                              disabled={!a.fee}
+                              className={`col-span-2 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all touch-manipulation disabled:opacity-40 ${
+                                paymentState.status === 'paid'
+                                  ? 'bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-200'
+                                  : paymentState.status === 'partial'
+                                    ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200'
+                                    : 'bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-200'
+                              } active:scale-95`}
+                            >
+                              <DollarSign className="w-4 h-4" />
+                              {paymentState.status === 'paid' ? 'Pagado' : 'Pago'}
+                            </button>
+                            <button
+                              onClick={() => handleEdit(a)}
+                              className="flex items-center justify-center px-2 py-2.5 rounded-xl bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light transition-all touch-manipulation active:scale-95"
+                              aria-label="Editar"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleCancel(a)}
+                              className="flex items-center justify-center px-2 py-2.5 rounded-xl bg-elegant-100 text-danger dark:bg-elegant-800/60 dark:text-red-400 transition-all touch-manipulation active:scale-95"
+                              aria-label="Cancelar"
+                            >
+                              <Ban className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
