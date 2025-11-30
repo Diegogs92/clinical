@@ -144,47 +144,47 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-      <div className="grid grid-cols-2 gap-2.5">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-primary-dark dark:text-white mb-1">Nombre</label>
+          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Nombre</label>
           <input className="input-field" {...register('firstName')} />
-          {errors.firstName && <p className="text-red-600 text-[10px] mt-0.5">{errors.firstName.message}</p>}
+          {errors.firstName && <p className="text-red-600 text-xs mt-1">{errors.firstName.message}</p>}
         </div>
         <div>
-          <label className="block text-xs font-medium text-primary-dark dark:text-white mb-1">Apellido</label>
+          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Apellido</label>
           <input className="input-field" {...register('lastName')} />
-          {errors.lastName && <p className="text-red-600 text-[10px] mt-0.5">{errors.lastName.message}</p>}
+          {errors.lastName && <p className="text-red-600 text-xs mt-1">{errors.lastName.message}</p>}
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-primary-dark dark:text-white mb-1">DNI</label>
+          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">DNI</label>
           <input className="input-field" {...register('dni')} />
-          {errors.dni && <p className="text-red-600 text-[10px] mt-0.5">{errors.dni.message}</p>}
+          {errors.dni && <p className="text-red-600 text-xs mt-1">{errors.dni.message}</p>}
         </div>
         <div>
-          <label className="block text-xs font-medium text-primary-dark dark:text-white mb-1">Teléfono</label>
+          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Teléfono</label>
           <input className="input-field" {...register('phone')} />
-          {errors.phone && <p className="text-red-600 text-[10px] mt-0.5">{errors.phone.message}</p>}
+          {errors.phone && <p className="text-red-600 text-xs mt-1">{errors.phone.message}</p>}
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-primary-dark dark:text-white mb-1">Email</label>
+          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Email</label>
           <input className="input-field" {...register('email')} />
-          {errors.email && <p className="text-red-600 text-[10px] mt-0.5">{errors.email.message}</p>}
+          {errors.email && <p className="text-red-600 text-xs mt-1">{errors.email.message}</p>}
         </div>
         <div>
-          <label className="block text-xs font-medium text-primary-dark dark:text-white mb-1">Fecha de Nacimiento</label>
+          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Fecha de Nacimiento</label>
           <input type="date" className="input-field" {...register('birthDate')} />
         </div>
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-primary-dark dark:text-white mb-1.5">Tipo de Cobertura</label>
-        <div className="grid grid-cols-3 gap-2">
-          <label className={`flex items-center justify-center p-2.5 border-2 rounded-lg cursor-pointer transition-all ${
+        <label className="block text-sm font-medium text-primary-dark dark:text-white mb-2">Tipo de Cobertura</label>
+        <div className="grid grid-cols-3 gap-2 md:gap-3">
+          <label className={`flex items-center justify-center p-3 md:p-3.5 border-2 rounded-xl cursor-pointer transition-all active:scale-95 ${
             insuranceType === 'particular'
               ? 'border-primary bg-primary/10 dark:bg-primary/20'
               : 'border-secondary-lighter dark:border-gray-600 hover:border-primary/50'
@@ -195,12 +195,12 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
               {...register('insuranceType')}
               className="sr-only"
             />
-            <span className={`text-xs font-medium ${insuranceType === 'particular' ? 'text-primary dark:text-white' : 'text-secondary dark:text-gray-400'}`}>
+            <span className={`text-sm font-medium ${insuranceType === 'particular' ? 'text-primary dark:text-white' : 'text-secondary dark:text-gray-400'}`}>
               Particular
             </span>
           </label>
 
-          <label className={`flex items-center justify-center p-2.5 border-2 rounded-lg cursor-pointer transition-all ${
+          <label className={`flex items-center justify-center p-3 md:p-3.5 border-2 rounded-xl cursor-pointer transition-all active:scale-95 ${
             insuranceType === 'obra-social'
               ? 'border-primary bg-primary/10 dark:bg-primary/20'
               : 'border-secondary-lighter dark:border-gray-600 hover:border-primary/50'
@@ -211,12 +211,12 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
               {...register('insuranceType')}
               className="sr-only"
             />
-            <span className={`text-xs font-medium ${insuranceType === 'obra-social' ? 'text-primary dark:text-white' : 'text-secondary dark:text-gray-400'}`}>
+            <span className={`text-sm font-medium ${insuranceType === 'obra-social' ? 'text-primary dark:text-white' : 'text-secondary dark:text-gray-400'}`}>
               Obra Social
             </span>
           </label>
 
-          <label className={`flex items-center justify-center p-2.5 border-2 rounded-lg cursor-pointer transition-all ${
+          <label className={`flex items-center justify-center p-3 md:p-3.5 border-2 rounded-xl cursor-pointer transition-all active:scale-95 ${
             insuranceType === 'prepaga'
               ? 'border-primary bg-primary/10 dark:bg-primary/20'
               : 'border-secondary-lighter dark:border-gray-600 hover:border-primary/50'
@@ -227,7 +227,7 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
               {...register('insuranceType')}
               className="sr-only"
             />
-            <span className={`text-xs font-medium ${insuranceType === 'prepaga' ? 'text-primary dark:text-white' : 'text-secondary dark:text-gray-400'}`}>
+            <span className={`text-sm font-medium ${insuranceType === 'prepaga' ? 'text-primary dark:text-white' : 'text-secondary dark:text-gray-400'}`}>
               Prepaga
             </span>
           </label>
@@ -235,9 +235,9 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
       </div>
 
       {insuranceType && insuranceType !== 'particular' && (
-        <div className="grid grid-cols-3 gap-2.5">
-          <div className="col-span-2">
-            <label className="block text-xs font-medium text-primary-dark dark:text-white mb-1">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">
               {insuranceType === 'obra-social' ? 'Obra Social' : 'Prepaga'}
             </label>
             <select
@@ -263,7 +263,7 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-primary-dark dark:text-white mb-1">Nº Afiliado</label>
+            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Nº Afiliado</label>
             <input
               className="input-field"
               {...register('insuranceNumber')}
@@ -272,14 +272,14 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
           </div>
         </div>
       )}
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-primary-dark dark:text-white mb-1">Dirección</label>
+          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Dirección</label>
           <input className="input-field" {...register('address')} />
         </div>
         <div>
-          <label className="block text-xs font-medium text-primary-dark dark:text-white mb-1">Notas</label>
-          <textarea rows={2} className="input-field resize-none" {...register('notes')} />
+          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Notas</label>
+          <textarea className="input-field resize-none" {...register('notes')} />
         </div>
       </div>
 

@@ -175,11 +175,11 @@ export default function QuickPatientForm({ onSuccess, onCancel }: Props) {
         <textarea rows={3} className="input-field" {...register('notes')} />
       </div>
 
-      <div className="flex gap-3 justify-end pt-2">
-        <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg hover:shadow-md hover:scale-105 transition-all duration-200 active:scale-[0.98]">
+      <div className="flex flex-col md:flex-row gap-3 justify-end pt-2">
+        <button type="button" onClick={onCancel} className="btn-secondary">
           Cancelar
         </button>
-        <button disabled={loading} type="submit" className="btn-primary hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+        <button disabled={loading} type="submit" className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
           {loading ? 'Creando...' : 'Crear Paciente'}
         </button>
       </div>

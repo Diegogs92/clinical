@@ -35,7 +35,8 @@
       "Bash(taskkill /F /PID 32436)",
       "Bash(taskkill //F //PID 32436)",
       "Bash(timeout /t 10 /nobreak)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npm run lint)"
     ],
     "deny": [],
     "ask": []

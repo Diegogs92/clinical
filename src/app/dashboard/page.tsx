@@ -343,7 +343,7 @@ export default function DashboardPage() {
                 <p className="text-[10px] md:text-xs text-elegant-500 dark:text-elegant-400 truncate">Agenda sincronizada</p>
               </div>
             </div>
-            <div className="hidden md:flex gap-2 justify-end">
+            <div className="flex gap-2 justify-end">
               <button
                 onClick={openNewAppointment}
                 className="btn-primary flex items-center gap-2 hover:shadow-lg hover:scale-105 transition-all md:min-w-[180px]"

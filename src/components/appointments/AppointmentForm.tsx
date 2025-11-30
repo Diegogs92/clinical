@@ -142,14 +142,14 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <label className="block text-sm font-semibold text-primary-dark dark:text-white">Paciente</label>
             <button
               type="button"
               onClick={() => setShowQuickPatient(true)}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary-dark dark:text-primary-light transition"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary-dark dark:text-primary-light transition active:scale-95"
             >
               <UserPlus className="w-3.5 h-3.5" />
               Nuevo
@@ -179,19 +179,19 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
           </select>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs font-medium text-elegant-600 dark:text-elegant-300 mb-1">Fecha</label>
+            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Fecha</label>
             <input type="date" className="input-field" {...register('date')} />
-            {errors.date && <p className="text-red-600 text-[10px] mt-0.5">{errors.date.message}</p>}
+            {errors.date && <p className="text-red-600 text-xs mt-1">{errors.date.message}</p>}
           </div>
           <div>
-            <label className="block text-xs font-medium text-elegant-600 dark:text-elegant-300 mb-1">Hora</label>
+            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Hora</label>
             <input type="time" className="input-field" {...register('startTime')} />
-            {errors.startTime && <p className="text-red-600 text-[10px] mt-0.5">{errors.startTime.message}</p>}
+            {errors.startTime && <p className="text-red-600 text-xs mt-1">{errors.startTime.message}</p>}
           </div>
           <div>
-            <label className="block text-xs font-medium text-elegant-600 dark:text-elegant-300 mb-1">Duración</label>
+            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Duración</label>
             <select className="input-field" {...register('duration', { valueAsNumber: true })}>
               <option value="45">45 min</option>
               <option value="60">60 min</option>
@@ -202,18 +202,18 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-elegant-600 dark:text-elegant-300 mb-1">Honorarios</label>
+            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Honorarios</label>
             <input type="number" className="input-field" placeholder="0" {...register('fee', { valueAsNumber: true })} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-elegant-600 dark:text-elegant-300 mb-1">Notas</label>
-            <textarea rows={2} className="input-field resize-none" placeholder="Indicaciones..." {...register('notes')} />
+            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Notas</label>
+            <textarea className="input-field resize-none" placeholder="Indicaciones..." {...register('notes')} />
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-2 pt-2">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-end gap-3 pt-2">
           <button type="button" onClick={onCancel} className="btn-secondary">Cancelar</button>
           <button disabled={loading} className="btn-primary disabled:opacity-50">
             {loading ? 'Guardando...' : (initialData ? 'Actualizar' : 'Crear')}
