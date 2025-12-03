@@ -39,7 +39,7 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
     { href: '/dashboard', label: 'Inicio', icon: LayoutDashboard },
     { href: '/patients', label: 'Pacientes', icon: Users },
     { href: '/offices', label: 'Consultorios', icon: Building2 },
-    { href: '/insurances', label: 'Obras Sociales', icon: Shield },
+    // { href: '/insurances', label: 'Obras Sociales', icon: Shield }, // Temporalmente oculto
     { href: '/fees', label: 'Honorarios', icon: DollarSign },
   ];
 

@@ -31,7 +31,7 @@ export default function MobileNavBar({ items, action }: MobileNavBarProps) {
         {/* Barra de navegación */}
         <div className="bg-white/95 dark:bg-elegant-900/95 backdrop-blur-xl rounded-3xl border border-elegant-200/60 dark:border-elegant-700/60 shadow-xl shadow-black/5 dark:shadow-black/20 overflow-hidden">
           {/* Grid de navegación */}
-          <div className="grid grid-cols-5 gap-0">
+          <div className={`grid ${items.length === 4 ? 'grid-cols-4' : 'grid-cols-5'} gap-0`}>
             {items.map(({ href, label, icon: Icon }) => {
               const active = isActive(href);
               return (
