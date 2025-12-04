@@ -1,5 +1,16 @@
 'use client';
 
+// BANNER DESHABILITADO TEMPORALMENTE
+// La sincronización con Google Calendar debe estar siempre activa
+// No mostrar advertencias de expiración de token
+
+export default function TokenExpirationBanner() {
+  // Banner deshabilitado - retornar null siempre
+  return null;
+}
+
+/* CÓDIGO ORIGINAL COMENTADO PARA FUTURA REACTIVACIÓN:
+
 import { useCalendarSync } from '@/contexts/CalendarSyncContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, X } from 'lucide-react';
@@ -58,3 +69,5 @@ export default function TokenExpirationBanner() {
     </div>
   );
 }
+
+*/
