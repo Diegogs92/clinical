@@ -195,3 +195,14 @@ export interface MonthlyRevenue {
   revenue: number;
   appointments: number;
 }
+
+export interface BlockedSlot {
+  id: string;
+  date: string; // YYYY-MM-DD
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  reason: string;
+  userId: string; // Professional ID
+  createdAt: string;
+  updatedAt: string;
+}

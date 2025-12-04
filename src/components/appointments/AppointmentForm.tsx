@@ -5,13 +5,14 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { createAppointment, updateAppointment } from '@/lib/appointments';
+import { hasBlockedSlotsInRange } from '@/lib/blockedSlots';
 import { useState, ChangeEvent } from 'react';
 import { Appointment } from '@/types';
 import { useCalendarSync } from '@/contexts/CalendarSyncContext';
 import { useToast } from '@/contexts/ToastContext';
 import Modal from '@/components/ui/Modal';
 import PatientForm from '@/components/patients/PatientForm';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, AlertTriangle } from 'lucide-react';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { useOffices } from '@/contexts/OfficesContext';
@@ -70,6 +71,25 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       const startDate = new Date(year, month - 1, day, h, m, 0, 0);
       const endDate = new Date(startDate);
       endDate.setMinutes(endDate.getMinutes() + values.duration);
+
+      // Calcular endTime
+      const endHour = String(endDate.getHours()).padStart(2, '0');
+      const endMinute = String(endDate.getMinutes()).padStart(2, '0');
+      const endTime = `${endHour}:${endMinute}`;
+
+      // Validar si hay franjas bloqueadas
+      const hasBlockedSlots = await hasBlockedSlotsInRange(
+        user.uid,
+        values.date,
+        values.startTime,
+        endTime
+      );
+
+      if (hasBlockedSlots) {
+        toast.error('No se puede agendar el turno en esta franja horaria porque está bloqueada');
+        setLoading(false);
+        return;
+      }
 
       const selected = patients.find(p => p.id === (values.patientId as unknown as string));
 

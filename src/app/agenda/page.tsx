@@ -1,34 +1,52 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { usePatients } from '@/contexts/PatientsContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { format, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, isWithinInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Calendar, Clock, User, Phone, Ban, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { Appointment } from '@/types';
-
-interface BlockedSlot {
-  id: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  reason: string;
-}
+import { BlockedSlot } from '@/types';
+import {
+  getBlockedSlotsByUser,
+  createBlockedSlot,
+  deleteBlockedSlot,
+} from '@/lib/blockedSlots';
 
 export default function AgendaPage() {
+  const { user } = useAuth();
   const { appointments, loading } = useAppointments();
   const { patients } = usePatients();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [blockedSlots, setBlockedSlots] = useState<BlockedSlot[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
   const [blockForm, setBlockForm] = useState({
     date: format(new Date(), 'yyyy-MM-dd'),
     startTime: '09:00',
     endTime: '10:00',
     reason: '',
   });
+
+  // Cargar franjas bloqueadas al montar el componente
+  useEffect(() => {
+    const loadBlockedSlots = async () => {
+      if (!user) return;
+      setLoadingSlots(true);
+      try {
+        const slots = await getBlockedSlotsByUser(user.uid);
+        setBlockedSlots(slots);
+      } catch (error) {
+        console.error('Error loading blocked slots:', error);
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+
+    loadBlockedSlots();
+  }, [user]);
 
   // Calcular semana actual
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Lunes
@@ -70,30 +88,39 @@ export default function AgendaPage() {
   const goToToday = () => setCurrentDate(new Date());
 
   // Manejar bloqueo de franja horaria
-  const handleBlockSlot = () => {
+  const handleBlockSlot = async () => {
+    if (!user) return;
+
     if (!blockForm.reason.trim()) {
       alert('Por favor ingresa un motivo para el bloqueo');
       return;
     }
 
-    const newBlock: BlockedSlot = {
-      id: Date.now().toString(),
-      ...blockForm,
-    };
-
-    setBlockedSlots([...blockedSlots, newBlock]);
-    setShowBlockModal(false);
-    setBlockForm({
-      date: format(new Date(), 'yyyy-MM-dd'),
-      startTime: '09:00',
-      endTime: '10:00',
-      reason: '',
-    });
+    try {
+      const newBlock = await createBlockedSlot(user.uid, blockForm);
+      setBlockedSlots([...blockedSlots, newBlock]);
+      setShowBlockModal(false);
+      setBlockForm({
+        date: format(new Date(), 'yyyy-MM-dd'),
+        startTime: '09:00',
+        endTime: '10:00',
+        reason: '',
+      });
+    } catch (error) {
+      console.error('Error creating blocked slot:', error);
+      alert('Error al crear la franja bloqueada. Por favor intenta de nuevo.');
+    }
   };
 
   // Eliminar bloqueo
-  const removeBlock = (id: string) => {
-    setBlockedSlots(blockedSlots.filter(b => b.id !== id));
+  const removeBlock = async (id: string) => {
+    try {
+      await deleteBlockedSlot(id);
+      setBlockedSlots(blockedSlots.filter(b => b.id !== id));
+    } catch (error) {
+      console.error('Error deleting blocked slot:', error);
+      alert('Error al eliminar la franja bloqueada. Por favor intenta de nuevo.');
+    }
   };
 
   // Estadísticas de la semana
