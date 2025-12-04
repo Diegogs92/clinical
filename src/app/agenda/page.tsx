@@ -241,7 +241,7 @@ export default function AgendaPage() {
                               >
                                 <div className="flex items-center gap-1 text-xs font-semibold text-elegant-900 dark:text-white mb-1">
                                   <User className="w-3 h-3" />
-                                  {patient?.name || 'Paciente'}
+                                  {patient ? `${patient.firstName} ${patient.lastName}` : 'Paciente'}
                                 </div>
                                 <div className="flex items-center gap-1 text-xs text-elegant-600 dark:text-elegant-400">
                                   <Clock className="w-3 h-3" />
