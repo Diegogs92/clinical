@@ -27,6 +27,8 @@ export async function createBlockedSlot(
     reason: string;
   }
 ): Promise<BlockedSlot> {
+  if (!db) throw new Error('Firestore not initialized');
+
   const now = new Date().toISOString();
 
   const blockedSlotData = {
@@ -48,6 +50,8 @@ export async function createBlockedSlot(
  * Obtener todas las franjas bloqueadas de un usuario
  */
 export async function getBlockedSlotsByUser(userId: string): Promise<BlockedSlot[]> {
+  if (!db) throw new Error('Firestore not initialized');
+
   const q = query(
     collection(db, COLLECTION_NAME),
     where('userId', '==', userId),
@@ -70,6 +74,8 @@ export async function getBlockedSlotsByDate(
   userId: string,
   date: string
 ): Promise<BlockedSlot[]> {
+  if (!db) throw new Error('Firestore not initialized');
+
   const q = query(
     collection(db, COLLECTION_NAME),
     where('userId', '==', userId),
@@ -117,6 +123,8 @@ export async function updateBlockedSlot(
     reason: string;
   }>
 ): Promise<void> {
+  if (!db) throw new Error('Firestore not initialized');
+
   const docRef = doc(db, COLLECTION_NAME, id);
 
   await updateDoc(docRef, {
@@ -129,6 +137,8 @@ export async function updateBlockedSlot(
  * Eliminar una franja bloqueada
  */
 export async function deleteBlockedSlot(id: string): Promise<void> {
+  if (!db) throw new Error('Firestore not initialized');
+
   const docRef = doc(db, COLLECTION_NAME, id);
   await deleteDoc(docRef);
 }
