@@ -363,7 +363,7 @@ export default function DashboardPage() {
                   { value: 'day', label: 'Dia' },
                   { value: 'week', label: 'Semana' },
                   { value: 'month', label: 'Mes' },
-                  { value: 'year', label: 'Ano' }
+                  { value: 'year', label: 'Año' }
                 ]}
                 value={view}
                 onChange={(v) => setView(v as 'day' | 'week' | 'month' | 'year')}

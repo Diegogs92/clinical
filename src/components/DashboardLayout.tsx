@@ -17,6 +17,7 @@ import {
   LogOut,
   Menu,
   X,
+  CalendarDays,
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 import MobileNavBar from './ui/MobileNavBar';
@@ -37,6 +38,7 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
 
   const navItems = [
     { href: '/dashboard', label: 'Inicio', icon: LayoutDashboard },
+    { href: '/agenda', label: 'Agenda', icon: CalendarDays },
     { href: '/patients', label: 'Pacientes', icon: Users },
     { href: '/offices', label: 'Consultorios', icon: Building2 },
     // { href: '/insurances', label: 'Obras Sociales', icon: Shield }, // Temporalmente oculto
