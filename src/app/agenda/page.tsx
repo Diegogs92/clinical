@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAppointments } from '@/contexts/AppointmentsContext';
-import { usePatientsContext } from '@/contexts/PatientsContext';
+import { usePatients } from '@/contexts/PatientsContext';
 import { format, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, isWithinInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Calendar, Clock, User, Phone, Ban, ChevronLeft, ChevronRight, X } from 'lucide-react';
@@ -19,7 +19,7 @@ interface BlockedSlot {
 
 export default function AgendaPage() {
   const { appointments, loading } = useAppointments();
-  const { patients } = usePatientsContext();
+  const { patients } = usePatients();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [blockedSlots, setBlockedSlots] = useState<BlockedSlot[]>([]);
