@@ -41,9 +41,9 @@ export default function AgendaPage() {
   // Obtener turnos para un día y hora específica
   const getAppointmentsForSlot = (date: Date, hour: number) => {
     return appointments.filter(apt => {
-      if (!apt.date || !apt.time) return false;
+      if (!apt.date || !apt.startTime) return false;
       const aptDate = parseISO(apt.date);
-      const aptHour = parseInt(apt.time.split(':')[0]);
+      const aptHour = parseInt(apt.startTime.split(':')[0]);
       return isSameDay(aptDate, date) && aptHour === hour;
     });
   };
@@ -107,7 +107,7 @@ export default function AgendaPage() {
     return {
       total: weekAppointments.length,
       confirmed: weekAppointments.filter(a => a.status === 'confirmed').length,
-      pending: weekAppointments.filter(a => a.status === 'pending').length,
+      pending: weekAppointments.filter(a => a.status === 'scheduled').length,
       blocked: blockedSlots.filter(slot => {
         const slotDate = parseISO(slot.date);
         return isWithinInterval(slotDate, { start: weekStart, end: weekEnd });
@@ -245,7 +245,7 @@ export default function AgendaPage() {
                                 </div>
                                 <div className="flex items-center gap-1 text-xs text-elegant-600 dark:text-elegant-400">
                                   <Clock className="w-3 h-3" />
-                                  {apt.time}
+                                  {apt.startTime}
                                 </div>
                                 {patient?.phone && (
                                   <div className="flex items-center gap-1 text-xs text-elegant-600 dark:text-elegant-400">
@@ -256,11 +256,21 @@ export default function AgendaPage() {
                                 <div className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
                                   apt.status === 'confirmed'
                                     ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                                    : apt.status === 'pending'
+                                    : apt.status === 'scheduled'
                                     ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+                                    : apt.status === 'completed'
+                                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
                                     : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                                 }`}>
-                                  {apt.status === 'confirmed' ? 'Confirmado' : apt.status === 'pending' ? 'Pendiente' : 'Cancelado'}
+                                  {apt.status === 'confirmed'
+                                    ? 'Confirmado'
+                                    : apt.status === 'scheduled'
+                                    ? 'Agendado'
+                                    : apt.status === 'completed'
+                                    ? 'Completado'
+                                    : apt.status === 'cancelled'
+                                    ? 'Cancelado'
+                                    : 'No asistió'}
                                 </div>
                               </div>
                             );
