@@ -101,8 +101,15 @@ export default function AgendaPage() {
       return;
     }
 
+    console.log('📝 Intentando crear franja bloqueada:', {
+      userId: user.uid,
+      data: blockForm,
+    });
+
     try {
       const newBlock = await createBlockedSlot(user.uid, blockForm);
+      console.log('✅ Franja bloqueada creada exitosamente:', newBlock);
+
       setBlockedSlots([...blockedSlots, newBlock]);
       setShowBlockModal(false);
       setBlockForm({
@@ -111,14 +118,17 @@ export default function AgendaPage() {
         endTime: '10:00',
         reason: '',
       });
+
+      alert('Franja bloqueada creada exitosamente');
     } catch (error: any) {
-      console.error('Error creating blocked slot:', error);
+      console.error('❌ Error creating blocked slot:', error);
+      console.error('Error completo:', JSON.stringify(error, null, 2));
 
       // Si es un error de índice, dar instrucciones específicas
       if (error?.message?.includes('index')) {
         alert('Se necesita crear un índice en Firestore.\n\nBusca en la consola un enlace que diga "You can create it here" y haz clic en él para crear el índice automáticamente.');
       } else {
-        alert(`Error al crear la franja bloqueada: ${error?.message || 'Error desconocido'}`);
+        alert(`Error al crear la franja bloqueada: ${error?.message || 'Error desconocido'}\n\nRevisa la consola para más detalles.`);
       }
     }
   };
