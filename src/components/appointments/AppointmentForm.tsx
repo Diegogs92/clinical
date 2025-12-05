@@ -78,6 +78,13 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       const endTime = `${endHour}:${endMinute}`;
 
       // Validar si hay franjas bloqueadas
+      console.log('🔍 Validando franjas bloqueadas:', {
+        userId: user.uid,
+        date: values.date,
+        startTime: values.startTime,
+        endTime: endTime,
+      });
+
       const blockedSlots = await getBlockedSlotsInRange(
         user.uid,
         values.date,
@@ -85,10 +92,17 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         endTime
       );
 
+      console.log('📊 Resultado de validación:', {
+        blockedSlotsCount: blockedSlots.length,
+        blockedSlots: blockedSlots,
+      });
+
       if (blockedSlots.length > 0) {
         const blockDetails = blockedSlots.map(slot =>
           `• ${slot.startTime} - ${slot.endTime}: ${slot.reason}`
         ).join('\n');
+
+        console.log('🚫 Bloqueando creación de turno:', blockDetails);
 
         toast.error(
           `No se puede agendar el turno porque se solapa con franjas bloqueadas:\n\n${blockDetails}`,
@@ -97,6 +111,8 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         setLoading(false);
         return;
       }
+
+      console.log('✅ No hay franjas bloqueadas, procediendo a crear turno');
 
       const selected = patients.find(p => p.id === (values.patientId as unknown as string));
 

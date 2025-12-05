@@ -187,20 +187,36 @@ export async function getBlockedSlotsInRange(
   startTime: string,
   endTime: string
 ): Promise<BlockedSlot[]> {
+  console.log('🔎 getBlockedSlotsInRange llamada con:', { userId, date, startTime, endTime });
+
   const blockedSlots = await getBlockedSlotsByDate(userId, date);
+  console.log('📋 Franjas bloqueadas encontradas para la fecha:', blockedSlots);
 
   const startMinutes = timeToMinutes(startTime);
   const endMinutes = timeToMinutes(endTime);
 
-  return blockedSlots.filter(slot => {
+  const overlapping = blockedSlots.filter(slot => {
     const slotStartMinutes = timeToMinutes(slot.startTime);
     const slotEndMinutes = timeToMinutes(slot.endTime);
 
     // Verifica si hay solapamiento
-    return (
+    const hasOverlap = (
       (startMinutes >= slotStartMinutes && startMinutes < slotEndMinutes) ||
       (endMinutes > slotStartMinutes && endMinutes <= slotEndMinutes) ||
       (startMinutes <= slotStartMinutes && endMinutes >= slotEndMinutes)
     );
+
+    console.log('🔍 Verificando solapamiento:', {
+      slot: `${slot.startTime} - ${slot.endTime}`,
+      appointment: `${startTime} - ${endTime}`,
+      slotMinutes: `${slotStartMinutes} - ${slotEndMinutes}`,
+      appointmentMinutes: `${startMinutes} - ${endMinutes}`,
+      hasOverlap,
+    });
+
+    return hasOverlap;
   });
+
+  console.log('✅ Franjas bloqueadas que se solapan:', overlapping);
+  return overlapping;
 }
