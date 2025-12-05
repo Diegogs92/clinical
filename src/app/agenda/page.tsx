@@ -38,8 +38,13 @@ export default function AgendaPage() {
       try {
         const slots = await getBlockedSlotsByUser(user.uid);
         setBlockedSlots(slots);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error loading blocked slots:', error);
+
+        // Si es un error de índice, mostrar en consola
+        if (error?.message?.includes('index')) {
+          console.warn('⚠️ Se necesita crear un índice en Firestore. Busca el enlace "You can create it here" en la consola.');
+        }
       } finally {
         setLoadingSlots(false);
       }
@@ -106,9 +111,15 @@ export default function AgendaPage() {
         endTime: '10:00',
         reason: '',
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating blocked slot:', error);
-      alert('Error al crear la franja bloqueada. Por favor intenta de nuevo.');
+
+      // Si es un error de índice, dar instrucciones específicas
+      if (error?.message?.includes('index')) {
+        alert('Se necesita crear un índice en Firestore.\n\nBusca en la consola un enlace que diga "You can create it here" y haz clic en él para crear el índice automáticamente.');
+      } else {
+        alert(`Error al crear la franja bloqueada: ${error?.message || 'Error desconocido'}`);
+      }
     }
   };
 
