@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { createAppointment, updateAppointment } from '@/lib/appointments';
-import { hasBlockedSlotsInRange } from '@/lib/blockedSlots';
+import { getBlockedSlotsInRange } from '@/lib/blockedSlots';
 import { useState, ChangeEvent } from 'react';
 import { Appointment } from '@/types';
 import { useCalendarSync } from '@/contexts/CalendarSyncContext';
@@ -78,15 +78,22 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       const endTime = `${endHour}:${endMinute}`;
 
       // Validar si hay franjas bloqueadas
-      const hasBlockedSlots = await hasBlockedSlotsInRange(
+      const blockedSlots = await getBlockedSlotsInRange(
         user.uid,
         values.date,
         values.startTime,
         endTime
       );
 
-      if (hasBlockedSlots) {
-        toast.error('No se puede agendar el turno en esta franja horaria porque está bloqueada');
+      if (blockedSlots.length > 0) {
+        const blockDetails = blockedSlots.map(slot =>
+          `• ${slot.startTime} - ${slot.endTime}: ${slot.reason}`
+        ).join('\n');
+
+        toast.error(
+          `No se puede agendar el turno porque se solapa con franjas bloqueadas:\n\n${blockDetails}`,
+          { duration: 8000 }
+        );
         setLoading(false);
         return;
       }

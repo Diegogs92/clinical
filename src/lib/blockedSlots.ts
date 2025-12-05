@@ -177,3 +177,30 @@ export async function hasBlockedSlotsInRange(
     );
   });
 }
+
+/**
+ * Obtener las franjas bloqueadas que se solapan con un rango de tiempo
+ */
+export async function getBlockedSlotsInRange(
+  userId: string,
+  date: string,
+  startTime: string,
+  endTime: string
+): Promise<BlockedSlot[]> {
+  const blockedSlots = await getBlockedSlotsByDate(userId, date);
+
+  const startMinutes = timeToMinutes(startTime);
+  const endMinutes = timeToMinutes(endTime);
+
+  return blockedSlots.filter(slot => {
+    const slotStartMinutes = timeToMinutes(slot.startTime);
+    const slotEndMinutes = timeToMinutes(slot.endTime);
+
+    // Verifica si hay solapamiento
+    return (
+      (startMinutes >= slotStartMinutes && startMinutes < slotEndMinutes) ||
+      (endMinutes > slotStartMinutes && endMinutes <= slotEndMinutes) ||
+      (startMinutes <= slotStartMinutes && endMinutes >= slotEndMinutes)
+    );
+  });
+}

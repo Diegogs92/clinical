@@ -5,6 +5,10 @@ import { X, CheckCircle2, AlertCircle, Info, AlertTriangle } from 'lucide-react'
 
 type ToastType = 'success' | 'error' | 'info' | 'warning';
 
+interface ToastOptions {
+  duration?: number;
+}
+
 interface Toast {
   id: string;
   message: string;
@@ -12,11 +16,11 @@ interface Toast {
 }
 
 interface ToastContextType {
-  showToast: (message: string, type?: ToastType) => void;
-  success: (message: string) => void;
-  error: (message: string) => void;
-  info: (message: string) => void;
-  warning: (message: string) => void;
+  showToast: (message: string, type?: ToastType, options?: ToastOptions) => void;
+  success: (message: string, options?: ToastOptions) => void;
+  error: (message: string, options?: ToastOptions) => void;
+  info: (message: string, options?: ToastOptions) => void;
+  warning: (message: string, options?: ToastOptions) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -24,19 +28,21 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const showToast = useCallback((message: string, type: ToastType = 'info') => {
+  const showToast = useCallback((message: string, type: ToastType = 'info', options?: ToastOptions) => {
     const id = Date.now().toString();
     setToasts((prev) => [...prev, { id, message, type }]);
-    
+
+    const duration = options?.duration || 4000;
+
     setTimeout(() => {
       setToasts((prev) => prev.filter((toast) => toast.id !== id));
-    }, 4000);
+    }, duration);
   }, []);
 
-  const success = useCallback((message: string) => showToast(message, 'success'), [showToast]);
-  const error = useCallback((message: string) => showToast(message, 'error'), [showToast]);
-  const info = useCallback((message: string) => showToast(message, 'info'), [showToast]);
-  const warning = useCallback((message: string) => showToast(message, 'warning'), [showToast]);
+  const success = useCallback((message: string, options?: ToastOptions) => showToast(message, 'success', options), [showToast]);
+  const error = useCallback((message: string, options?: ToastOptions) => showToast(message, 'error', options), [showToast]);
+  const info = useCallback((message: string, options?: ToastOptions) => showToast(message, 'info', options), [showToast]);
+  const warning = useCallback((message: string, options?: ToastOptions) => showToast(message, 'warning', options), [showToast]);
 
   const removeToast = (id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
@@ -71,19 +77,21 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast, success, error, info, warning }}>
       {children}
-      <div className="fixed bottom-4 right-4 z-50 space-y-2 max-w-md">
+      <div className="fixed bottom-4 right-4 z-50 space-y-2 max-w-md px-4">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`flex items-center gap-3 p-4 rounded-lg border shadow-lg animate-in slide-in-from-right ${getStyles(
+            className={`flex items-start gap-3 p-4 rounded-lg border shadow-lg animate-in slide-in-from-right ${getStyles(
               toast.type
             )}`}
           >
-            {getIcon(toast.type)}
-            <p className="flex-1 text-sm font-medium">{toast.message}</p>
+            <div className="flex-shrink-0 mt-0.5">
+              {getIcon(toast.type)}
+            </div>
+            <p className="flex-1 text-sm font-medium whitespace-pre-line">{toast.message}</p>
             <button
               onClick={() => removeToast(toast.id)}
-              className="text-current opacity-70 hover:opacity-100 transition-opacity"
+              className="flex-shrink-0 text-current opacity-70 hover:opacity-100 transition-opacity"
             >
               <X className="w-4 h-4" />
             </button>

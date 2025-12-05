@@ -5,6 +5,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { format, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, isWithinInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Calendar, Clock, User, Phone, Ban, ChevronLeft, ChevronRight, X } from 'lucide-react';
@@ -17,6 +18,7 @@ import {
 
 export default function AgendaPage() {
   const { user } = useAuth();
+  const toast = useToast();
   const { appointments, loading } = useAppointments();
   const { patients } = usePatients();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -97,7 +99,7 @@ export default function AgendaPage() {
     if (!user) return;
 
     if (!blockForm.reason.trim()) {
-      alert('Por favor ingresa un motivo para el bloqueo');
+      toast.error('Por favor ingresa un motivo para el bloqueo');
       return;
     }
 
@@ -119,16 +121,18 @@ export default function AgendaPage() {
         reason: '',
       });
 
-      alert('Franja bloqueada creada exitosamente');
+      toast.success('Franja bloqueada creada exitosamente');
     } catch (error: any) {
       console.error('❌ Error creating blocked slot:', error);
       console.error('Error completo:', JSON.stringify(error, null, 2));
 
       // Si es un error de índice, dar instrucciones específicas
       if (error?.message?.includes('index')) {
-        alert('Se necesita crear un índice en Firestore.\n\nBusca en la consola un enlace que diga "You can create it here" y haz clic en él para crear el índice automáticamente.');
+        toast.error('Se necesita crear un índice en Firestore. Busca en la consola un enlace que diga "You can create it here" y haz clic en él.', { duration: 8000 });
+      } else if (error?.code === 'permission-denied') {
+        toast.error('Error de permisos. Por favor verifica que las reglas de Firestore estén actualizadas.', { duration: 6000 });
       } else {
-        alert(`Error al crear la franja bloqueada: ${error?.message || 'Error desconocido'}\n\nRevisa la consola para más detalles.`);
+        toast.error(`Error al crear la franja bloqueada: ${error?.message || 'Error desconocido'}`, { duration: 5000 });
       }
     }
   };
@@ -138,9 +142,10 @@ export default function AgendaPage() {
     try {
       await deleteBlockedSlot(id);
       setBlockedSlots(blockedSlots.filter(b => b.id !== id));
+      toast.success('Franja bloqueada eliminada exitosamente');
     } catch (error) {
       console.error('Error deleting blocked slot:', error);
-      alert('Error al eliminar la franja bloqueada. Por favor intenta de nuevo.');
+      toast.error('Error al eliminar la franja bloqueada. Por favor intenta de nuevo.');
     }
   };
 
