@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 import { X, CheckCircle2, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 
 type ToastType = 'success' | 'error' | 'info' | 'warning';
@@ -74,30 +75,35 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const toastPortal = typeof document !== 'undefined' ? ReactDOM.createPortal(
+    <div className="fixed bottom-20 md:bottom-4 right-4 left-4 md:left-auto z-[10000] space-y-2 max-w-md md:ml-auto pointer-events-none">
+      {toasts.map((toast) => (
+        <div
+          key={toast.id}
+          className={`flex items-start gap-3 p-4 rounded-lg border shadow-xl animate-in slide-in-from-right pointer-events-auto ${getStyles(
+            toast.type
+          )}`}
+        >
+          <div className="flex-shrink-0 mt-0.5">
+            {getIcon(toast.type)}
+          </div>
+          <p className="flex-1 text-sm font-medium whitespace-pre-line">{toast.message}</p>
+          <button
+            onClick={() => removeToast(toast.id)}
+            className="flex-shrink-0 text-current opacity-70 hover:opacity-100 transition-opacity"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      ))}
+    </div>,
+    document.body
+  ) : null;
+
   return (
     <ToastContext.Provider value={{ showToast, success, error, info, warning }}>
       {children}
-      <div className="fixed bottom-20 md:bottom-4 right-4 left-4 md:left-auto z-[9999] space-y-2 max-w-md md:ml-auto pointer-events-none">
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            className={`flex items-start gap-3 p-4 rounded-lg border shadow-xl animate-in slide-in-from-right pointer-events-auto ${getStyles(
-              toast.type
-            )}`}
-          >
-            <div className="flex-shrink-0 mt-0.5">
-              {getIcon(toast.type)}
-            </div>
-            <p className="flex-1 text-sm font-medium whitespace-pre-line">{toast.message}</p>
-            <button
-              onClick={() => removeToast(toast.id)}
-              className="flex-shrink-0 text-current opacity-70 hover:opacity-100 transition-opacity"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        ))}
-      </div>
+      {toastPortal}
     </ToastContext.Provider>
   );
 }
