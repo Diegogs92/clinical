@@ -114,34 +114,37 @@ export default function TokenExpirationBanner() {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[9999] bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg">
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 flex-shrink-0 animate-pulse" />
-            <div>
-              <p className="font-semibold text-sm">Tu sesión con Google Calendar expiró</p>
-              <p className="text-xs opacity-90">
-                Haz clic en "Renovar" para continuar sincronizando turnos con Google Calendar
-              </p>
+    <div className="fixed bottom-4 right-4 z-[9999] max-w-md">
+      <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-xl rounded-lg p-4 border border-blue-400">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="font-semibold text-sm mb-1">Permisos de Google Calendar</p>
+            <p className="text-xs opacity-90 mb-3">
+              Para sincronizar turnos con Google Calendar, necesitas renovar los permisos (se vencen cada hora por seguridad de Google)
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleReauth}
+                disabled={isReauthing}
+                className="bg-white text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isReauthing ? 'Renovando...' : 'Renovar Permisos'}
+              </button>
+              <button
+                onClick={() => setDismissed(true)}
+                className="text-white/80 hover:text-white text-xs underline"
+              >
+                Más tarde
+              </button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleReauth}
-              disabled={isReauthing}
-              className="bg-white text-orange-600 hover:bg-orange-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isReauthing ? 'Renovando...' : 'Renovar'}
-            </button>
-            <button
-              onClick={() => setDismissed(true)}
-              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-              title="Cerrar"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+          <button
+            onClick={() => setDismissed(true)}
+            className="flex-shrink-0 text-white/80 hover:text-white transition-opacity"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </div>

@@ -40,13 +40,13 @@ interface Props {
 }
 
 export default function AppointmentForm({ initialData, onCreated, onCancel }: Props) {
-  const { user } = useAuth();
+  const { user, signInWithGoogle } = useAuth();
   const [loading, setLoading] = useState(false);
   const { patients, refreshPatients } = usePatients();
   const { offices } = useOffices();
   const { refreshAppointments } = useAppointments();
   const [showQuickPatient, setShowQuickPatient] = useState(false);
-  const { syncAppointment } = useCalendarSync();
+  const { syncAppointment, isTokenExpired } = useCalendarSync();
   const toast = useToast();
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<AppointmentFormValues>({
     resolver: zodResolver(schema),
@@ -158,6 +158,22 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       } else {
         const id = await createAppointment(payload);
         const created = { ...payload, id };
+
+        // Si el token expiró, solicitar renovación automáticamente
+        if (isTokenExpired) {
+          console.log('[AppointmentForm] Token expirado, solicitando renovación...');
+          try {
+            await signInWithGoogle();
+            console.log('[AppointmentForm] Token renovado, reintentando sincronización...');
+          } catch (error) {
+            console.error('[AppointmentForm] Error renovando token:', error);
+            toast.warning('Turno creado. Haz clic en "Renovar Permisos" abajo para sincronizar con Google Calendar');
+            await refreshAppointments();
+            reset();
+            onCreated?.(created);
+            return;
+          }
+        }
 
         console.log('[AppointmentForm] Intentando sincronizar con Google Calendar...');
         const eventId = await syncAppointment(created, 'create', undefined, officeColorId);
