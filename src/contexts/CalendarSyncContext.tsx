@@ -33,12 +33,22 @@ export function CalendarSyncProvider({ children }: Props) {
   const [isTokenExpired, setIsTokenExpired] = useState(false);
 
   useEffect(() => {
+    console.log('[CalendarSync] useEffect - Estado actual:', {
+      hasUser: !!user,
+      hasToken: !!googleAccessToken,
+      tokenLength: googleAccessToken?.length || 0
+    });
+
     // Si el usuario está autenticado con Google, está "conectado" para Calendar
     if (user && googleAccessToken) {
+      console.log('[CalendarSync] ✅ Usuario conectado con token válido');
       setIsConnected(true);
       // Verificar si el token está expirado
       checkTokenExpiration();
     } else {
+      console.log('[CalendarSync] ❌ Usuario NO conectado:', {
+        reason: !user ? 'no user' : 'no token'
+      });
       setIsConnected(false);
       setIsTokenExpired(false);
     }

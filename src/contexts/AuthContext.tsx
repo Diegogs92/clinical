@@ -76,6 +76,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(user);
 
       if (user) {
+        // Cargar access token del localStorage si existe y no ha expirado
+        const savedToken = localStorage.getItem('google_access_token');
+        const savedExpiry = localStorage.getItem('google_token_expires_at');
+
+        if (savedToken && savedExpiry) {
+          const expiresAt = parseInt(savedExpiry, 10);
+          const now = Date.now();
+
+          if (now < expiresAt) {
+            logger.log('[AuthContext] Token válido recuperado del localStorage');
+            setGoogleAccessToken(savedToken);
+          } else {
+            logger.log('[AuthContext] Token expirado, limpiando localStorage');
+            localStorage.removeItem('google_access_token');
+            localStorage.removeItem('google_token_expires_at');
+            setGoogleAccessToken(null);
+          }
+        }
+
         if (!db) {
           logger.error('[AuthContext] Firestore no inicializado');
           setLoading(false);
@@ -107,9 +126,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setError('Error al crear perfil de usuario');
         }
       } else {
-        // Usuario cerró sesión, limpiar perfil y error
+        // Usuario cerró sesión, limpiar perfil, error y token
         setUserProfile(null);
         setError(null);
+        setGoogleAccessToken(null);
+        localStorage.removeItem('google_access_token');
+        localStorage.removeItem('google_token_expires_at');
       }
       setLoading(false);
     });

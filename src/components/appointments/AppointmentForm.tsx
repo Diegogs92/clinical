@@ -152,12 +152,15 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         const id = await createAppointment(payload);
         const created = { ...payload, id };
 
+        console.log('[AppointmentForm] Intentando sincronizar con Google Calendar...');
         const eventId = await syncAppointment(created, 'create', undefined, officeColorId);
+        console.log('[AppointmentForm] Resultado de sincronización:', eventId);
+
         if (eventId) {
           await updateAppointment(id, { googleCalendarEventId: eventId });
           toast.success('Turno creado y sincronizado con Google Calendar');
         } else {
-          toast.success('Turno creado (sin sincronizar con Google Calendar)');
+          toast.success('Turno creado sin sincronizar');
           console.warn('No se pudo sincronizar con Google Calendar. Verifica tu sesión.');
         }
 

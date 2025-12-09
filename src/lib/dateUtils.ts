@@ -3,13 +3,17 @@ import { es } from 'date-fns/locale';
 
 /**
  * Combina una fecha ISO (YYYY-MM-DD) con una hora (HH:mm) para crear un Date
+ * en la zona horaria local (Argentina/Buenos Aires)
  */
 export function combineDateAndTime(dateStr: string, timeStr: string): Date {
   // dateStr format: "2025-01-17" or ISO string
   // timeStr format: "14:30"
   const dateOnly = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
-  const dateTimeStr = `${dateOnly}T${timeStr}:00`;
-  return parseISO(dateTimeStr);
+  const [year, month, day] = dateOnly.split('-').map(Number);
+  const [hours, minutes] = timeStr.split(':').map(Number);
+
+  // Crear Date en hora local (no UTC)
+  return new Date(year, month - 1, day, hours, minutes, 0, 0);
 }
 
 /**
