@@ -142,7 +142,14 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         const updated = { ...payload, id: initialData.id };
 
         if (initialData.googleCalendarEventId) {
-          await syncAppointment(updated, 'update', initialData.googleCalendarEventId, officeColorId);
+          const eventId = await syncAppointment(updated, 'update', initialData.googleCalendarEventId, officeColorId);
+          if (eventId) {
+            toast.success('Turno actualizado y sincronizado con Google Calendar');
+          } else {
+            toast.success('Turno actualizado');
+          }
+        } else {
+          toast.success('Turno actualizado');
         }
 
         await refreshAppointments();

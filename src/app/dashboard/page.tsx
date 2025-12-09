@@ -632,7 +632,7 @@ export default function DashboardPage() {
               onCreated={(appt: Appointment) => {
                 setShowForm(false);
                 setEditingAppointment(null);
-                toast.success(editingAppointment ? 'Turno actualizado correctamente' : 'Turno creado correctamente');
+                // Toast se muestra en AppointmentForm con información de sincronización
                 refreshAppointments();
               }}
               onCancel={()=>{setShowForm(false); setEditingAppointment(null);}}
