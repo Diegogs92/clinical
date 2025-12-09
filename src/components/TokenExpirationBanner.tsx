@@ -3,13 +3,86 @@
 import { useCalendarSync } from '@/contexts/CalendarSyncContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { getTokenInfo } from '@/lib/tokenRefresh';
 
 export default function TokenExpirationBanner() {
-  const { isTokenExpired } = useCalendarSync();
+  const { isTokenExpired, checkTokenExpiration } = useCalendarSync();
   const { signInWithGoogle, user } = useAuth();
   const [dismissed, setDismissed] = useState(false);
   const [isReauthing, setIsReauthing] = useState(false);
+  const [autoRenewing, setAutoRenewing] = useState(false);
+
+  // Función para renovar token automáticamente de manera silenciosa
+  const autoRenewToken = useCallback(async () => {
+    if (autoRenewing || isReauthing) return;
+
+    try {
+      setAutoRenewing(true);
+      console.log('[TokenBanner] Renovando token automáticamente de forma silenciosa...');
+
+      // Intentar renovar sin mostrar popup
+      await signInWithGoogle();
+
+      console.log('[TokenBanner] Token renovado automáticamente');
+      setDismissed(false); // Asegurar que el banner se oculta
+    } catch (error) {
+      console.warn('[TokenBanner] No se pudo renovar automáticamente:', error);
+      // Si falla, mostrar el banner para renovación manual
+    } finally {
+      setAutoRenewing(false);
+    }
+  }, [autoRenewing, isReauthing, signInWithGoogle]);
+
+  // Detectar actividad del usuario y verificar si el token está por expirar
+  useEffect(() => {
+    if (!user) return;
+
+    const checkAndRenew = () => {
+      const tokenInfo = getTokenInfo();
+      if (!tokenInfo) return;
+
+      const now = Date.now();
+      const timeUntilExpiry = tokenInfo.expiresAt - now;
+      const tenMinutes = 10 * 60 * 1000;
+
+      // Si faltan menos de 10 minutos para que expire, renovar automáticamente
+      if (timeUntilExpiry > 0 && timeUntilExpiry < tenMinutes) {
+        console.log('[TokenBanner] Token expirará pronto, renovando automáticamente...');
+        autoRenewToken();
+      }
+    };
+
+    // Verificar cada 2 minutos
+    const intervalId = setInterval(checkAndRenew, 2 * 60 * 1000);
+
+    // Verificar cuando hay actividad del usuario
+    const events = ['click', 'keydown', 'mousemove', 'touchstart'];
+    const activityHandler = () => {
+      // Solo verificar si ha pasado al menos 1 minuto desde la última verificación
+      checkAndRenew();
+    };
+
+    // Throttle: solo verificar una vez por minuto máximo
+    let lastCheck = 0;
+    const throttledHandler = () => {
+      const now = Date.now();
+      if (now - lastCheck > 60000) { // 1 minuto
+        lastCheck = now;
+        activityHandler();
+      }
+    };
+
+    events.forEach(event => window.addEventListener(event, throttledHandler, { passive: true }));
+
+    // Verificar inmediatamente al montar
+    checkAndRenew();
+
+    return () => {
+      clearInterval(intervalId);
+      events.forEach(event => window.removeEventListener(event, throttledHandler));
+    };
+  }, [user, autoRenewToken]);
 
   // Resetear el dismissed cuando el token se renueva exitosamente
   useEffect(() => {
@@ -19,14 +92,14 @@ export default function TokenExpirationBanner() {
   }, [isTokenExpired]);
 
   // Solo mostrar si el usuario está autenticado, el token expiró y no fue dismissed
-  if (!user || !isTokenExpired || dismissed) {
+  if (!user || !isTokenExpired || dismissed || autoRenewing) {
     return null;
   }
 
   const handleReauth = async () => {
     try {
       setIsReauthing(true);
-      console.log('[TokenBanner] Iniciando re-autenticación con Google...');
+      console.log('[TokenBanner] Iniciando re-autenticación manual con Google...');
 
       // Re-autenticar para obtener nuevo token
       await signInWithGoogle();
@@ -50,7 +123,7 @@ export default function TokenExpirationBanner() {
             <div>
               <p className="font-semibold text-sm">Tu sesión con Google Calendar expiró</p>
               <p className="text-xs opacity-90">
-                Los nuevos turnos no se sincronizarán hasta que renueves los permisos
+                Haz clic en "Renovar" para continuar sincronizando turnos con Google Calendar
               </p>
             </div>
           </div>
@@ -60,7 +133,7 @@ export default function TokenExpirationBanner() {
               disabled={isReauthing}
               className="bg-white text-orange-600 hover:bg-orange-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isReauthing ? 'Renovando...' : 'Renovar Permisos'}
+              {isReauthing ? 'Renovando...' : 'Renovar'}
             </button>
             <button
               onClick={() => setDismissed(true)}
