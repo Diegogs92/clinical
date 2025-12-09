@@ -33,7 +33,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     const id = Date.now().toString();
     setToasts((prev) => [...prev, { id, message, type }]);
 
-    const duration = options?.duration || 4000;
+    const duration = options?.duration || 2500; // Reducido de 4000 a 2500ms (2.5 segundos)
 
     setTimeout(() => {
       setToasts((prev) => prev.filter((toast) => toast.id !== id));
@@ -77,23 +77,23 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const toastPortal = typeof document !== 'undefined' ? ReactDOM.createPortal(
     <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 pointer-events-none">
-      <div className="space-y-2 w-full max-w-md pointer-events-none">
+      <div className="space-y-2 w-full max-w-lg pointer-events-none">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`flex items-start gap-3 p-4 rounded-lg border shadow-xl animate-in zoom-in-95 fade-in pointer-events-auto ${getStyles(
+            className={`flex items-start gap-3 p-5 rounded-lg border shadow-xl animate-in zoom-in-95 fade-in pointer-events-auto ${getStyles(
               toast.type
             )}`}
           >
             <div className="flex-shrink-0 mt-0.5">
               {getIcon(toast.type)}
             </div>
-            <p className="flex-1 text-sm font-medium whitespace-pre-line">{toast.message}</p>
+            <p className="flex-1 text-base font-medium whitespace-pre-line">{toast.message}</p>
             <button
               onClick={() => removeToast(toast.id)}
               className="flex-shrink-0 text-current opacity-70 hover:opacity-100 transition-opacity"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         ))}

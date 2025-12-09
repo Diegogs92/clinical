@@ -44,22 +44,21 @@ export default function TokenExpirationBanner() {
 
       const now = Date.now();
       const timeUntilExpiry = tokenInfo.expiresAt - now;
-      const tenMinutes = 10 * 60 * 1000;
+      const twentyMinutes = 20 * 60 * 1000; // Aumentado de 10 a 20 minutos
 
-      // Si faltan menos de 10 minutos para que expire, renovar automáticamente
-      if (timeUntilExpiry > 0 && timeUntilExpiry < tenMinutes) {
-        console.log('[TokenBanner] Token expirará pronto, renovando automáticamente...');
+      // Si faltan menos de 20 minutos para que expire, renovar automáticamente
+      if (timeUntilExpiry > 0 && timeUntilExpiry < twentyMinutes) {
+        console.log('[TokenBanner] Token expirará pronto (en', Math.floor(timeUntilExpiry / 60000), 'minutos), renovando automáticamente...');
         autoRenewToken();
       }
     };
 
-    // Verificar cada 2 minutos
-    const intervalId = setInterval(checkAndRenew, 2 * 60 * 1000);
+    // Verificar cada 1 minuto (más frecuente)
+    const intervalId = setInterval(checkAndRenew, 60 * 1000);
 
     // Verificar cuando hay actividad del usuario
     const events = ['click', 'keydown', 'mousemove', 'touchstart'];
     const activityHandler = () => {
-      // Solo verificar si ha pasado al menos 1 minuto desde la última verificación
       checkAndRenew();
     };
 
