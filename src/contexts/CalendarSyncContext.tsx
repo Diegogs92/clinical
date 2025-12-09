@@ -52,6 +52,18 @@ export function CalendarSyncProvider({ children }: Props) {
       setIsConnected(false);
       setIsTokenExpired(false);
     }
+
+    // Verificar expiración periódicamente cada 5 minutos
+    const intervalId = setInterval(() => {
+      if (user && googleAccessToken) {
+        const expired = checkTokenExpiration();
+        if (expired) {
+          console.log('[CalendarSync] Token expirado detectado en chequeo periódico');
+        }
+      }
+    }, 5 * 60 * 1000); // 5 minutos
+
+    return () => clearInterval(intervalId);
   }, [user, googleAccessToken]);
 
   const checkTokenExpiration = (): boolean => {
@@ -80,6 +92,13 @@ export function CalendarSyncProvider({ children }: Props) {
     eventId?: string,
     officeColorId?: string
   ): Promise<string | null> => {
+    // Verificar si el token está expirado ANTES de intentar sincronizar
+    const expired = checkTokenExpiration();
+    if (expired) {
+      console.warn('[CalendarSync] Token expirado. No se puede sincronizar.');
+      return null;
+    }
+
     if (!isConnected) {
       console.warn('[CalendarSync] No conectado a Google Calendar');
       return null;
@@ -113,6 +132,7 @@ export function CalendarSyncProvider({ children }: Props) {
           console.warn('[CalendarSync] Token expirado (401). Limpiando token y marcando como expirado.');
           clearTokenInfo();
           setIsTokenExpired(true);
+          setIsConnected(false);
         }
 
         throw new Error(errorData.error || 'Failed to sync');

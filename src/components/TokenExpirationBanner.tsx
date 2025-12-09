@@ -1,38 +1,43 @@
 'use client';
 
-// BANNER DESHABILITADO TEMPORALMENTE
-// La sincronización con Google Calendar debe estar siempre activa
-// No mostrar advertencias de expiración de token
-
-export default function TokenExpirationBanner() {
-  // Banner deshabilitado - retornar null siempre
-  return null;
-}
-
-/* CÓDIGO ORIGINAL COMENTADO PARA FUTURA REACTIVACIÓN:
-
 import { useCalendarSync } from '@/contexts/CalendarSyncContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function TokenExpirationBanner() {
   const { isTokenExpired } = useCalendarSync();
-  const { signOut, signInWithGoogle } = useAuth();
+  const { signInWithGoogle, user } = useAuth();
   const [dismissed, setDismissed] = useState(false);
+  const [isReauthing, setIsReauthing] = useState(false);
 
-  if (!isTokenExpired || dismissed) {
+  // Resetear el dismissed cuando el token se renueva exitosamente
+  useEffect(() => {
+    if (!isTokenExpired) {
+      setDismissed(false);
+    }
+  }, [isTokenExpired]);
+
+  // Solo mostrar si el usuario está autenticado, el token expiró y no fue dismissed
+  if (!user || !isTokenExpired || dismissed) {
     return null;
   }
 
   const handleReauth = async () => {
     try {
-      // Re-autenticar SIN cerrar sesión
-      // Solo renovamos el token de Google Calendar
+      setIsReauthing(true);
+      console.log('[TokenBanner] Iniciando re-autenticación con Google...');
+
+      // Re-autenticar para obtener nuevo token
       await signInWithGoogle();
-      setDismissed(true); // Ocultar banner después de re-autenticar
+
+      console.log('[TokenBanner] Re-autenticación exitosa');
+      setDismissed(true);
     } catch (error) {
-      console.error('Error al re-autenticar:', error);
+      console.error('[TokenBanner] Error al re-autenticar:', error);
+      alert('Error al renovar permisos. Por favor intenta nuevamente.');
+    } finally {
+      setIsReauthing(false);
     }
   };
 
@@ -41,20 +46,21 @@ export default function TokenExpirationBanner() {
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+            <AlertTriangle className="w-5 h-5 flex-shrink-0 animate-pulse" />
             <div>
               <p className="font-semibold text-sm">Tu sesión con Google Calendar expiró</p>
               <p className="text-xs opacity-90">
-                Haz clic en "Renovar Permisos" para seguir sincronizando turnos con Google Calendar
+                Los nuevos turnos no se sincronizarán hasta que renueves los permisos
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handleReauth}
-              className="bg-white text-orange-600 hover:bg-orange-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap"
+              disabled={isReauthing}
+              className="bg-white text-orange-600 hover:bg-orange-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Renovar Permisos
+              {isReauthing ? 'Renovando...' : 'Renovar Permisos'}
             </button>
             <button
               onClick={() => setDismissed(true)}
@@ -69,5 +75,3 @@ export default function TokenExpirationBanner() {
     </div>
   );
 }
-
-*/
