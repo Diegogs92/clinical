@@ -109,10 +109,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUserProfile(profileSnap.data() as UserProfile);
           } else {
             logger.log('[AuthContext] Creando nuevo perfil');
+            const username = (user.email || '').split('@')[0] || '';
             const newProfile: UserProfile = {
               uid: user.uid,
               email: user.email || '',
-              displayName: user.displayName || '',
+              username,
+              displayName: user.displayName || username || '',
               photoURL: user.photoURL || '',
               role: 'profesional', // Por defecto, nuevos usuarios son profesionales
               defaultAppointmentDuration: 30,

@@ -156,6 +156,7 @@ export type UserRole = 'administrador' | 'profesional' | 'secretaria';
 export interface UserProfile {
   uid: string;
   email: string;
+  username?: string;
   displayName: string;
   photoURL?: string;
   role: UserRole; // Rol del usuario en el sistema

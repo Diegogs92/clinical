@@ -12,10 +12,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const router = useRouter();
+
+  const buildEmail = (u: string) => `${u.trim().toLowerCase()}@dentify.local`;
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -34,10 +36,11 @@ export default function LoginPage() {
     setLoading(true);
     setLocalError(null);
     try {
+      const aliasEmail = buildEmail(username);
       if (mode === 'login') {
-        await signInWithEmail(email, password);
+        await signInWithEmail(aliasEmail, password);
       } else {
-        await registerWithEmail(email, password, displayName || undefined);
+        await registerWithEmail(aliasEmail, password, displayName || username);
       }
     } catch (err: any) {
       setLocalError(err?.message || 'Error de autenticación');
@@ -90,6 +93,17 @@ export default function LoginPage() {
           )}
 
           <div className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-secondary dark:text-gray-300">Usuario</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="input-field w-full"
+                placeholder="Ej: romina"
+                autoComplete="username"
+              />
+            </div>
             {mode === 'register' && (
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-secondary dark:text-gray-300">Nombre</label>
@@ -104,17 +118,6 @@ export default function LoginPage() {
               </div>
             )}
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-secondary dark:text-gray-300">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input-field w-full"
-                placeholder="correo@consultorio.com"
-                autoComplete="email"
-              />
-            </div>
-            <div className="space-y-1">
               <label className="text-xs font-semibold text-secondary dark:text-gray-300">Contraseña</label>
               <input
                 type="password"
@@ -127,7 +130,7 @@ export default function LoginPage() {
             </div>
             <button
               onClick={handleSubmit}
-              disabled={loading || !email || !password}
+              disabled={loading || !username || !password}
               className="w-full flex items-center justify-center gap-2 bg-primary text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (

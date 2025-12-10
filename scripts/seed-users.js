@@ -29,33 +29,35 @@ try {
 
 const db = admin.firestore();
 
+const SEED_DOMAIN = 'dentify.local';
+
 const SEED_USERS = [
   {
-    email: 'romina@dentify.com',
+    username: 'romina',
     password: 'Dentify2025*',
     displayName: 'Romina Administradora',
     role: 'administrador',
   },
   {
-    email: 'secretaria@dentify.com',
+    username: 'secretaria',
     password: 'Dentify2025*',
     displayName: 'Secretaria Consultorio',
     role: 'secretaria',
   },
   {
-    email: 'colega1@dentify.com',
+    username: 'colega1',
     password: 'Dentify2025*',
     displayName: 'Colega 1',
     role: 'profesional',
   },
   {
-    email: 'colega2@dentify.com',
+    username: 'colega2',
     password: 'Dentify2025*',
     displayName: 'Colega 2',
     role: 'profesional',
   },
   {
-    email: 'colega3@dentify.com',
+    username: 'colega3',
     password: 'Dentify2025*',
     displayName: 'Colega 3',
     role: 'profesional',
@@ -63,7 +65,8 @@ const SEED_USERS = [
 ];
 
 async function upsertUser(userSeed) {
-  const { email, password, displayName, role } = userSeed;
+  const { username, password, displayName, role } = userSeed;
+  const email = `${username}@${SEED_DOMAIN}`;
 
   let userRecord;
   try {
@@ -91,6 +94,7 @@ async function upsertUser(userSeed) {
     {
       uid: userRecord.uid,
       email,
+      username,
       displayName,
       role,
       defaultAppointmentDuration: 30,
