@@ -82,6 +82,22 @@ export async function getPatientsByUser(userId: string): Promise<Patient[]> {
   return list.sort((a, b) => a.lastName.localeCompare(b.lastName));
 }
 
+export async function getAllPatients(): Promise<Patient[]> {
+  if (mockMode || !db) return [...mockPatients].sort((a, b) => a.lastName.localeCompare(b.lastName));
+  const colRef = collection(db as Firestore, PATIENTS_COLLECTION);
+  const snap = await getDocs(colRef);
+  const list = snap.docs.map(d => {
+    try {
+      return PatientSchema.parse({ ...d.data(), id: d.id });
+    } catch (error) {
+      logger.error('Error validating patient data:', error);
+      return null;
+    }
+  }).filter((p): p is Patient => p !== null);
+
+  return list.sort((a, b) => a.lastName.localeCompare(b.lastName));
+}
+
 export async function uploadPatientFile(patientId: string, file: File): Promise<PatientFile> {
   if (mockMode || !storage) {
     return {

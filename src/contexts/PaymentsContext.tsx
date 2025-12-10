@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { Payment } from '@/types';
 import { listPayments, listPendingPayments } from '@/lib/payments';
 import { useAuth } from './AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface PaymentsContextType {
   payments: Payment[];
@@ -17,6 +18,7 @@ const PaymentsContext = createContext<PaymentsContextType | undefined>(undefined
 
 export function PaymentsProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  const { canViewAllPayments } = usePermissions();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [pendingPayments, setPendingPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +29,7 @@ export function PaymentsProvider({ children }: { children: React.ReactNode }) {
       return [];
     }
     try {
-      const data = await listPayments(user.uid);
+      const data = await listPayments(user.uid, canViewAllPayments);
       setPayments(data);
       return data;
     } catch (error) {
@@ -42,14 +44,14 @@ export function PaymentsProvider({ children }: { children: React.ReactNode }) {
       return [];
     }
     try {
-      const data = await listPendingPayments(user.uid);
+      const data = await listPendingPayments(user.uid, canViewAllPayments);
       setPendingPayments(data);
       return data;
     } catch (error) {
       console.error('Error loading pending payments:', error);
       return [];
     }
-  }, [user]);
+  }, [user, canViewAllPayments]);
 
   useEffect(() => {
     const loadData = async () => {

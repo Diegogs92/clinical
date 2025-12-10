@@ -71,47 +71,43 @@ export async function getPayment(id: string): Promise<Payment|null> {
   return { ...data, id: snap.id };
 }
 
-export async function listPayments(userId: string): Promise<Payment[]> {
+export async function listPayments(userId: string, viewAll: boolean = false): Promise<Payment[]> {
   if (mockMode || !db) {
     const mockPayments = getMockPayments();
-    console.log('[listPayments] Mock mode - Total pagos:', mockPayments.length, 'Usuario:', userId);
-    const filtered = mockPayments.filter(p => p.userId === userId);
-    console.log('[listPayments] Pagos filtrados:', filtered.length);
+    const filtered = viewAll ? mockPayments : mockPayments.filter(p => p.userId === userId);
     return sortByDateDesc(filtered);
   }
 
-  // Evitar indices compuestos: filtramos por usuario y ordenamos en cliente
-  const q = query(collection(db as Firestore, PAYMENTS_COLLECTION), where('userId','==',userId));
-  const snap = await getDocs(q);
-  const payments = snap.docs.map(d => ({ ...d.data() as Payment, id: d.id }));
+  const snap = viewAll
+    ? await getDocs(collection(db as Firestore, PAYMENTS_COLLECTION))
+    : await getDocs(query(collection(db as Firestore, PAYMENTS_COLLECTION), where('userId','==',userId)));
 
+  const payments = snap.docs.map(d => ({ ...d.data() as Payment, id: d.id }));
   return sortByDateDesc(payments);
 }
 
-export async function listPendingPayments(userId: string): Promise<Payment[]> {
+export async function listPendingPayments(userId: string, viewAll: boolean = false): Promise<Payment[]> {
   if (mockMode || !db) {
     const mockPayments = getMockPayments();
-    return sortByDateDesc(mockPayments.filter(p => p.userId === userId && p.status === 'pending'));
+    const filtered = viewAll ? mockPayments : mockPayments.filter(p => p.userId === userId);
+    return sortByDateDesc(filtered.filter(p => p.status === 'pending'));
   }
 
-  // Traemos todos los pagos del usuario y filtramos pendientes en memoria para evitar requerir indices
-  const q = query(collection(db as Firestore, PAYMENTS_COLLECTION), where('userId','==',userId));
-  const snap = await getDocs(q);
-  const payments = snap.docs.map(d => ({ ...d.data() as Payment, id: d.id }));
+  const snap = viewAll
+    ? await getDocs(collection(db as Firestore, PAYMENTS_COLLECTION))
+    : await getDocs(query(collection(db as Firestore, PAYMENTS_COLLECTION), where('userId','==',userId)));
 
+  const payments = snap.docs.map(d => ({ ...d.data() as Payment, id: d.id }));
   return sortByDateDesc(payments.filter(p => p.status === 'pending'));
 }
 
-export async function listPaymentsByAppointment(appointmentId: string, userId: string): Promise<Payment[]> {
+export async function listPaymentsByAppointment(appointmentId: string): Promise<Payment[]> {
   if (mockMode || !db) {
     const mockPayments = getMockPayments();
     return mockPayments.filter(p => p.appointmentId === appointmentId);
   }
 
-  // Traemos todos los pagos del usuario y filtramos por appointmentId en memoria para evitar requerir índice compuesto
-  const q = query(collection(db as Firestore, PAYMENTS_COLLECTION), where('userId','==',userId));
+  const q = query(collection(db as Firestore, PAYMENTS_COLLECTION), where('appointmentId','==',appointmentId));
   const snap = await getDocs(q);
-  const payments = snap.docs.map(d => ({ ...d.data() as Payment, id: d.id }));
-
-  return payments.filter(p => p.appointmentId === appointmentId);
+  return snap.docs.map(d => ({ ...d.data() as Payment, id: d.id }));
 }

@@ -250,7 +250,7 @@ export default function DashboardPage() {
         await syncAppointment(appt, 'delete', appt.googleCalendarEventId);
       }
 
-      await deleteAppointment(appt.id, user.uid);
+      await deleteAppointment(appt.id);
       await refreshAppointments();
       await refreshPayments();
       await refreshPendingPayments();

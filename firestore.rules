@@ -3,91 +3,120 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
-    function isAuthenticated() {
+    // Helpers de autenticación y roles
+    function signedIn() {
       return request.auth != null;
     }
 
+    function getUserRole() {
+      return get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.role;
+    }
+
     function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+      return signedIn() && request.auth.uid == userId;
     }
 
-    function belongsToUser(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+    function isAdmin() {
+      return signedIn() && getUserRole() == 'administrador';
     }
 
-    // Patients collection
-    match /patients/{patientId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    function isSecretary() {
+      return signedIn() && getUserRole() == 'secretaria';
     }
 
-    // Appointments collection
-    match /appointments/{appointmentId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    function isProfessional() {
+      return signedIn() && getUserRole() == 'profesional';
     }
 
-    // Payments collection
-    match /payments/{paymentId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated()
-                    && request.resource.data.userId == request.auth.uid
-                    && request.resource.data.keys().hasAll(['patientId', 'patientName', 'amount', 'method', 'status', 'date', 'consultationType', 'userId', 'createdAt', 'updatedAt']);
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
-    }
-
-    // Insurances collection
-    match /insurances/{insuranceId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
-    }
-
-    // Authorizations collection
-    match /authorizations/{authorizationId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
-    }
-
-    // User profiles collection
+    // User profiles
     match /userProfiles/{userId} {
-      allow read: if isAuthenticated() && userId == request.auth.uid;
-      allow create: if isAuthenticated() && userId == request.auth.uid;
-      allow update: if isAuthenticated() && userId == request.auth.uid;
-      allow delete: if isAuthenticated() && userId == request.auth.uid;
+      allow read: if signedIn() && (isOwner(userId) || isAdmin());
+      allow create: if signedIn() && isOwner(userId);
+      // Admin puede actualizar cualquier perfil; el dueño puede actualizar salvo el campo role
+      allow update: if signedIn() && (
+        isAdmin() ||
+        (isOwner(userId) && request.resource.data.role == resource.data.role)
+      );
+      allow delete: if isAdmin();
     }
 
-    // Medical history collection
+    // Patients
+    match /patients/{patientId} {
+      allow read: if signedIn() && (isAdmin() || isSecretary() || isOwner(resource.data.userId));
+      allow create: if signedIn() && (
+        isAdmin() ||
+        (isProfessional() && request.resource.data.userId == request.auth.uid)
+      );
+      allow update: if signedIn() && (isAdmin() || isOwner(resource.data.userId));
+      allow delete: if isAdmin();
+    }
+
+    // Appointments (turnos y eventos personales)
+    match /appointments/{appointmentId} {
+      allow read: if signedIn() && (isAdmin() || isSecretary() || isOwner(resource.data.userId));
+      allow create: if signedIn() && (
+        // Admin crea turnos para cualquiera; eventos personales solo admin
+        (isAdmin()) ||
+        (isProfessional() && request.resource.data.userId == request.auth.uid && request.resource.data.appointmentType != 'personal')
+      );
+      allow update: if signedIn() && (
+        isAdmin() ||
+        isOwner(resource.data.userId)
+      );
+      allow delete: if signedIn() && (
+        isAdmin() ||
+        isOwner(resource.data.userId)
+      );
+    }
+
+    // Payments
+    match /payments/{paymentId} {
+      allow read: if signedIn() && (isAdmin() || isSecretary() || isOwner(resource.data.userId));
+      allow create: if signedIn()
+        && (isAdmin() || isSecretary() || isOwner(request.resource.data.userId))
+        && request.resource.data.keys().hasAll(['patientId', 'patientName', 'amount', 'method', 'status', 'date', 'consultationType', 'userId', 'createdAt', 'updatedAt']);
+      allow update: if signedIn() && (isAdmin() || isSecretary() || isOwner(resource.data.userId));
+      allow delete: if isAdmin();
+    }
+
+    // Insurances
+    match /insurances/{insuranceId} {
+      allow read: if signedIn() && (isAdmin() || isSecretary() || isOwner(resource.data.userId));
+      allow create: if signedIn() && (isAdmin() || (isProfessional() && request.resource.data.userId == request.auth.uid));
+      allow update: if signedIn() && (isAdmin() || isOwner(resource.data.userId));
+      allow delete: if isAdmin();
+    }
+
+    // Authorizations
+    match /authorizations/{authorizationId} {
+      allow read: if signedIn() && (isAdmin() || isSecretary() || isOwner(resource.data.userId));
+      allow create: if signedIn() && (isAdmin() || (isProfessional() && request.resource.data.userId == request.auth.uid));
+      allow update: if signedIn() && (isAdmin() || isOwner(resource.data.userId));
+      allow delete: if isAdmin();
+    }
+
+    // Medical history
     match /medicalHistory/{historyId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read: if signedIn() && (isAdmin() || isSecretary() || isOwner(resource.data.userId));
+      allow create: if signedIn() && (isAdmin() || (isProfessional() && request.resource.data.userId == request.auth.uid));
+      allow update: if signedIn() && (isAdmin() || isOwner(resource.data.userId));
+      allow delete: if isAdmin();
     }
 
-    // Blocked slots collection
+    // Blocked slots (eventos personales para bloquear agenda)
     match /blockedSlots/{slotId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read: if signedIn() && (isAdmin() || isSecretary() || isOwner(resource.data.userId));
+      allow create: if signedIn() && isAdmin() && request.resource.data.userId == request.auth.uid;
+      allow update: if signedIn() && isAdmin() && isOwner(resource.data.userId);
+      allow delete: if signedIn() && isAdmin() && isOwner(resource.data.userId);
     }
 
-    // Offices collection
+    // Offices
     match /offices/{officeId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read: if signedIn() && (isAdmin() || isSecretary() || isOwner(resource.data.userId));
+      allow create: if signedIn() && isAdmin() && request.resource.data.userId == request.auth.uid;
+      allow update: if signedIn() && isAdmin() && isOwner(resource.data.userId);
+      allow delete: if signedIn() && isAdmin() && isOwner(resource.data.userId);
     }
 
     // Deny all other collections by default

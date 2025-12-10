@@ -2,7 +2,8 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getPatientsByUser } from "@/lib/patients";
+import { usePermissions } from "@/hooks/usePermissions";
+import { getAllPatients, getPatientsByUser } from "@/lib/patients";
 import { Patient } from "@/types";
 
 interface PatientsContextValue {
@@ -15,6 +16,7 @@ const PatientsContext = createContext<PatientsContextValue | undefined>(undefine
 
 export const PatientsProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
+  const { canViewAllPatients } = usePermissions();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -26,7 +28,9 @@ export const PatientsProvider = ({ children }: { children: React.ReactNode }) =>
     }
     setLoading(true);
     try {
-      const list = await getPatientsByUser(user.uid);
+      const list = canViewAllPatients
+        ? await getAllPatients()
+        : await getPatientsByUser(user.uid);
       setPatients(list);
       return list;
     } catch (error) {
@@ -35,7 +39,7 @@ export const PatientsProvider = ({ children }: { children: React.ReactNode }) =>
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, canViewAllPatients]);
 
   useEffect(() => {
     refreshPatients();

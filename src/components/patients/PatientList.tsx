@@ -14,6 +14,7 @@ import Modal from '@/components/ui/Modal';
 import PatientForm from './PatientForm';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export default function PatientList() {
   const { user } = useAuth();
@@ -23,6 +24,7 @@ export default function PatientList() {
   const [isNewPatientModalOpen, setIsNewPatientModalOpen] = useState(false);
   const { patients, loading: patientsLoading, refreshPatients } = usePatients();
   const { appointments } = useAppointments();
+  const { canViewAllPayments } = usePermissions();
   const toast = useToast();
   const confirm = useConfirm();
 
@@ -49,7 +51,7 @@ export default function PatientList() {
     if (!user) return;
     if (showLoading) setLoading(true);
     try {
-      const paymentsData = await listPayments(user.uid);
+      const paymentsData = await listPayments(user.uid, canViewAllPayments);
       setPayments(paymentsData);
     } catch (e) {
       console.error(e);
@@ -58,7 +60,7 @@ export default function PatientList() {
         setLoading(false);
       }
     }
-  }, [user]);
+  }, [user, canViewAllPayments]);
 
   useEffect(() => {
     loadData({ showLoading: true });
