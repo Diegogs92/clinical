@@ -130,7 +130,8 @@ export default function DashboardPage() {
         const inDateRange = d >= windowRange.start && d < windowRange.end;
         const matchesPatient = !filterPatient || a.patientId === filterPatient;
         const matchesStatus = !filterStatus || a.status === filterStatus;
-        const matchesSearch = !query || a.patientName.toLowerCase().includes(query);
+        const searchableText = a.patientName || a.title || '';
+        const matchesSearch = !query || searchableText.toLowerCase().includes(query);
         return inDateRange && matchesPatient && matchesStatus && matchesSearch;
       })
       .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
@@ -174,9 +175,10 @@ export default function DashboardPage() {
   };
 
   const handleCancel = async (appt: Appointment) => {
+    const displayName = appt.patientName || appt.title || 'este turno';
     const confirmed = await confirm({
       title: 'Cancelar turno',
-      description: `Cancelar el turno de ${appt.patientName}?`,
+      description: `Cancelar el turno de ${displayName}?`,
       confirmText: 'Cancelar turno',
       tone: 'danger',
     });
@@ -192,7 +194,7 @@ export default function DashboardPage() {
         await syncAppointment({ ...appt, status: 'cancelled' }, 'delete', appt.googleCalendarEventId);
       }
 
-      if (isToday && appt.fee) {
+      if (isToday && appt.fee && appt.appointmentType === 'patient' && appt.patientId && appt.patientName) {
         const charge = await confirm({
           title: 'Cobraste honorarios?',
           description: `Registrar honorarios de $${appt.fee.toLocaleString()} para este turno cancelado hoy?`,
@@ -209,7 +211,7 @@ export default function DashboardPage() {
           method: 'cash',
           status: charge ? 'completed' : 'pending',
           date: new Date().toISOString(),
-          consultationType: appt.type,
+          consultationType: appt.type || '',
           userId: user?.uid || '',
         });
       }
@@ -233,9 +235,10 @@ export default function DashboardPage() {
       return;
     }
 
+    const displayName = appt.patientName || appt.title || 'este turno';
     const confirmed = await confirm({
       title: 'Eliminar turno',
-      description: `Eliminar definitivamente el turno de ${appt.patientName}?`,
+      description: `Eliminar definitivamente el turno de ${displayName}?`,
       confirmText: 'Eliminar',
       tone: 'danger',
     });
@@ -297,6 +300,12 @@ export default function DashboardPage() {
       return;
     }
 
+    // Validar que sea un turno de paciente
+    if (appt.appointmentType !== 'patient' || !appt.patientId || !appt.patientName) {
+      toast.error('No se puede registrar pago para este tipo de evento');
+      return;
+    }
+
     const isTotal = appt.fee ? amountNum >= appt.fee : true;
     const status: 'completed' | 'pending' = isTotal ? 'completed' : 'pending';
     console.log('[submitPayment] Es pago total', isTotal, 'Status:', status);
@@ -312,7 +321,7 @@ export default function DashboardPage() {
         method: 'cash',
         status,
         date: new Date().toISOString(),
-        consultationType: appt.type,
+        consultationType: appt.type || '',
         userId: user.uid,
       });
       console.log('[submitPayment] Pago creado con ID:', paymentId);
@@ -454,7 +463,7 @@ export default function DashboardPage() {
                           <tr key={a.id}>
                             <td className="font-medium">{fecha}</td>
                             <td>{a.startTime} - {a.endTime}</td>
-                            <td>{a.patientName}</td>
+                            <td>{a.patientName || a.title || 'Evento'}</td>
                             <td>
                               {office ? (
                                 <span className="text-sm text-gray-600 dark:text-gray-400">{office.name}</span>
@@ -567,7 +576,7 @@ export default function DashboardPage() {
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
                               <h3 className="font-bold text-primary-dark dark:text-white text-base truncate">
-                                {a.patientName}
+                                {a.patientName || a.title || 'Evento'}
                               </h3>
                               <p className="text-xs text-elegant-600 dark:text-elegant-400 mt-0.5">
                                 {fecha} · {a.startTime} - {a.endTime}
@@ -675,7 +684,9 @@ export default function DashboardPage() {
         {paymentDialog.appointment && (
           <div className="space-y-4">
             <div className="space-y-1">
-              <p className="text-sm text-elegant-600 dark:text-elegant-300">{paymentDialog.appointment.patientName}</p>
+              <p className="text-sm text-elegant-600 dark:text-elegant-300">
+                {paymentDialog.appointment.patientName || paymentDialog.appointment.title || 'Evento'}
+              </p>
               <p className="text-lg font-semibold text-primary-dark dark:text-white">
                 Honorarios: ${paymentDialog.appointment.fee?.toLocaleString()}
               </p>

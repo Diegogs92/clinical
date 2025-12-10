@@ -85,7 +85,8 @@ export default function AgendaPage() {
   };
 
   // Obtener información del paciente
-  const getPatientInfo = (patientId: string) => {
+  const getPatientInfo = (patientId: string | undefined) => {
+    if (!patientId) return null;
     return patients.find(p => p.id === patientId);
   };
 
@@ -286,6 +287,7 @@ export default function AgendaPage() {
                           </div>
                         ) : (
                           slotAppointments.map(apt => {
+                            const isPersonalEvent = apt.appointmentType === 'personal';
                             const patient = getPatientInfo(apt.patientId);
                             return (
                               <div
@@ -293,8 +295,8 @@ export default function AgendaPage() {
                                 className="mb-1 p-2 rounded bg-primary/10 dark:bg-primary/20 border border-primary/30"
                               >
                                 <div className="flex items-center gap-1 text-xs font-semibold text-elegant-900 dark:text-white mb-1">
-                                  <User className="w-3 h-3" />
-                                  {patient ? `${patient.firstName} ${patient.lastName}` : 'Paciente'}
+                                  {isPersonalEvent ? '🔒' : <User className="w-3 h-3" />}
+                                  {isPersonalEvent ? (apt.title || 'Evento Personal') : (patient ? `${patient.firstName} ${patient.lastName}` : 'Paciente')}
                                 </div>
                                 <div className="flex items-center gap-1 text-xs text-elegant-600 dark:text-elegant-400">
                                   <Clock className="w-3 h-3" />
