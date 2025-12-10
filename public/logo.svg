@@ -2,15 +2,30 @@
   <!-- Fondo circular con gradiente -->
   <circle cx="256" cy="256" r="240" fill="#08415C"/>
   <circle cx="256" cy="256" r="200" fill="#388697"/>
-  
-  <!-- Cruz médica estilizada -->
-  <rect x="226" y="140" width="60" height="232" rx="10" fill="#F4FAFF"/>
-  <rect x="140" y="226" width="232" height="60" rx="10" fill="#F4FAFF"/>
-  
-  <!-- Detalle de pulso/latido del corazón -->
-  <path d="M150 256 L180 256 L195 226 L210 286 L225 256 L362 256" stroke="#70AE6E" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  
-  <!-- Círculo central decorativo -->
-  <circle cx="256" cy="256" r="35" fill="#7494EA"/>
-  <circle cx="256" cy="256" r="20" fill="#F4FAFF"/>
+
+  <!-- Diente minimalista -->
+  <g transform="translate(190, 180)">
+    <!-- Corona del diente -->
+    <path d="M20 30 Q20 10, 35 10 Q50 10, 50 30 L50 60 Q50 75, 35 75 Q20 75, 20 60 Z"
+          fill="#F4FAFF" stroke="#70AE6E" stroke-width="2"/>
+    <!-- Raíz del diente -->
+    <path d="M25 75 L25 95 Q25 105, 35 105 Q45 105, 45 95 L45 75"
+          fill="#F4FAFF" stroke="#70AE6E" stroke-width="2"/>
+  </g>
+
+  <!-- Reloj minimalista -->
+  <g transform="translate(280, 260)">
+    <!-- Círculo del reloj -->
+    <circle cx="30" cy="30" r="28" fill="#F4FAFF" stroke="#7494EA" stroke-width="3"/>
+    <!-- Manecilla de hora (apuntando a 10) -->
+    <line x1="30" y1="30" x2="20" y2="18" stroke="#08415C" stroke-width="3" stroke-linecap="round"/>
+    <!-- Manecilla de minuto (apuntando a 2) -->
+    <line x1="30" y1="30" x2="42" y2="20" stroke="#388697" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Centro del reloj -->
+    <circle cx="30" cy="30" r="3" fill="#7494EA"/>
+  </g>
+
+  <!-- Texto DENTIFY -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold"
+        fill="#F4FAFF" text-anchor="middle">DENTIFY</text>
 </svg>

@@ -78,6 +78,21 @@ export async function getAppointmentsByUser(userId: string): Promise<Appointment
   return appointments.sort((a, b) => a.date.localeCompare(b.date));
 }
 
+/**
+ * Obtiene todos los turnos (para administradores y secretarias)
+ */
+export async function getAllAppointments(): Promise<Appointment[]> {
+  if (mockMode || !db) {
+    return mockAppointments.sort((a,b) => a.date.localeCompare(b.date));
+  }
+  const colRef = collection(db as Firestore, APPOINTMENTS_COLLECTION);
+  const snap = await getDocs(colRef);
+  const appointments = snap.docs.map(d => ({ ...d.data() as Appointment, id: d.id }));
+
+  // Ordenar por fecha en el cliente
+  return appointments.sort((a, b) => a.date.localeCompare(b.date));
+}
+
 // Utility to expand recurrence (client-side only for now)
 export function expandRecurrence(base: Appointment, maxOccurrences: number = 100): Appointment[] {
   if (!base.isRecurrent || !base.recurrenceRule) return [base];

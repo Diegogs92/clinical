@@ -82,11 +82,11 @@ export default function LoginPage() {
         {/* Logo and Title */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
-            <Image src="/logo.svg" alt="Clinical" width={80} height={80} priority />
+            <Image src="/logo.svg" alt="DENTIFY" width={80} height={80} priority />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-2">Clinical</h1>
+          <h1 className="text-4xl font-bold text-white mb-2">DENTIFY</h1>
           <p className="text-white/90 text-lg font-medium drop-shadow-lg">
-            Sistema de Gestión para Profesionales de Salud
+            Asistente de Gestión Odontológica
           </p>
         </div>
 

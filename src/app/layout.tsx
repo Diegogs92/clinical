@@ -22,9 +22,12 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Clinical - Sistema de Gestión Médica',
-  description: 'Plataforma profesional para la gestión de consultorios médicos',
+  title: 'DENTIFY - Asistente de Gestión Odontológica',
+  description: 'Plataforma profesional para la gestión de consultorios odontológicos',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 export const viewport: Viewport = {
   width: 'device-width',

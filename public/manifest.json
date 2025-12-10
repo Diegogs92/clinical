@@ -1,7 +1,7 @@
 {
-  "name": "Clinical - Gestión Médica",
-  "short_name": "Clinical",
-  "description": "Sistema profesional de gestión para consultorios médicos. Administra pacientes, citas, honorarios y obras sociales.",
+  "name": "DENTIFY - Asistente Odontológico",
+  "short_name": "DENTIFY",
+  "description": "Asistente profesional de gestión para consultorios odontológicos. Administra pacientes, turnos, honorarios y más.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -24,7 +24,7 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["health", "medical", "productivity", "business"],
+  "categories": ["health", "medical", "dental", "productivity", "business"],
   "screenshots": [],
   "shortcuts": [
     {

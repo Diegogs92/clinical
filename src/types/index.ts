@@ -53,17 +53,21 @@ export interface Office {
 }
 
 // Appointment types
+export type AppointmentType = 'patient' | 'personal'; // Tipo de evento: turno con paciente o evento personal
+
 export interface Appointment {
   id: string;
-  patientId: string;
-  patientName: string;
+  appointmentType: AppointmentType; // Tipo de evento
+  patientId?: string; // Opcional para eventos personales
+  patientName?: string; // Opcional para eventos personales
+  title?: string; // Para eventos personales (recordatorios, notas)
   officeId?: string; // Consultorio ID
   date: string;
   startTime: string;
   endTime: string;
   duration: number; // in minutes
   status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled' | 'no-show';
-  type: string; // consultation type
+  type?: string; // consultation type (solo para turnos de pacientes)
   fee?: number; // Honorarios del turno
   notes?: string;
   insuranceId?: string;
@@ -147,11 +151,14 @@ export interface Payment {
 }
 
 // User/Professional types
+export type UserRole = 'administrador' | 'profesional' | 'secretaria';
+
 export interface UserProfile {
   uid: string;
   email: string;
   displayName: string;
   photoURL?: string;
+  role: UserRole; // Rol del usuario en el sistema
   specialty?: string;
   licenseNumber?: string;
   phone?: string;

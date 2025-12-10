@@ -56,6 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             email: 'demo@local',
             displayName: 'Demo Usuario',
             photoURL: '',
+            role: 'administrador', // Usuario mock es administrador
             defaultAppointmentDuration: 30,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -113,6 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               email: user.email || '',
               displayName: user.displayName || '',
               photoURL: user.photoURL || '',
+              role: 'profesional', // Por defecto, nuevos usuarios son profesionales
               defaultAppointmentDuration: 30,
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),

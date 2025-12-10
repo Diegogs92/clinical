@@ -1,0 +1,14 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo -->
+  <circle cx="16" cy="16" r="16" fill="#08415C"/>
+
+  <!-- Diente simple -->
+  <path d="M10 12 Q10 9, 12 9 Q14 9, 14 12 L14 16 Q14 18, 12 18 Q10 18, 10 16 Z"
+        fill="#F4FAFF"/>
+
+  <!-- Reloj simple -->
+  <circle cx="21" cy="21" r="6" fill="#F4FAFF"/>
+  <circle cx="21" cy="21" r="5" fill="#388697"/>
+  <line x1="21" y1="21" x2="20" y2="18" stroke="#F4FAFF" stroke-width="1" stroke-linecap="round"/>
+  <line x1="21" y1="21" x2="23" y2="20" stroke="#F4FAFF" stroke-width="1" stroke-linecap="round"/>
+</svg>

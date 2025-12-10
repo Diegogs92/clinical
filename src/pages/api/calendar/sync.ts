@@ -62,8 +62,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
     };
 
+    // Diferenciar entre eventos personales y turnos de pacientes
+    const isPersonalEvent = appointment.appointmentType === 'personal';
+    const eventSummary = isPersonalEvent
+      ? `🔒 ${appointment.title || 'Evento Personal'}`
+      : `👤 Turno: ${appointment.patientName || 'Sin nombre'}`;
+
     const event: any = {
-      summary: `Turno: ${appointment.patientName || 'Sin nombre'}`,
+      summary: eventSummary,
       description: appointment.notes || '',
       start: {
         dateTime: formatDateTimeForCalendar(startDateTime),

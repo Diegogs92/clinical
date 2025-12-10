@@ -2,8 +2,9 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getAppointmentsByUser } from "@/lib/appointments";
+import { getAppointmentsByUser, getAllAppointments } from "@/lib/appointments";
 import { Appointment } from "@/types";
+import { canViewAllAppointments } from "@/lib/permissions";
 
 interface AppointmentsContextValue {
   appointments: Appointment[];
@@ -14,23 +15,28 @@ interface AppointmentsContextValue {
 const AppointmentsContext = createContext<AppointmentsContextValue | undefined>(undefined);
 
 export const AppointmentsProvider = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(false);
 
   const refreshAppointments = useCallback(async () => {
-    if (!user) {
-      console.log('[AppointmentsContext] No user, clearing appointments');
+    if (!user || !userProfile) {
+      console.log('[AppointmentsContext] No user or profile, clearing appointments');
       setAppointments([]);
       setLoading(false);
       return [];
     }
 
-    console.log('[AppointmentsContext] Refreshing appointments for user:', user.uid);
+    console.log('[AppointmentsContext] Refreshing appointments for user:', user.uid, 'role:', userProfile.role);
     setLoading(true);
     try {
-      const list = await getAppointmentsByUser(user.uid);
-      console.log('[AppointmentsContext] Fetched appointments:', list.length);
+      // Admin y secretaria ven todos los turnos, profesionales solo los suyos
+      const canViewAll = canViewAllAppointments(userProfile.role);
+      const list = canViewAll
+        ? await getAllAppointments()
+        : await getAppointmentsByUser(user.uid);
+
+      console.log('[AppointmentsContext] Fetched appointments:', list.length, 'viewAll:', canViewAll);
       setAppointments(list);
       return list;
     } catch (error) {
@@ -39,7 +45,7 @@ export const AppointmentsProvider = ({ children }: { children: React.ReactNode }
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, userProfile]);
 
   useEffect(() => {
     refreshAppointments();

@@ -25,6 +25,7 @@ import { useConfirm } from '@/contexts/ConfirmContext';
 import { useCalendarSync } from '@/contexts/CalendarSyncContext';
 import { addDays, addMonths, addYears, startOfMonth, startOfWeek, startOfYear, format } from 'date-fns';
 import { combineDateAndTime } from '@/lib/dateUtils';
+import { usePermissions } from '@/hooks/usePermissions';
 
 const statusOptions = [
   { value: '', label: 'Todos los estados' },
@@ -42,6 +43,7 @@ export default function DashboardPage() {
   const { payments, pendingPayments, refreshPayments, refreshPendingPayments } = usePayments();
   const confirm = useConfirm();
   const { syncAppointment } = useCalendarSync();
+  const permissions = usePermissions();
   const [view, setView] = useState<'day' | 'week' | 'month' | 'year'>('week');
   const [showForm, setShowForm] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
@@ -162,6 +164,11 @@ export default function DashboardPage() {
   }, [now, payments, pendingPayments]);
 
   const handleEdit = (appt: Appointment) => {
+    // Verificar permisos: solo admin puede editar turnos de otros
+    if (appt.userId !== user?.uid && !permissions.canEditAppointmentsForOthers) {
+      toast.error('No tienes permisos para editar turnos de otros profesionales');
+      return;
+    }
     setEditingAppointment(appt);
     setShowForm(true);
   };
@@ -219,6 +226,12 @@ export default function DashboardPage() {
 
   const handleDelete = async (appt: Appointment) => {
     if (!user) return;
+
+    // Verificar permisos: solo admin puede eliminar turnos de otros
+    if (appt.userId !== user?.uid && !permissions.canDeleteAppointmentsForOthers) {
+      toast.error('No tienes permisos para eliminar turnos de otros profesionales');
+      return;
+    }
 
     const confirmed = await confirm({
       title: 'Eliminar turno',
@@ -470,42 +483,50 @@ export default function DashboardPage() {
                             </td>
                             <td className="text-right">
                               <div className="flex items-center justify-end gap-1">
-                                <button
-                                  onClick={() => openPaymentDialog(a)}
-                                  disabled={!a.fee}
-                                  className={`p-1.5 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
-                                    paymentStateFor(a).status === 'paid'
-                                      ? 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'
-                                      : paymentStateFor(a).status === 'partial'
-                                        ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20'
-                                        : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
-                                  }`}
-                                  aria-label="Registrar pago"
-                                  title={a.fee && paymentStateFor(a).remainingAmount > 0 ? `Pendiente: $${paymentStateFor(a).remainingAmount.toLocaleString()}` : 'Pago completo'}
-                                >
-                                  <DollarSign className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleEdit(a)}
-                                  className="icon-btn-primary"
-                                  aria-label="Editar turno"
-                                >
-                                  <Edit2 className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleCancel(a)}
-                                  className="icon-btn-danger"
-                                  aria-label="Cancelar turno"
-                                >
-                                  <Ban className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleDelete(a)}
-                                  className="icon-btn-danger"
-                                  aria-label="Eliminar turno"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
+                                {permissions.canRegisterPayments && (
+                                  <button
+                                    onClick={() => openPaymentDialog(a)}
+                                    disabled={!a.fee}
+                                    className={`p-1.5 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
+                                      paymentStateFor(a).status === 'paid'
+                                        ? 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'
+                                        : paymentStateFor(a).status === 'partial'
+                                          ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20'
+                                          : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
+                                    }`}
+                                    aria-label="Registrar pago"
+                                    title={a.fee && paymentStateFor(a).remainingAmount > 0 ? `Pendiente: $${paymentStateFor(a).remainingAmount.toLocaleString()}` : 'Pago completo'}
+                                  >
+                                    <DollarSign className="w-4 h-4" />
+                                  </button>
+                                )}
+                                {(a.userId === user?.uid || permissions.canEditAppointmentsForOthers) && (
+                                  <button
+                                    onClick={() => handleEdit(a)}
+                                    className="icon-btn-primary"
+                                    aria-label="Editar turno"
+                                  >
+                                    <Edit2 className="w-4 h-4" />
+                                  </button>
+                                )}
+                                {(a.userId === user?.uid || permissions.canEditAppointmentsForOthers) && (
+                                  <button
+                                    onClick={() => handleCancel(a)}
+                                    className="icon-btn-danger"
+                                    aria-label="Cancelar turno"
+                                  >
+                                    <Ban className="w-4 h-4" />
+                                  </button>
+                                )}
+                                {(a.userId === user?.uid || permissions.canDeleteAppointmentsForOthers) && (
+                                  <button
+                                    onClick={() => handleDelete(a)}
+                                    className="icon-btn-danger"
+                                    aria-label="Eliminar turno"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -588,34 +609,40 @@ export default function DashboardPage() {
                           </div>
 
                           <div className="grid grid-cols-4 gap-1.5 pt-2.5 border-t border-elegant-200 dark:border-elegant-700">
-                            <button
-                              onClick={() => openPaymentDialog(a)}
-                              disabled={!a.fee}
-                              className={`col-span-2 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all touch-manipulation disabled:opacity-40 ${
-                                paymentState.status === 'paid'
-                                  ? 'bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-200'
-                                  : paymentState.status === 'partial'
-                                    ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200'
-                                    : 'bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-200'
-                              } active:scale-95`}
-                            >
-                              <DollarSign className="w-4 h-4" />
-                              {paymentState.status === 'paid' ? 'Pagado' : 'Pago'}
-                            </button>
-                            <button
-                              onClick={() => handleEdit(a)}
-                              className="flex items-center justify-center px-2 py-2.5 rounded-xl bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light transition-all touch-manipulation active:scale-95"
-                              aria-label="Editar"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleCancel(a)}
-                              className="flex items-center justify-center px-2 py-2.5 rounded-xl bg-elegant-100 text-danger dark:bg-elegant-800/60 dark:text-red-400 transition-all touch-manipulation active:scale-95"
-                              aria-label="Cancelar"
-                            >
-                              <Ban className="w-4 h-4" />
-                            </button>
+                            {permissions.canRegisterPayments && (
+                              <button
+                                onClick={() => openPaymentDialog(a)}
+                                disabled={!a.fee}
+                                className={`col-span-2 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all touch-manipulation disabled:opacity-40 ${
+                                  paymentState.status === 'paid'
+                                    ? 'bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-200'
+                                    : paymentState.status === 'partial'
+                                      ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200'
+                                      : 'bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-200'
+                                } active:scale-95`}
+                              >
+                                <DollarSign className="w-4 h-4" />
+                                {paymentState.status === 'paid' ? 'Pagado' : 'Pago'}
+                              </button>
+                            )}
+                            {(a.userId === user?.uid || permissions.canEditAppointmentsForOthers) && (
+                              <button
+                                onClick={() => handleEdit(a)}
+                                className="flex items-center justify-center px-2 py-2.5 rounded-xl bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light transition-all touch-manipulation active:scale-95"
+                                aria-label="Editar"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                            )}
+                            {(a.userId === user?.uid || permissions.canEditAppointmentsForOthers) && (
+                              <button
+                                onClick={() => handleCancel(a)}
+                                className="flex items-center justify-center px-2 py-2.5 rounded-xl bg-elegant-100 text-danger dark:bg-elegant-800/60 dark:text-red-400 transition-all touch-manipulation active:scale-95"
+                                aria-label="Cancelar"
+                              >
+                                <Ban className="w-4 h-4" />
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>

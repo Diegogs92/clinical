@@ -59,11 +59,11 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
           <div className="flex items-center justify-between h-14 md:h-16">
             <div className="flex items-center gap-2 md:gap-3">
               <div className="flex items-center justify-center w-9 h-9 md:w-10 md:h-10 rounded-xl overflow-hidden">
-                <img src="/logo.svg" alt="Clinical Logo" className="w-full h-full object-cover" />
+                <img src="/logo.svg" alt="DENTIFY Logo" className="w-full h-full object-cover" />
               </div>
               <div className="block">
                 <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
-                  Clinical
+                  DENTIFY
                 </h1>
                 {user && (
                   <p className="hidden sm:block text-xs text-elegant-600 dark:text-elegant-400 truncate max-w-[150px] md:max-w-none">

@@ -13,9 +13,9 @@ export default function GlobalLoader() {
       <div className="flex flex-col items-center gap-6">
         <ECGLoader className="text-primary" />
         <div className="flex flex-col items-center gap-2">
-          <h2 className="text-2xl font-bold text-primary dark:text-primary-light">Clinical</h2>
+          <h2 className="text-2xl font-bold text-primary dark:text-primary-light">DENTIFY</h2>
           <p className="text-sm text-elegant-600 dark:text-elegant-400 animate-pulse">
-            Cargando tu espacio profesional...
+            Cargando tu asistente odontológico...
           </p>
         </div>
       </div>

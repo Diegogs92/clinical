@@ -84,7 +84,7 @@ export default function InstallPrompt() {
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-primary-dark dark:text-white text-sm">
-            Instalar Clinical
+            Instalar DENTIFY
           </p>
           <p className="text-xs text-elegant-600 dark:text-elegant-400 mt-0.5">
             Acceso rápido desde tu pantalla de inicio

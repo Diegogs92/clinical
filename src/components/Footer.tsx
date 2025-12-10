@@ -19,8 +19,8 @@ export function Footer() {
     const formElement = event.target as HTMLFormElement;
     const formData = new FormData(formElement);
     formData.append('access_key', WEB3FORMS_ACCESS_KEY);
-    formData.append('subject', 'Comentario desde Clinical');
-    const senderName = user?.displayName?.trim() || 'Usuario Clinical';
+    formData.append('subject', 'Comentario desde DENTIFY');
+    const senderName = user?.displayName?.trim() || 'Usuario DENTIFY';
     const senderEmail = user?.email || 'dgarciasantillan@gmail.com';
     formData.append('name', senderName);
     formData.append('email', senderEmail);
