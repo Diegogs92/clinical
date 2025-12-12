@@ -9,14 +9,12 @@ import { canManageUsers } from '@/lib/permissions';
 import { UserProfile, UserRole } from '@/types';
 import { Users, Edit, Shield, Mail, Calendar, Clock } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
-import { useConfirm } from '@/contexts/ConfirmContext';
 import EditUserModal from '@/components/users/EditUserModal';
 
 export default function UsersPage() {
   const { userProfile } = useAuth();
   const router = useRouter();
   const { showToast } = useToast();
-  const { confirm } = useConfirm();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
