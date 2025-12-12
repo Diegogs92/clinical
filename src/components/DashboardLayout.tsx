@@ -18,6 +18,7 @@ import {
   Menu,
   X,
   CalendarDays,
+  UserCog,
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 import MobileNavBar from './ui/MobileNavBar';
@@ -32,7 +33,7 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ children, mobileAction }: DashboardLayoutProps) {
-  const { user, signOut } = useAuth();
+  const { user, userProfile, signOut } = useAuth();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -43,6 +44,7 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
     { href: '/offices', label: 'Consultorios', icon: Building2 },
     // { href: '/insurances', label: 'Obras Sociales', icon: Shield }, // Temporalmente oculto
     { href: '/fees', label: 'Honorarios', icon: DollarSign },
+    ...(userProfile?.role === 'administrador' ? [{ href: '/admin/users', label: 'Usuarios', icon: UserCog }] : []),
   ];
 
   const handleLogout = async () => {
