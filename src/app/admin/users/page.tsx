@@ -7,14 +7,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getAllUsers, updateUserProfile } from '@/lib/users';
 import { canManageUsers } from '@/lib/permissions';
 import { UserProfile, UserRole } from '@/types';
-import { Users, Edit, Shield, Mail, Calendar, Clock } from 'lucide-react';
+import { Users, Edit, Shield, Mail, Calendar, Trash2 } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
+import { useConfirm } from '@/contexts/ConfirmContext';
 import EditUserModal from '@/components/users/EditUserModal';
+import { deleteUserProfile } from '@/lib/users';
 
 export default function UsersPage() {
   const { userProfile } = useAuth();
   const router = useRouter();
   const { showToast } = useToast();
+  const confirm = useConfirm();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
@@ -63,6 +66,32 @@ export default function UsersPage() {
     } catch (error) {
       console.error('Error updating user:', error);
       showToast('Error al actualizar usuario', 'error');
+    }
+  };
+
+  const handleDeleteUser = async (user: UserProfile) => {
+    // Prevenir eliminación del propio usuario
+    if (user.uid === userProfile?.uid) {
+      showToast('No puedes eliminar tu propio usuario', 'error');
+      return;
+    }
+
+    const confirmed = await confirm({
+      title: 'Eliminar Usuario',
+      message: `¿Estás seguro de que deseas eliminar a ${user.displayName || user.email}? Esta acción no se puede deshacer.`,
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar',
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await deleteUserProfile(user.uid);
+      showToast('Usuario eliminado correctamente', 'success');
+      loadUsers();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      showToast('Error al eliminar usuario', 'error');
     }
   };
 
@@ -250,13 +279,24 @@ export default function UsersPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <button
-                          onClick={() => handleEditUser(user)}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-colors font-medium text-sm"
-                        >
-                          <Edit className="w-4 h-4" />
-                          Editar
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleEditUser(user)}
+                            className="inline-flex items-center gap-2 px-3 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-colors font-medium text-sm"
+                          >
+                            <Edit className="w-4 h-4" />
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(user)}
+                            disabled={user.uid === userProfile?.uid}
+                            className="inline-flex items-center gap-2 px-3 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={user.uid === userProfile?.uid ? 'No puedes eliminar tu propio usuario' : 'Eliminar usuario'}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Eliminar
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -301,13 +341,23 @@ export default function UsersPage() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => handleEditUser(user)}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-colors font-medium text-sm"
-                  >
-                    <Edit className="w-4 h-4" />
-                    Editar Usuario
-                  </button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => handleEditUser(user)}
+                      className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-colors font-medium text-sm"
+                    >
+                      <Edit className="w-4 h-4" />
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleDeleteUser(user)}
+                      disabled={user.uid === userProfile?.uid}
+                      className="flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Eliminar
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
