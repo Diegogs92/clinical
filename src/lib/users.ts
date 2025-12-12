@@ -6,9 +6,6 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
-  query,
-  orderBy,
-  Timestamp,
 } from 'firebase/firestore';
 import { db, mockMode } from './firebase';
 import { UserProfile } from '@/types';
@@ -31,12 +28,18 @@ export async function getAllUsers(): Promise<UserProfile[]> {
 
   try {
     const usersRef = collection(db, COLLECTION_NAME);
-    const q = query(usersRef, orderBy('createdAt', 'desc'));
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(usersRef);
 
     const users: UserProfile[] = [];
     snapshot.forEach((doc) => {
       users.push({ ...doc.data(), uid: doc.id } as UserProfile);
+    });
+
+    // Ordenar en memoria por fecha de creación (más reciente primero)
+    users.sort((a, b) => {
+      const dateA = new Date(a.createdAt || 0).getTime();
+      const dateB = new Date(b.createdAt || 0).getTime();
+      return dateB - dateA;
     });
 
     logger.log(`[users] Loaded ${users.length} users`);
