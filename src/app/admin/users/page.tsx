@@ -38,10 +38,12 @@ export default function UsersPage() {
   const loadUsers = async () => {
     try {
       setLoading(true);
+      console.log('[UsersPage] Cargando usuarios...');
       const allUsers = await getAllUsers();
+      console.log('[UsersPage] Usuarios cargados:', allUsers.length, allUsers);
       setUsers(allUsers);
     } catch (error) {
-      console.error('Error loading users:', error);
+      console.error('[UsersPage] Error loading users:', error);
       showToast('Error al cargar usuarios', 'error');
     } finally {
       setLoading(false);
@@ -93,6 +95,8 @@ export default function UsersPage() {
   const filteredUsers = filterRole === 'all'
     ? users
     : users.filter(u => u.role === filterRole);
+
+  console.log('[UsersPage] Renderizando - Total usuarios:', users.length, 'Filtrados:', filteredUsers.length, 'Loading:', loading);
 
   if (loading) {
     return (
