@@ -78,9 +78,10 @@ export default function UsersPage() {
 
     const confirmed = await confirm({
       title: 'Eliminar Usuario',
-      message: `¿Estás seguro de que deseas eliminar a ${user.displayName || user.email}? Esta acción no se puede deshacer.`,
+      description: `¿Estás seguro de que deseas eliminar a ${user.displayName || user.email}? Esta acción no se puede deshacer.`,
       confirmText: 'Eliminar',
       cancelText: 'Cancelar',
+      tone: 'danger',
     });
 
     if (!confirmed) return;
