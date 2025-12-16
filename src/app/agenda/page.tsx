@@ -48,6 +48,9 @@ export default function AgendaPage() {
     endTime: '10:00',
     reason: '',
   });
+  const [minHour, setMinHour] = useState(7);
+  const [maxHour, setMaxHour] = useState(21);
+  const [stepMinutes, setStepMinutes] = useState<10 | 15 | 20 | 30>(15);
 
   // Cargar franjas bloqueadas al montar el componente
   useEffect(() => {
@@ -247,6 +250,44 @@ export default function AgendaPage() {
               Visualiza y gestiona tus turnos de la semana
             </p>
           </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full md:w-auto">
+            <label className="flex items-center gap-2 text-xs font-semibold text-elegant-700 dark:text-elegant-200">
+              Inicio
+              <select
+                className="input-field text-xs"
+                value={minHour}
+                onChange={(e) => setMinHour(Number(e.target.value))}
+              >
+                {[6,7,8,9,10].map(h => (
+                  <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>
+                ))}
+              </select>
+            </label>
+            <label className="flex items-center gap-2 text-xs font-semibold text-elegant-700 dark:text-elegant-200">
+              Fin
+              <select
+                className="input-field text-xs"
+                value={maxHour}
+                onChange={(e) => setMaxHour(Number(e.target.value))}
+              >
+                {[18,19,20,21,22].map(h => (
+                  <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>
+                ))}
+              </select>
+            </label>
+            <label className="flex items-center gap-2 text-xs font-semibold text-elegant-700 dark:text-elegant-200">
+              Intervalo
+              <select
+                className="input-field text-xs"
+                value={stepMinutes}
+                onChange={(e) => setStepMinutes(Number(e.target.value) as 10 | 15 | 20 | 30)}
+              >
+                {[10,15,20,30].map(m => (
+                  <option key={m} value={m}>{m} min</option>
+                ))}
+              </select>
+            </label>
+          </div>
           <button
             onClick={() => setShowBlockModal(true)}
             className="btn-danger flex items-center gap-2"
@@ -304,8 +345,8 @@ export default function AgendaPage() {
             events={calendarEvents}
             defaultView={Views.WEEK}
             views={[Views.WEEK, Views.DAY]}
-            step={15}
-            timeslots={4}
+            step={stepMinutes}
+            timeslots={Math.max(1, Math.floor(60 / stepMinutes))}
             defaultDate={currentDate}
             onNavigate={setCurrentDate}
             resizable
@@ -314,8 +355,8 @@ export default function AgendaPage() {
             style={{ height: 820 }}
             onEventDrop={handleEventDrop}
             onEventResize={handleEventResize}
-            min={new Date(1970, 1, 1, 7, 0, 0)}
-            max={new Date(1970, 1, 1, 21, 0, 0)}
+            min={new Date(1970, 1, 1, minHour, 0, 0)}
+            max={new Date(1970, 1, 1, maxHour, 0, 0)}
             messages={{
               today: 'Hoy',
               previous: 'Anterior',
