@@ -6,7 +6,7 @@ import { useAppointments } from '@/contexts/AppointmentsContext';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
-import { format, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, isWithinInterval } from 'date-fns';
+import { format, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, isWithinInterval, differenceInMinutes, parse } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Calendar, Clock, User, Phone, Ban, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { BlockedSlot } from '@/types';
@@ -15,11 +15,28 @@ import {
   createBlockedSlot,
   deleteBlockedSlot,
 } from '@/lib/blockedSlots';
+import { updateAppointment } from '@/lib/appointments';
+import { combineDateAndTime } from '@/lib/dateUtils';
+import { Calendar as BigCalendar, Views, dateFnsLocalizer } from 'react-big-calendar';
+import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
+
+const locales = { es };
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay: (date: Date) => date.getDay(),
+  locales,
+});
+
+const DnDCalendar = withDragAndDrop(BigCalendar);
 
 export default function AgendaPage() {
   const { user } = useAuth();
   const toast = useToast();
-  const { appointments, loading } = useAppointments();
+  const { appointments, loading, refreshAppointments } = useAppointments();
   const { patients } = usePatients();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showBlockModal, setShowBlockModal] = useState(false);
@@ -59,30 +76,6 @@ export default function AgendaPage() {
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Lunes
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 }); // Domingo
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-
-  // Horarios de trabajo (9 AM - 6 PM)
-  const workingHours = Array.from({ length: 10 }, (_, i) => i + 9); // 9-18
-
-  // Obtener turnos para un día y hora específica
-  const getAppointmentsForSlot = (date: Date, hour: number) => {
-    return appointments.filter(apt => {
-      if (!apt.date || !apt.startTime) return false;
-      const aptDate = parseISO(apt.date);
-      const aptHour = parseInt(apt.startTime.split(':')[0]);
-      return isSameDay(aptDate, date) && aptHour === hour;
-    });
-  };
-
-  // Verificar si un slot está bloqueado
-  const isSlotBlocked = (date: Date, hour: number) => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-    return blockedSlots.some(slot => {
-      if (slot.date !== dateStr) return false;
-      const slotStart = parseInt(slot.startTime.split(':')[0]);
-      const slotEnd = parseInt(slot.endTime.split(':')[0]);
-      return hour >= slotStart && hour < slotEnd;
-    });
-  };
 
   // Obtener información del paciente
   const getPatientInfo = (patientId: string | undefined) => {
@@ -169,6 +162,78 @@ export default function AgendaPage() {
     };
   }, [appointments, blockedSlots, weekStart, weekEnd]);
 
+  // Eventos para agenda interactiva
+  const calendarEvents = useMemo(() => {
+    return appointments.map(apt => {
+      const start = combineDateAndTime(apt.date, apt.startTime);
+      const end = apt.endTime ? combineDateAndTime(apt.date, apt.endTime) : new Date(start.getTime() + (apt.duration || 30) * 60000);
+      const patient = getPatientInfo(apt.patientId);
+      const title = apt.appointmentType === 'personal'
+        ? apt.title || 'Evento personal'
+        : patient
+          ? `${patient.firstName} ${patient.lastName}`
+          : apt.patientName || 'Turno';
+
+      return {
+        ...apt,
+        title,
+        start,
+        end,
+      };
+    });
+  }, [appointments, patients]);
+
+  const eventPropGetter = (event: any) => {
+    const status = event.status;
+    let bg = '#E0F2FE';
+    if (status === 'confirmed') bg = '#DCFCE7';
+    if (status === 'completed') bg = '#DBEAFE';
+    if (status === 'cancelled') bg = '#FEE2E2';
+    if (status === 'no-show') bg = '#FDE68A';
+    return {
+      style: {
+        backgroundColor: bg,
+        color: '#0F172A',
+        borderRadius: 8,
+        border: '1px solid rgba(14,165,233,0.35)',
+        padding: '4px 8px',
+        fontWeight: 600,
+      },
+    };
+  };
+
+  const handleEventDrop = async ({ event, start, end }: any) => {
+    try {
+      const duration = Math.max(15, differenceInMinutes(end, start));
+      await updateAppointment(event.id, {
+        date: start.toISOString(),
+        startTime: format(start, 'HH:mm'),
+        endTime: format(end, 'HH:mm'),
+        duration,
+      });
+      await refreshAppointments();
+      toast.success('Turno reprogramado');
+    } catch (error) {
+      console.error('Error moviendo turno:', error);
+      toast.error('No se pudo mover el turno');
+    }
+  };
+
+  const handleEventResize = async ({ event, start, end }: any) => {
+    try {
+      const duration = Math.max(15, differenceInMinutes(end, start));
+      await updateAppointment(event.id, {
+        endTime: format(end, 'HH:mm'),
+        duration,
+      });
+      await refreshAppointments();
+      toast.success('Duración ajustada');
+    } catch (error) {
+      console.error('Error ajustando turno:', error);
+      toast.error('No se pudo ajustar la duración');
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -231,115 +296,39 @@ export default function AgendaPage() {
           </div>
         </div>
 
-        {/* Grilla de agenda semanal */}
-        <div className="card overflow-x-auto">
-          <div className="min-w-[800px]">
-            {/* Encabezados de días */}
-            <div className="grid grid-cols-8 gap-2 mb-4">
-              <div className="text-xs font-semibold text-elegant-600 dark:text-elegant-400 p-2">
-                Hora
-              </div>
-              {weekDays.map(day => (
-                <div
-                  key={day.toString()}
-                  className={`text-center p-2 rounded-lg ${
-                    isSameDay(day, new Date())
-                      ? 'bg-primary/10 dark:bg-primary/20 border-2 border-primary'
-                      : 'bg-elegant-100 dark:bg-elegant-800'
-                  }`}
-                >
-                  <div className="text-xs font-semibold text-elegant-900 dark:text-white">
-                    {format(day, 'EEE', { locale: es })}
-                  </div>
-                  <div className="text-lg font-bold text-elegant-900 dark:text-white">
-                    {format(day, 'd')}
-                  </div>
-                </div>
-              ))}
-            </div>
 
-            {/* Grilla de horarios */}
-            <div className="space-y-2">
-              {workingHours.map(hour => (
-                <div key={hour} className="grid grid-cols-8 gap-2">
-                  <div className="flex items-center justify-center text-sm font-medium text-elegant-600 dark:text-elegant-400">
-                    {String(hour).padStart(2, '0')}:00
-                  </div>
-                  {weekDays.map(day => {
-                    const slotAppointments = getAppointmentsForSlot(day, hour);
-                    const isBlocked = isSlotBlocked(day, hour);
-
-                    return (
-                      <div
-                        key={`${day}-${hour}`}
-                        className={`min-h-[80px] p-2 rounded-lg border-2 transition-all ${
-                          isBlocked
-                            ? 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700'
-                            : slotAppointments.length > 0
-                            ? 'bg-primary/5 dark:bg-primary/10 border-primary/30'
-                            : 'bg-white dark:bg-elegant-900 border-elegant-200 dark:border-elegant-700 hover:border-primary/50'
-                        }`}
-                      >
-                        {isBlocked ? (
-                          <div className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
-                            <Ban className="w-3 h-3" />
-                            <span>Bloqueado</span>
-                          </div>
-                        ) : (
-                          slotAppointments.map(apt => {
-                            const isPersonalEvent = apt.appointmentType === 'personal';
-                            const patient = getPatientInfo(apt.patientId);
-                            return (
-                              <div
-                                key={apt.id}
-                                className="mb-1 p-2 rounded bg-primary/10 dark:bg-primary/20 border border-primary/30"
-                              >
-                                <div className="flex items-center gap-1 text-xs font-semibold text-elegant-900 dark:text-white mb-1">
-                                  {isPersonalEvent ? '🔒' : <User className="w-3 h-3" />}
-                                  {isPersonalEvent ? (apt.title || 'Evento Personal') : (patient ? `${patient.firstName} ${patient.lastName}` : 'Paciente')}
-                                </div>
-                                <div className="flex items-center gap-1 text-xs text-elegant-600 dark:text-elegant-400">
-                                  <Clock className="w-3 h-3" />
-                                  {apt.startTime}
-                                </div>
-                                {patient?.phone && (
-                                  <div className="flex items-center gap-1 text-xs text-elegant-600 dark:text-elegant-400">
-                                    <Phone className="w-3 h-3" />
-                                    {patient.phone}
-                                  </div>
-                                )}
-                                <div className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                                  apt.status === 'confirmed'
-                                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                                    : apt.status === 'scheduled'
-                                    ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
-                                    : apt.status === 'completed'
-                                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                                    : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                                }`}>
-                                  {apt.status === 'confirmed'
-                                    ? 'Confirmado'
-                                    : apt.status === 'scheduled'
-                                    ? 'Agendado'
-                                    : apt.status === 'completed'
-                                    ? 'Completado'
-                                    : apt.status === 'cancelled'
-                                    ? 'Cancelado'
-                                    : 'No asistió'}
-                                </div>
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* Agenda interactiva con drag & drop */}
+        <div className="card overflow-hidden">
+          <DnDCalendar
+            localizer={localizer}
+            events={calendarEvents}
+            defaultView={Views.WEEK}
+            views={[Views.WEEK, Views.DAY]}
+            step={15}
+            timeslots={4}
+            defaultDate={currentDate}
+            onNavigate={setCurrentDate}
+            resizable
+            popup
+            culture="es"
+            style={{ height: 820 }}
+            onEventDrop={handleEventDrop}
+            onEventResize={handleEventResize}
+            min={new Date(1970, 1, 1, 7, 0, 0)}
+            max={new Date(1970, 1, 1, 21, 0, 0)}
+            messages={{
+              today: 'Hoy',
+              previous: 'Anterior',
+              next: 'Siguiente',
+              week: 'Semana',
+              day: 'D?a',
+              month: 'Mes',
+              noEventsInRange: 'Sin turnos en este rango',
+              showMore: total => `+${total} m?s`,
+            }}
+            eventPropGetter={eventPropGetter}
+          />
         </div>
-
         {/* Lista de franjas bloqueadas */}
         {blockedSlots.length > 0 && (
           <div className="card">
