@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { Patient, Insurance } from '@/types';
 import { useToast } from '@/contexts/ToastContext';
 import PatientFileUpload from './PatientFileUpload';
+import { usePatients } from '@/contexts/PatientsContext';
 
 const patientSchema = z.object({
   firstName: z.string().min(1, 'Nombre requerido'),
@@ -41,6 +42,7 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
   const [initialPatient, setInitialPatient] = useState<Patient | null>(null);
   const [insurances, setInsurances] = useState<Insurance[]>([]);
   const [selectedType, setSelectedType] = useState<'particular' | 'obra-social' | 'prepaga'>('particular');
+  const { refreshPatients } = usePatients();
 
   const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm<PatientFormValues>({
     resolver: zodResolver(patientSchema),
@@ -130,6 +132,7 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
         await createPatient(patientData);
         toast.success('Paciente creado correctamente');
       }
+      await refreshPatients();
       if (onSuccess) {
         onSuccess();
       } else {

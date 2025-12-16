@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { createPatient } from '@/lib/patients';
 import { useState } from 'react';
+import { usePatients } from '@/contexts/PatientsContext';
 
 
 const patientSchema = z.object({
@@ -32,6 +33,7 @@ interface Props {
 export default function QuickPatientForm({ onSuccess, onCancel }: Props) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const { refreshPatients } = usePatients();
 
   const { register, handleSubmit, formState: { errors }, watch } = useForm<PatientFormValues>({
     resolver: zodResolver(patientSchema),
@@ -63,6 +65,7 @@ export default function QuickPatientForm({ onSuccess, onCancel }: Props) {
       if (values.notes && values.notes.trim()) patientData.notes = values.notes;
 
       const newId = await createPatient(patientData);
+      await refreshPatients();
       onSuccess({ id: newId });
     } catch (e) {
       console.error('Error al crear paciente:', e);
