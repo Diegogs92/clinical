@@ -205,7 +205,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const registerWithEmail = async (email: string, password: string, displayName?: string) => {
     if (mockMode) return;
-    if (!auth || !db) return;
+    if (!auth) return;
     setError(null);
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);

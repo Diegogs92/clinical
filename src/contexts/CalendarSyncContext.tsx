@@ -5,6 +5,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Appointment } from '@/types';
 import { getTokenInfo, clearTokenInfo } from '@/lib/tokenRefresh';
 
+const CALENDAR_ENABLED = false;
+const disabledValue: CalendarSyncContextType = {
+  isConnected: false,
+  isTokenExpired: false,
+  syncAppointment: async () => null,
+  checkTokenExpiration: () => false,
+};
+
 interface CalendarSyncContextType {
   isConnected: boolean;
   isTokenExpired: boolean;
@@ -31,6 +39,14 @@ export function CalendarSyncProvider({ children }: Props) {
   const { user, googleAccessToken } = useAuth();
   const [isConnected, setIsConnected] = useState(false);
   const [isTokenExpired, setIsTokenExpired] = useState(false);
+
+  if (!CALENDAR_ENABLED) {
+    return (
+      <CalendarSyncContext.Provider value={disabledValue}>
+        {children}
+      </CalendarSyncContext.Provider>
+    );
+  }
 
   useEffect(() => {
     console.log('[CalendarSync] useEffect - Estado actual:', {

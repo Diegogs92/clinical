@@ -8,7 +8,6 @@ import { createAppointment, updateAppointment } from '@/lib/appointments';
 import { getBlockedSlotsInRange } from '@/lib/blockedSlots';
 import { useState, ChangeEvent } from 'react';
 import { Appointment } from '@/types';
-import { useCalendarSync } from '@/contexts/CalendarSyncContext';
 import { useToast } from '@/contexts/ToastContext';
 import Modal from '@/components/ui/Modal';
 import PatientForm from '@/components/patients/PatientForm';
@@ -40,13 +39,12 @@ interface Props {
 }
 
 export default function AppointmentForm({ initialData, onCreated, onCancel }: Props) {
-  const { user, signInWithGoogle } = useAuth();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const { patients, refreshPatients } = usePatients();
   const { offices } = useOffices();
   const { refreshAppointments } = useAppointments();
   const [showQuickPatient, setShowQuickPatient] = useState(false);
-  const { syncAppointment, isTokenExpired } = useCalendarSync();
   const toast = useToast();
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<AppointmentFormValues>({
     resolver: zodResolver(schema),
@@ -78,7 +76,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       const endTime = `${endHour}:${endMinute}`;
 
       // Validar si hay franjas bloqueadas
-      console.log('🔍 Validando franjas bloqueadas:', {
+      console.log('Validando franjas bloqueadas:', {
         userId: user.uid,
         date: values.date,
         startTime: values.startTime,
@@ -92,17 +90,17 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         endTime
       );
 
-      console.log('📊 Resultado de validación:', {
+      console.log('Resultado de validacion:', {
         blockedSlotsCount: blockedSlots.length,
         blockedSlots: blockedSlots,
       });
 
       if (blockedSlots.length > 0) {
         const blockDetails = blockedSlots.map(slot =>
-          `• ${slot.startTime} - ${slot.endTime}: ${slot.reason}`
+          `${slot.startTime} - ${slot.endTime}: ${slot.reason}`
         ).join('\n');
 
-        console.log('🚫 Bloqueando creación de turno:', blockDetails);
+        console.log('Bloqueando creacion de turno:', blockDetails);
 
         toast.error(
           `No se puede agendar el turno porque se solapa con franjas bloqueadas:\n\n${blockDetails}`,
@@ -112,7 +110,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         return;
       }
 
-      console.log('✅ No hay franjas bloqueadas, procediendo a crear turno');
+      console.log('No hay franjas bloqueadas, procediendo a crear turno');
 
       const selected = patients.find(p => p.id === (values.patientId as unknown as string));
 
@@ -133,25 +131,11 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         updatedAt: '',
       } as any;
 
-      // Obtener el colorId del consultorio si existe
-      const office = values.officeId ? offices.find(o => o.id === values.officeId) : null;
-      const officeColorId = office?.colorId;
-
       if (initialData) {
         await updateAppointment(initialData.id, payload);
         const updated = { ...payload, id: initialData.id };
 
-        if (initialData.googleCalendarEventId) {
-          const eventId = await syncAppointment(updated, 'update', initialData.googleCalendarEventId, officeColorId);
-          if (eventId) {
-            toast.success('Turno actualizado y sincronizado con Google Calendar');
-          } else {
-            toast.success('Turno actualizado');
-          }
-        } else {
-          toast.success('Turno actualizado');
-        }
-
+        toast.success('Turno actualizado');
         await refreshAppointments();
         reset();
         onCreated?.(updated);
@@ -159,34 +143,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         const id = await createAppointment(payload);
         const created = { ...payload, id };
 
-        // Si el token expiró, solicitar renovación automáticamente
-        if (isTokenExpired) {
-          console.log('[AppointmentForm] Token expirado, solicitando renovación...');
-          try {
-            await signInWithGoogle();
-            console.log('[AppointmentForm] Token renovado, reintentando sincronización...');
-          } catch (error) {
-            console.error('[AppointmentForm] Error renovando token:', error);
-            toast.warning('Turno creado. Haz clic en "Renovar Permisos" abajo para sincronizar con Google Calendar');
-            await refreshAppointments();
-            reset();
-            onCreated?.(created);
-            return;
-          }
-        }
-
-        console.log('[AppointmentForm] Intentando sincronizar con Google Calendar...');
-        const eventId = await syncAppointment(created, 'create', undefined, officeColorId);
-        console.log('[AppointmentForm] Resultado de sincronización:', eventId);
-
-        if (eventId) {
-          await updateAppointment(id, { googleCalendarEventId: eventId });
-          toast.success('Turno creado y sincronizado con Google Calendar');
-        } else {
-          toast.success('Turno creado sin sincronizar');
-          console.warn('No se pudo sincronizar con Google Calendar. Verifica tu sesión.');
-        }
-
+        toast.success('Turno creado');
         await refreshAppointments();
         reset();
         onCreated?.(created);

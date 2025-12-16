@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
-import NextAuthProvider from '@/components/NextAuthProvider';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ConfirmProvider } from '@/contexts/ConfirmContext';
@@ -45,26 +44,24 @@ export default function RootLayout({
       <body className="antialiased bg-pearl dark:bg-elegant-950 text-elegant-900 dark:text-elegant-50 min-h-screen">
         <ErrorBoundary>
           <ThemeProvider>
-            <NextAuthProvider>
-              <AuthProvider>
-                <ToastProvider>
-                  <ConfirmProvider>
-                    <PatientsProvider>
-                      <OfficesProvider>
-                        <AppointmentsProvider>
-                          <PaymentsProvider>
-                            <CalendarSyncProvider>
-                              <GlobalLoader />
-                              {children}
-                            </CalendarSyncProvider>
-                          </PaymentsProvider>
-                        </AppointmentsProvider>
-                      </OfficesProvider>
-                    </PatientsProvider>
-                  </ConfirmProvider>
-                </ToastProvider>
-              </AuthProvider>
-            </NextAuthProvider>
+            <AuthProvider>
+              <ToastProvider>
+                <ConfirmProvider>
+                  <PatientsProvider>
+                    <OfficesProvider>
+                      <AppointmentsProvider>
+                        <PaymentsProvider>
+                          <CalendarSyncProvider>
+                            <GlobalLoader />
+                            {children}
+                          </CalendarSyncProvider>
+                        </PaymentsProvider>
+                      </AppointmentsProvider>
+                    </OfficesProvider>
+                  </PatientsProvider>
+                </ConfirmProvider>
+              </ToastProvider>
+            </AuthProvider>
           </ThemeProvider>
         </ErrorBoundary>
       </body>
