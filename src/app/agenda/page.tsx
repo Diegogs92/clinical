@@ -262,60 +262,66 @@ export default function AgendaPage() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
-              Agenda Semanal
-            </h1>
-            <p className="text-sm text-elegant-600 dark:text-elegant-400 mt-1">
-              Visualiza y gestiona tus turnos de la semana
-            </p>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+                Agenda Semanal
+              </h1>
+              <p className="text-sm text-elegant-600 dark:text-elegant-400 mt-1">
+                Visualiza y gestiona tus turnos de la semana
+              </p>
+            </div>
+            <button
+              onClick={() => setShowBlockModal(true)}
+              className="btn-danger flex items-center gap-2 whitespace-nowrap"
+            >
+              <Ban className="w-4 h-4" />
+              Anular Franja Horaria
+            </button>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full md:w-auto">
-            <label className="flex items-center gap-2 text-xs font-semibold text-elegant-700 dark:text-elegant-200">
-              Inicio
+
+          {/* Controles de vista compactos */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-elegant-50 dark:bg-elegant-800/50 border border-elegant-200 dark:border-elegant-700">
+              <Clock className="w-4 h-4 text-elegant-500" />
               <select
-                className="input-field text-xs"
+                className="bg-transparent border-0 text-sm font-medium text-elegant-700 dark:text-elegant-200 outline-none cursor-pointer pr-1"
                 value={minHour}
                 onChange={(e) => setMinHour(Number(e.target.value))}
+                title="Hora de inicio"
               >
                 {[6,7,8,9,10].map(h => (
                   <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>
                 ))}
               </select>
-            </label>
-            <label className="flex items-center gap-2 text-xs font-semibold text-elegant-700 dark:text-elegant-200">
-              Fin
+              <span className="text-elegant-400 dark:text-elegant-500">-</span>
               <select
-                className="input-field text-xs"
+                className="bg-transparent border-0 text-sm font-medium text-elegant-700 dark:text-elegant-200 outline-none cursor-pointer pr-1"
                 value={maxHour}
                 onChange={(e) => setMaxHour(Number(e.target.value))}
+                title="Hora de fin"
               >
                 {[18,19,20,21,22].map(h => (
                   <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>
                 ))}
               </select>
-            </label>
-            <label className="flex items-center gap-2 text-xs font-semibold text-elegant-700 dark:text-elegant-200">
-              Intervalo
+            </div>
+
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-elegant-50 dark:bg-elegant-800/50 border border-elegant-200 dark:border-elegant-700">
+              <Calendar className="w-4 h-4 text-elegant-500" />
               <select
-                className="input-field text-xs"
+                className="bg-transparent border-0 text-sm font-medium text-elegant-700 dark:text-elegant-200 outline-none cursor-pointer"
                 value={stepMinutes}
                 onChange={(e) => setStepMinutes(Number(e.target.value) as 10 | 15 | 20 | 30)}
+                title="Intervalo de tiempo"
               >
                 {[10,15,20,30].map(m => (
                   <option key={m} value={m}>{m} min</option>
                 ))}
               </select>
-            </label>
+            </div>
           </div>
-          <button
-            onClick={() => setShowBlockModal(true)}
-            className="btn-danger flex items-center gap-2"
-          >
-            <Ban className="w-4 h-4" />
-            Anular Franja Horaria
-          </button>
         </div>
 
         {/* Navegación de semana */}

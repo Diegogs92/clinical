@@ -18,7 +18,9 @@
       "Bash(npm run dev:*)",
       "Bash(timeout /t 10)",
       "Bash(node scripts/verify-all.js:*)",
-      "Bash(firebase deploy:*)"
+      "Bash(firebase deploy:*)",
+      "Bash(where firebase:*)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []
