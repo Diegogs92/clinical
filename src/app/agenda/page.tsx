@@ -195,21 +195,47 @@ export default function AgendaPage() {
 
   const eventPropGetter = (event: any) => {
     const status = event.status;
-    let bg = '#E0F2FE';
-    if (status === 'confirmed') bg = '#DCFCE7';
-    if (status === 'completed') bg = '#DBEAFE';
-    if (status === 'cancelled') bg = '#FEE2E2';
-    if (status === 'no-show') bg = '#FDE68A';
-    if (event.appointmentType === 'personal') bg = '#F3E8FF';
-    if (event.isBlocked) {
-      bg = 'repeating-linear-gradient(45deg, rgba(239,68,68,0.15), rgba(239,68,68,0.15) 8px, rgba(239,68,68,0.3) 8px, rgba(239,68,68,0.3) 16px)';
+    const isDark = document.documentElement.classList.contains('dark');
+
+    let bgLight = '#E0F2FE';
+    let bgDark = 'rgba(14, 165, 233, 0.25)';
+    let borderColor = 'rgba(14, 165, 233, 0.5)';
+    let textColor = isDark ? '#F0F9FF' : '#0F172A';
+
+    if (status === 'confirmed') {
+      bgLight = '#DCFCE7';
+      bgDark = 'rgba(34, 197, 94, 0.25)';
+      borderColor = isDark ? 'rgba(34, 197, 94, 0.5)' : 'rgba(22, 163, 74, 0.4)';
+    } else if (status === 'completed') {
+      bgLight = '#DBEAFE';
+      bgDark = 'rgba(59, 130, 246, 0.25)';
+      borderColor = isDark ? 'rgba(59, 130, 246, 0.5)' : 'rgba(37, 99, 235, 0.4)';
+    } else if (status === 'cancelled') {
+      bgLight = '#FEE2E2';
+      bgDark = 'rgba(239, 68, 68, 0.25)';
+      borderColor = isDark ? 'rgba(239, 68, 68, 0.5)' : 'rgba(220, 38, 38, 0.4)';
+    } else if (status === 'no-show') {
+      bgLight = '#FDE68A';
+      bgDark = 'rgba(234, 179, 8, 0.25)';
+      borderColor = isDark ? 'rgba(234, 179, 8, 0.5)' : 'rgba(202, 138, 4, 0.4)';
+    } else if (event.appointmentType === 'personal') {
+      bgLight = '#F3E8FF';
+      bgDark = 'rgba(168, 85, 247, 0.25)';
+      borderColor = isDark ? 'rgba(168, 85, 247, 0.5)' : 'rgba(147, 51, 234, 0.4)';
     }
+
+    if (event.isBlocked) {
+      bgLight = 'repeating-linear-gradient(45deg, rgba(239,68,68,0.15), rgba(239,68,68,0.15) 8px, rgba(239,68,68,0.3) 8px, rgba(239,68,68,0.3) 16px)';
+      bgDark = 'repeating-linear-gradient(45deg, rgba(239,68,68,0.25), rgba(239,68,68,0.25) 8px, rgba(239,68,68,0.4) 8px, rgba(239,68,68,0.4) 16px)';
+      borderColor = isDark ? 'rgba(239, 68, 68, 0.6)' : 'rgba(220, 38, 38, 0.5)';
+    }
+
     return {
       style: {
-        backgroundColor: bg,
-        color: '#0F172A',
+        backgroundColor: isDark ? bgDark : bgLight,
+        color: textColor,
         borderRadius: 8,
-        border: '1px solid rgba(14,165,233,0.35)',
+        border: `1px solid ${borderColor}`,
         padding: '4px 8px',
         fontWeight: 600,
       },

@@ -1,29 +1,33 @@
 <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="faviconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0EA5E9"/>
+    <linearGradient id="favGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06B6D4"/>
       <stop offset="100%" stop-color="#0284C7"/>
     </linearGradient>
   </defs>
 
-  <!-- Fondo -->
-  <rect width="64" height="64" rx="14" fill="url(#faviconGrad)"/>
+  <rect width="64" height="64" rx="14" fill="url(#favGrad)"/>
 
-  <!-- Diente con cruz -->
-  <path d="M32 16
-           C40 16, 46 22, 46 30
-           C46 36, 44 42, 42 47
-           C40 52, 38 54, 35 54
-           C33 54, 32 48, 32 48
-           C32 48, 31 54, 29 54
-           C26 54, 24 52, 22 47
-           C20 42, 18 36, 18 30
-           C18 22, 24 16, 32 16Z"
+  <!-- D simplificada -->
+  <path d="M 18 18
+           L 30 18
+           Q 46 18, 46 32
+           Q 46 46, 30 46
+           L 18 46
+           L 18 18 Z"
         fill="#FFFFFF"/>
 
-  <!-- Cruz médica -->
-  <g transform="translate(32, 35)">
-    <rect x="-1" y="-5" width="2" height="10" rx="0.5" fill="#0EA5E9"/>
-    <rect x="-5" y="-1" width="10" height="2" rx="0.5" fill="#0EA5E9"/>
-  </g>
+  <!-- Diente en la D -->
+  <path d="M 30 24
+           C 36 24, 40 28, 40 33
+           C 40 37, 39 40, 37 43
+           C 36 45, 35 46, 33 46
+           C 31 46, 31 42, 31 42
+           C 31 42, 31 46, 29 46
+           C 27 46, 26 45, 25 43
+           C 23 40, 22 37, 22 33
+           C 22 28, 26 24, 32 24
+           L 30 24 Z"
+        fill="url(#favGrad)"
+        opacity="0.9"/>
 </svg>

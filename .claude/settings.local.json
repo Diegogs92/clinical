@@ -20,7 +20,8 @@
       "Bash(node scripts/verify-all.js:*)",
       "Bash(firebase deploy:*)",
       "Bash(where firebase:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(vercel --version:*)"
     ],
     "deny": [],
     "ask": []
