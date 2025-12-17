@@ -309,8 +309,8 @@ export default function AgendaPage() {
 
           {/* Controles de vista compactos */}
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-elegant-50 dark:bg-elegant-800/50 border border-elegant-200 dark:border-elegant-700">
-              <Clock className="w-4 h-4 text-elegant-500" />
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-elegant-800 border border-elegant-200 dark:border-elegant-700 shadow-sm">
+              <Clock className="w-4 h-4 text-elegant-500 dark:text-elegant-400" />
               <select
                 className="bg-transparent border-0 text-sm font-medium text-elegant-700 dark:text-elegant-200 outline-none cursor-pointer pr-1"
                 value={minHour}
@@ -334,8 +334,8 @@ export default function AgendaPage() {
               </select>
             </div>
 
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-elegant-50 dark:bg-elegant-800/50 border border-elegant-200 dark:border-elegant-700">
-              <Calendar className="w-4 h-4 text-elegant-500" />
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-elegant-800 border border-elegant-200 dark:border-elegant-700 shadow-sm">
+              <Calendar className="w-4 h-4 text-elegant-500 dark:text-elegant-400" />
               <select
                 className="bg-transparent border-0 text-sm font-medium text-elegant-700 dark:text-elegant-200 outline-none cursor-pointer"
                 value={stepMinutes}
@@ -371,21 +371,21 @@ export default function AgendaPage() {
 
           {/* Estadísticas de la semana */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="p-3 rounded-xl bg-primary/10 dark:bg-primary/20">
-              <div className="text-2xl font-bold text-primary">{weekStats.total}</div>
-              <div className="text-xs text-elegant-600 dark:text-elegant-400">Total Turnos</div>
+            <div className="p-3 rounded-xl bg-primary/10 dark:bg-primary/25 border border-primary/20 dark:border-primary/30">
+              <div className="text-2xl font-bold text-primary dark:text-primary-light">{weekStats.total}</div>
+              <div className="text-xs text-elegant-600 dark:text-elegant-300">Total Turnos</div>
             </div>
-            <div className="p-3 rounded-xl bg-green-500/10 dark:bg-green-500/20">
+            <div className="p-3 rounded-xl bg-green-500/10 dark:bg-green-500/25 border border-green-500/20 dark:border-green-500/30">
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">{weekStats.confirmed}</div>
-              <div className="text-xs text-elegant-600 dark:text-elegant-400">Confirmados</div>
+              <div className="text-xs text-elegant-600 dark:text-elegant-300">Confirmados</div>
             </div>
-            <div className="p-3 rounded-xl bg-amber-500/10 dark:bg-amber-500/20">
+            <div className="p-3 rounded-xl bg-amber-500/10 dark:bg-amber-500/25 border border-amber-500/20 dark:border-amber-500/30">
               <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{weekStats.pending}</div>
-              <div className="text-xs text-elegant-600 dark:text-elegant-400">Pendientes</div>
+              <div className="text-xs text-elegant-600 dark:text-elegant-300">Pendientes</div>
             </div>
-            <div className="p-3 rounded-xl bg-red-500/10 dark:bg-red-500/20">
+            <div className="p-3 rounded-xl bg-red-500/10 dark:bg-red-500/25 border border-red-500/20 dark:border-red-500/30">
               <div className="text-2xl font-bold text-red-600 dark:text-red-400">{weekStats.blocked}</div>
-              <div className="text-xs text-elegant-600 dark:text-elegant-400">Bloqueados</div>
+              <div className="text-xs text-elegant-600 dark:text-elegant-300">Bloqueados</div>
             </div>
           </div>
         </div>
@@ -426,33 +426,33 @@ export default function AgendaPage() {
         </div>
 
         {/* Leyenda de estados */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-elegant-700 dark:text-elegant-200">
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-4 h-4 rounded bg-sky-100 border border-sky-200" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-medium text-elegant-700 dark:text-elegant-200">
+          <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-elegant-800/50 border border-elegant-200 dark:border-elegant-700">
+            <span className="inline-block w-5 h-5 rounded bg-sky-100 dark:bg-sky-500/30 border border-sky-300 dark:border-sky-400" />
             Agendado
           </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-4 h-4 rounded bg-emerald-100 border border-emerald-200" />
+          <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-elegant-800/50 border border-elegant-200 dark:border-elegant-700">
+            <span className="inline-block w-5 h-5 rounded bg-emerald-100 dark:bg-emerald-500/30 border border-emerald-300 dark:border-emerald-400" />
             Confirmado
           </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-4 h-4 rounded bg-blue-100 border border-blue-200" />
+          <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-elegant-800/50 border border-elegant-200 dark:border-elegant-700">
+            <span className="inline-block w-5 h-5 rounded bg-blue-100 dark:bg-blue-500/30 border border-blue-300 dark:border-blue-400" />
             Completado
           </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-4 h-4 rounded bg-red-100 border border-red-200" />
+          <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-elegant-800/50 border border-elegant-200 dark:border-elegant-700">
+            <span className="inline-block w-5 h-5 rounded bg-red-100 dark:bg-red-500/30 border border-red-300 dark:border-red-400" />
             Cancelado
           </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-4 h-4 rounded bg-amber-100 border border-amber-200" />
+          <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-elegant-800/50 border border-elegant-200 dark:border-elegant-700">
+            <span className="inline-block w-5 h-5 rounded bg-amber-100 dark:bg-amber-500/30 border border-amber-300 dark:border-amber-400" />
             No show
           </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-4 h-4 rounded bg-purple-100 border border-purple-200" />
+          <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-elegant-800/50 border border-elegant-200 dark:border-elegant-700">
+            <span className="inline-block w-5 h-5 rounded bg-purple-100 dark:bg-purple-500/30 border border-purple-300 dark:border-purple-400" />
             Evento personal
           </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-4 h-4 rounded bg-red-50 border border-red-200" style={{ backgroundImage: 'repeating-linear-gradient(45deg, rgba(239,68,68,0.15), rgba(239,68,68,0.15) 8px, rgba(239,68,68,0.3) 8px, rgba(239,68,68,0.3) 16px)' }} />
+          <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-elegant-800/50 border border-elegant-200 dark:border-elegant-700">
+            <span className="inline-block w-5 h-5 rounded bg-red-50 dark:bg-red-500/20 border border-red-300 dark:border-red-400" style={{ backgroundImage: 'repeating-linear-gradient(45deg, rgba(239,68,68,0.15), rgba(239,68,68,0.15) 8px, rgba(239,68,68,0.3) 8px, rgba(239,68,68,0.3) 16px)' }} />
             Bloqueo
           </div>
         </div>
@@ -466,18 +466,18 @@ export default function AgendaPage() {
               {blockedSlots.map(slot => (
                 <div
                   key={slot.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
+                  className="flex items-center justify-between p-3 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700/50"
                 >
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-elegant-900 dark:text-white">
-                      <Calendar className="w-4 h-4" />
+                    <div className="flex items-center gap-2 text-sm font-semibold text-elegant-900 dark:text-red-100">
+                      <Calendar className="w-4 h-4 text-red-600 dark:text-red-400" />
                       {format(parseISO(slot.date), "d 'de' MMMM yyyy", { locale: es })}
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-elegant-600 dark:text-elegant-400 mt-1">
-                      <Clock className="w-4 h-4" />
+                    <div className="flex items-center gap-2 text-sm text-elegant-600 dark:text-red-200 mt-1">
+                      <Clock className="w-4 h-4 text-red-600 dark:text-red-400" />
                       {slot.startTime} - {slot.endTime}
                     </div>
-                    <div className="text-sm text-elegant-600 dark:text-elegant-400 mt-1">
+                    <div className="text-sm text-elegant-600 dark:text-red-200 mt-1">
                       Motivo: {slot.reason}
                     </div>
                   </div>
