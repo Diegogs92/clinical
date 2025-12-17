@@ -9,36 +9,27 @@
   <!-- Fondo circular -->
   <circle cx="256" cy="256" r="256" fill="url(#bg)"/>
 
-  <!-- Letra D grande y clara -->
+  <!-- Letra D con el diente calado como negativo -->
   <path d="M 140 120
            L 250 120
            C 350 120, 390 180, 390 256
            C 390 332, 350 392, 250 392
            L 140 392
-           L 140 120 Z"
+           Z
+           M 278 200
+           C 308 200, 330 222, 330 250
+           C 330 276, 325 302, 320 320
+           C 315 338, 309 350, 296 350
+           C 288 350, 284 326, 282 326
+           C 280 326, 276 350, 266 350
+           C 254 350, 249 338, 244 320
+           C 239 302, 234 276, 234 250
+           C 234 222, 248 200, 278 200
+           Z"
         fill="#FFFFFF"
         stroke="#FFFFFF"
-        stroke-width="4"
-        stroke-linejoin="round"/>
-
-  <!-- Diente simple dentro de la D -->
-  <g>
-    <!-- Diente blanco -->
-    <path d="M 280 200
-             C 310 200, 330 220, 330 250
-             C 330 275, 325 300, 320 320
-             C 315 340, 310 350, 298 350
-             C 288 350, 285 325, 283 325
-             C 281 325, 278 350, 268 350
-             C 256 350, 251 340, 246 320
-             C 241 300, 236 275, 236 250
-             C 236 220, 256 200, 286 200
-             L 280 200 Z"
-          fill="#06B6D4"
-          stroke="#FFFFFF"
-          stroke-width="3"/>
-
-    <!-- Brillo en el diente -->
-    <ellipse cx="270" cy="230" rx="10" ry="18" fill="#FFFFFF" opacity="0.4" transform="rotate(-20 270 230)"/>
-  </g>
+        stroke-width="6"
+        stroke-linejoin="round"
+        fill-rule="evenodd"
+        clip-rule="evenodd"/>
 </svg>

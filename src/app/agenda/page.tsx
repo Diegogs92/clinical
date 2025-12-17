@@ -198,36 +198,36 @@ export default function AgendaPage() {
     const isDark = document.documentElement.classList.contains('dark');
 
     let bgLight = '#E0F2FE';
-    let bgDark = 'rgba(14, 165, 233, 0.25)';
-    let borderColor = 'rgba(14, 165, 233, 0.5)';
-    let textColor = isDark ? '#F0F9FF' : '#0F172A';
+    let bgDark = 'rgba(56, 189, 248, 0.32)';
+    let borderColor = 'rgba(56, 189, 248, 0.55)';
+    let textColor = isDark ? '#EAF6FF' : '#0F172A';
 
     if (status === 'confirmed') {
       bgLight = '#DCFCE7';
-      bgDark = 'rgba(34, 197, 94, 0.25)';
-      borderColor = isDark ? 'rgba(34, 197, 94, 0.5)' : 'rgba(22, 163, 74, 0.4)';
+      bgDark = 'rgba(34, 197, 94, 0.32)';
+      borderColor = isDark ? 'rgba(34, 197, 94, 0.6)' : 'rgba(22, 163, 74, 0.4)';
     } else if (status === 'completed') {
       bgLight = '#DBEAFE';
-      bgDark = 'rgba(59, 130, 246, 0.25)';
-      borderColor = isDark ? 'rgba(59, 130, 246, 0.5)' : 'rgba(37, 99, 235, 0.4)';
+      bgDark = 'rgba(59, 130, 246, 0.32)';
+      borderColor = isDark ? 'rgba(96, 165, 250, 0.6)' : 'rgba(37, 99, 235, 0.45)';
     } else if (status === 'cancelled') {
       bgLight = '#FEE2E2';
-      bgDark = 'rgba(239, 68, 68, 0.25)';
-      borderColor = isDark ? 'rgba(239, 68, 68, 0.5)' : 'rgba(220, 38, 38, 0.4)';
+      bgDark = 'rgba(248, 113, 113, 0.32)';
+      borderColor = isDark ? 'rgba(248, 113, 113, 0.65)' : 'rgba(220, 38, 38, 0.45)';
     } else if (status === 'no-show') {
       bgLight = '#FDE68A';
-      bgDark = 'rgba(234, 179, 8, 0.25)';
-      borderColor = isDark ? 'rgba(234, 179, 8, 0.5)' : 'rgba(202, 138, 4, 0.4)';
+      bgDark = 'rgba(234, 179, 8, 0.32)';
+      borderColor = isDark ? 'rgba(234, 179, 8, 0.6)' : 'rgba(202, 138, 4, 0.45)';
     } else if (event.appointmentType === 'personal') {
       bgLight = '#F3E8FF';
-      bgDark = 'rgba(168, 85, 247, 0.25)';
-      borderColor = isDark ? 'rgba(168, 85, 247, 0.5)' : 'rgba(147, 51, 234, 0.4)';
+      bgDark = 'rgba(168, 85, 247, 0.3)';
+      borderColor = isDark ? 'rgba(192, 132, 252, 0.6)' : 'rgba(147, 51, 234, 0.45)';
     }
 
     if (event.isBlocked) {
       bgLight = 'repeating-linear-gradient(45deg, rgba(239,68,68,0.15), rgba(239,68,68,0.15) 8px, rgba(239,68,68,0.3) 8px, rgba(239,68,68,0.3) 16px)';
-      bgDark = 'repeating-linear-gradient(45deg, rgba(239,68,68,0.25), rgba(239,68,68,0.25) 8px, rgba(239,68,68,0.4) 8px, rgba(239,68,68,0.4) 16px)';
-      borderColor = isDark ? 'rgba(239, 68, 68, 0.6)' : 'rgba(220, 38, 38, 0.5)';
+      bgDark = 'repeating-linear-gradient(45deg, rgba(239,68,68,0.3), rgba(239,68,68,0.3) 8px, rgba(239,68,68,0.45) 8px, rgba(239,68,68,0.45) 16px)';
+      borderColor = isDark ? 'rgba(248, 113, 113, 0.7)' : 'rgba(220, 38, 38, 0.55)';
     }
 
     return {
@@ -238,6 +238,9 @@ export default function AgendaPage() {
         border: `1px solid ${borderColor}`,
         padding: '4px 8px',
         fontWeight: 600,
+        boxShadow: isDark
+          ? '0 10px 22px -12px rgba(0, 0, 0, 0.65)'
+          : '0 8px 20px -12px rgba(15, 23, 42, 0.35)',
       },
     };
   };
@@ -394,6 +397,7 @@ export default function AgendaPage() {
         {/* Agenda interactiva con drag & drop */}
         <div className="card overflow-hidden">
           <DnDCalendar
+            className="agenda-calendar"
             localizer={localizer}
             events={calendarEvents}
             defaultView={Views.WEEK}

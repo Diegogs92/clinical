@@ -9,18 +9,14 @@
   <!-- Fondo redondeado -->
   <rect width="256" height="256" rx="60" fill="url(#iconBg)"/>
 
-  <!-- D grande -->
+  <!-- D con diente calado como negativo -->
   <path d="M 65 55
            L 130 55
            C 190 55, 210 95, 210 128
            Q 210 161, 190 201
-           L 130 201
            L 65 201
-           L 65 55 Z"
-        fill="#FFFFFF"/>
-
-  <!-- Diente -->
-  <path d="M 140 85
+           Z
+           M 140 85
            C 160 85, 175 100, 175 120
            C 175 135, 172 150, 168 163
            C 165 176, 162 182, 155 182
@@ -29,8 +25,11 @@
            C 130 182, 127 176, 124 163
            C 120 150, 117 135, 117 120
            C 117 100, 132 85, 152 85
-           L 140 85 Z"
-        fill="#06B6D4"
+           Z"
+        fill="#FFFFFF"
         stroke="#FFFFFF"
-        stroke-width="2"/>
+        stroke-width="4"
+        stroke-linejoin="round"
+        fill-rule="evenodd"
+        clip-rule="evenodd"/>
 </svg>
