@@ -1,0 +1,52 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0EA5E9"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+    <linearGradient id="toothIconGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F0F9FF"/>
+    </linearGradient>
+    <filter id="iconShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fondo -->
+  <rect width="256" height="256" rx="60" fill="url(#iconGrad)"/>
+
+  <!-- Círculos decorativos -->
+  <circle cx="128" cy="128" r="100" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.1"/>
+
+  <!-- Diente con cruz médica -->
+  <g filter="url(#iconShadow)">
+    <path d="M128 60
+             C150 60, 168 78, 168 100
+             C168 118, 164 140, 160 158
+             C156 176, 152 188, 142 188
+             C133 188, 130 165, 128 165
+             C126 165, 123 188, 114 188
+             C104 188, 100 176, 96 158
+             C92 140, 88 118, 88 100
+             C88 78, 106 60, 128 60Z"
+          fill="url(#toothIconGrad)"
+          stroke="#FFFFFF"
+          stroke-width="4"
+          stroke-linejoin="round"/>
+
+    <!-- Cruz -->
+    <g transform="translate(128, 120)">
+      <rect x="-2" y="-12" width="4" height="24" rx="1" fill="#0EA5E9"/>
+      <rect x="-12" y="-2" width="24" height="4" rx="1" fill="#0EA5E9"/>
+    </g>
+  </g>
+</svg>

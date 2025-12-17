@@ -1,42 +1,94 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="80" y1="80" x2="440" y2="440" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0EA5E9"/>
-      <stop offset="1" stop-color="#0B4F79"/>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0EA5E9"/>
+      <stop offset="100%" stop-color="#0284C7"/>
     </linearGradient>
-    <linearGradient id="tooth" x1="0" y1="0" x2="0" y2="1">
-      <stop stop-color="#F8FBFF"/>
-      <stop offset="1" stop-color="#E3ECF5"/>
+    <linearGradient id="toothGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F0F9FF"/>
     </linearGradient>
+    <linearGradient id="pulseGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0EA5E9" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#0EA5E9" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#0EA5E9" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Sombra suave para profundidad -->
+    <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dx="0" dy="4" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.2"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Glow effect -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
 
-  <!-- Fondo circular -->
-  <circle cx="256" cy="256" r="240" fill="url(#bg)"/>
-  <circle cx="256" cy="256" r="216" fill="#E0F2FE" opacity="0.15"/>
+  <!-- Fondo con gradiente circular moderno -->
+  <circle cx="256" cy="256" r="256" fill="url(#primaryGrad)"/>
 
-  <!-- Calendario -->
-  <g transform="translate(112 112)">
-    <rect x="0" y="24" width="288" height="224" rx="30" fill="#F8FBFF" stroke="#0EA5E9" stroke-width="10"/>
-    <rect x="0" y="24" width="288" height="60" rx="30" fill="#0EA5E9" opacity="0.95"/>
-    <line x1="48" y1="0" x2="48" y2="44" stroke="#F8FBFF" stroke-width="14" stroke-linecap="round"/>
-    <line x1="240" y1="0" x2="240" y2="44" stroke="#F8FBFF" stroke-width="14" stroke-linecap="round"/>
-    <g stroke="#D7E6F3" stroke-width="2">
-      <line x1="48" y1="104" x2="240" y2="104"/>
-      <line x1="48" y1="146" x2="240" y2="146"/>
-      <line x1="48" y1="188" x2="240" y2="188"/>
-      <line x1="80" y1="88" x2="80" y2="204"/>
-      <line x1="144" y1="88" x2="144" y2="204"/>
-      <line x1="208" y1="88" x2="208" y2="204"/>
+  <!-- Círculo interior decorativo -->
+  <circle cx="256" cy="256" r="220" fill="none" stroke="#FFFFFF" stroke-width="2" opacity="0.1"/>
+  <circle cx="256" cy="256" r="200" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.1"/>
+
+  <!-- Diente estilizado moderno con forma más geométrica -->
+  <g filter="url(#softShadow)">
+    <!-- Diente principal -->
+    <path d="M256 140
+             C286 140, 310 164, 310 194
+             C310 224, 305 260, 300 290
+             C295 320, 288 340, 275 340
+             C262 340, 258 310, 256 310
+             C254 310, 250 340, 237 340
+             C224 340, 217 320, 212 290
+             C207 260, 202 224, 202 194
+             C202 164, 226 140, 256 140Z"
+          fill="url(#toothGrad)"
+          stroke="#FFFFFF"
+          stroke-width="6"
+          stroke-linejoin="round"/>
+
+    <!-- Línea de brillo en el diente -->
+    <ellipse cx="240" cy="180" rx="16" ry="28" fill="#FFFFFF" opacity="0.4" transform="rotate(-20 240 180)"/>
+
+    <!-- Cruz médica minimalista en el diente -->
+    <g transform="translate(256, 240)">
+      <rect x="-3" y="-16" width="6" height="32" rx="2" fill="#0EA5E9" opacity="0.9"/>
+      <rect x="-16" y="-3" width="32" height="6" rx="2" fill="#0EA5E9" opacity="0.9"/>
     </g>
-    <circle cx="208" cy="188" r="12" fill="#0EA5E9"/>
   </g>
 
-  <!-- Diente -->
-  <g transform="translate(186 208)">
-    <path d="M70 0c34 0 60 26 60 66 0 24-6 50-14 74-8 26-15 48-26 48-14 0-19-32-32-32-12 0-17 32-32 32-12 0-19-22-27-48C21 116 14 90 14 66 14 26 40 0 74 0h-4z" fill="url(#tooth)" stroke="#0EA5E9" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M78 40c-10 10-22 14-34 12" stroke="#0EA5E9" stroke-width="6" stroke-linecap="round"/>
+  <!-- Línea de pulso cardíaco/digital moderna -->
+  <g transform="translate(256, 360)">
+    <path d="M-100,0 L-70,0 L-60,-15 L-50,15 L-40,-25 L-30,25 L-20,0 L20,0 L30,-20 L40,20 L50,-15 L60,15 L70,0 L100,0"
+          stroke="url(#pulseGrad)"
+          stroke-width="4"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+          filter="url(#glow)"/>
   </g>
 
-  <!-- Marca -->
-  <text x="256" y="432" font-family="Plus Jakarta Sans, Arial, sans-serif" font-size="54" font-weight="700" fill="#F8FBFF" text-anchor="middle" letter-spacing="2">DENTIFY</text>
+  <!-- Puntos decorativos modernos alrededor -->
+  <circle cx="140" cy="160" r="6" fill="#FFFFFF" opacity="0.3"/>
+  <circle cx="372" cy="160" r="6" fill="#FFFFFF" opacity="0.3"/>
+  <circle cx="140" cy="352" r="6" fill="#FFFFFF" opacity="0.3"/>
+  <circle cx="372" cy="352" r="6" fill="#FFFFFF" opacity="0.3"/>
+
+  <!-- Pequeños arcos decorativos -->
+  <path d="M 120 256 Q 120 220, 140 200" stroke="#FFFFFF" stroke-width="3" fill="none" opacity="0.2" stroke-linecap="round"/>
+  <path d="M 392 256 Q 392 220, 372 200" stroke="#FFFFFF" stroke-width="3" fill="none" opacity="0.2" stroke-linecap="round"/>
 </svg>
