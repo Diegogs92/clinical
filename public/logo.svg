@@ -1,66 +1,44 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="mainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#06B6D4"/>
-      <stop offset="100%" stop-color="#0284C7"/>
+      <stop offset="100%" stop-color="#0EA5E9"/>
     </linearGradient>
-
-    <linearGradient id="toothWhite" x1="50%" y1="0%" x2="50%" y2="100%">
-      <stop offset="0%" stop-color="#FFFFFF"/>
-      <stop offset="100%" stop-color="#F8FAFC"/>
-    </linearGradient>
-
-    <filter id="softGlow">
-      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
-      <feMerge>
-        <feMergeNode in="coloredBlur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
   </defs>
 
-  <!-- Fondo con gradiente -->
-  <circle cx="256" cy="256" r="256" fill="url(#mainGrad)"/>
+  <!-- Fondo circular -->
+  <circle cx="256" cy="256" r="256" fill="url(#bg)"/>
 
-  <!-- Elementos geométricos de fondo -->
-  <circle cx="256" cy="256" r="210" fill="none" stroke="#FFFFFF" stroke-width="1.5" opacity="0.12"/>
-  <circle cx="256" cy="256" r="185" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.08"/>
+  <!-- Letra D grande y clara -->
+  <path d="M 140 120
+           L 250 120
+           C 350 120, 390 180, 390 256
+           C 390 332, 350 392, 250 392
+           L 140 392
+           L 140 120 Z"
+        fill="#FFFFFF"
+        stroke="#FFFFFF"
+        stroke-width="4"
+        stroke-linejoin="round"/>
 
-  <!-- Símbolo principal: D con diente integrado -->
-  <g filter="url(#softGlow)">
-    <!-- Letra D estilizada -->
-    <path d="M 180 160
-             L 240 160
-             Q 320 160, 320 256
-             Q 320 352, 240 352
-             L 180 352
-             L 180 160 Z"
-          fill="url(#toothWhite)"
+  <!-- Diente simple dentro de la D -->
+  <g>
+    <!-- Diente blanco -->
+    <path d="M 280 200
+             C 310 200, 330 220, 330 250
+             C 330 275, 325 300, 320 320
+             C 315 340, 310 350, 298 350
+             C 288 350, 285 325, 283 325
+             C 281 325, 278 350, 268 350
+             C 256 350, 251 340, 246 320
+             C 241 300, 236 275, 236 250
+             C 236 220, 256 200, 286 200
+             L 280 200 Z"
+          fill="#06B6D4"
           stroke="#FFFFFF"
-          stroke-width="8"
-          stroke-linejoin="round"/>
+          stroke-width="3"/>
 
-    <!-- Diente integrado en la D -->
-    <path d="M 240 200
-             C 265 200, 285 220, 285 245
-             C 285 265, 282 285, 278 305
-             C 274 325, 270 335, 260 335
-             C 252 335, 250 315, 248 315
-             C 246 315, 244 335, 236 335
-             C 226 335, 222 325, 218 305
-             C 214 285, 211 265, 211 245
-             C 211 220, 231 200, 256 200
-             L 240 200 Z"
-          fill="url(#mainGrad)"
-          opacity="0.95"/>
-
-    <!-- Brillo sutil en el diente -->
-    <ellipse cx="235" cy="225" rx="12" ry="22" fill="#FFFFFF" opacity="0.3" transform="rotate(-15 235 225)"/>
+    <!-- Brillo en el diente -->
+    <ellipse cx="270" cy="230" rx="10" ry="18" fill="#FFFFFF" opacity="0.4" transform="rotate(-20 270 230)"/>
   </g>
-
-  <!-- Puntos decorativos minimalistas -->
-  <circle cx="130" cy="150" r="5" fill="#FFFFFF" opacity="0.25"/>
-  <circle cx="382" cy="150" r="5" fill="#FFFFFF" opacity="0.25"/>
-  <circle cx="130" cy="362" r="5" fill="#FFFFFF" opacity="0.25"/>
-  <circle cx="382" cy="362" r="5" fill="#FFFFFF" opacity="0.25"/>
 </svg>

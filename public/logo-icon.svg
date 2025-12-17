@@ -1,46 +1,36 @@
 <svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="iconMainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="iconBg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#06B6D4"/>
-      <stop offset="100%" stop-color="#0284C7"/>
-    </linearGradient>
-
-    <linearGradient id="iconWhite" x1="50%" y1="0%" x2="50%" y2="100%">
-      <stop offset="0%" stop-color="#FFFFFF"/>
-      <stop offset="100%" stop-color="#F8FAFC"/>
+      <stop offset="100%" stop-color="#0EA5E9"/>
     </linearGradient>
   </defs>
 
-  <!-- Fondo -->
-  <rect width="256" height="256" rx="60" fill="url(#iconMainGrad)"/>
+  <!-- Fondo redondeado -->
+  <rect width="256" height="256" rx="60" fill="url(#iconBg)"/>
 
-  <!-- Círculo decorativo -->
-  <circle cx="128" cy="128" r="95" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.1"/>
+  <!-- D grande -->
+  <path d="M 65 55
+           L 130 55
+           C 190 55, 210 95, 210 128
+           Q 210 161, 190 201
+           L 130 201
+           L 65 201
+           L 65 55 Z"
+        fill="#FFFFFF"/>
 
-  <!-- D con diente -->
-  <g>
-    <path d="M 80 70
-             L 120 70
-             Q 176 70, 176 128
-             Q 176 186, 120 186
-             L 80 186
-             L 80 70 Z"
-          fill="url(#iconWhite)"
-          stroke="#FFFFFF"
-          stroke-width="6"
-          stroke-linejoin="round"/>
-
-    <path d="M 120 95
-             C 138 95, 151 108, 151 125
-             C 151 138, 149 150, 146 160
-             C 143 170, 140 175, 133 175
-             C 127 175, 126 162, 125 162
-             C 124 162, 123 175, 117 175
-             C 110 175, 107 170, 104 160
-             C 101 150, 99 138, 99 125
-             C 99 108, 112 95, 130 95
-             L 120 95 Z"
-          fill="url(#iconMainGrad)"
-          opacity="0.95"/>
-  </g>
+  <!-- Diente -->
+  <path d="M 140 85
+           C 160 85, 175 100, 175 120
+           C 175 135, 172 150, 168 163
+           C 165 176, 162 182, 155 182
+           C 149 182, 147 168, 146 168
+           C 145 168, 143 182, 137 182
+           C 130 182, 127 176, 124 163
+           C 120 150, 117 135, 117 120
+           C 117 100, 132 85, 152 85
+           L 140 85 Z"
+        fill="#06B6D4"
+        stroke="#FFFFFF"
+        stroke-width="2"/>
 </svg>
