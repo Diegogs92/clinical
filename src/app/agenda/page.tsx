@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { usePatients } from '@/contexts/PatientsContext';
@@ -8,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { format, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, isWithinInterval, differenceInMinutes, parse } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, Clock, User, Phone, Ban, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Calendar, Clock, User, Phone, Ban, ChevronLeft, ChevronRight, X, PlusCircle, Eye } from 'lucide-react';
 import { BlockedSlot } from '@/types';
 import {
   getBlockedSlotsByUser,
@@ -17,7 +18,7 @@ import {
 } from '@/lib/blockedSlots';
 import { updateAppointment } from '@/lib/appointments';
 import { combineDateAndTime } from '@/lib/dateUtils';
-import { Calendar as BigCalendar, Views, dateFnsLocalizer } from 'react-big-calendar';
+import { Calendar as BigCalendar, Views, dateFnsLocalizer, SlotInfo } from 'react-big-calendar';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
@@ -38,6 +39,7 @@ export default function AgendaPage() {
   const toast = useToast();
   const { appointments, loading, refreshAppointments } = useAppointments();
   const { patients } = usePatients();
+  const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [blockedSlots, setBlockedSlots] = useState<BlockedSlot[]>([]);
@@ -51,6 +53,7 @@ export default function AgendaPage() {
   const [minHour, setMinHour] = useState(7);
   const [maxHour, setMaxHour] = useState(21);
   const [stepMinutes, setStepMinutes] = useState<10 | 15 | 20 | 30>(15);
+  const [showPreferences, setShowPreferences] = useState(false);
 
   // Cargar franjas bloqueadas al montar el componente
   useEffect(() => {
@@ -90,6 +93,10 @@ export default function AgendaPage() {
   const goToPreviousWeek = () => setCurrentDate(addDays(currentDate, -7));
   const goToNextWeek = () => setCurrentDate(addDays(currentDate, 7));
   const goToToday = () => setCurrentDate(new Date());
+
+  const newAppointment = () => {
+    router.push('/dashboard?create=appointment');
+  };
 
   // Manejar bloqueo de franja horaria
   const handleBlockSlot = async () => {
@@ -193,6 +200,10 @@ export default function AgendaPage() {
     if (status === 'completed') bg = '#DBEAFE';
     if (status === 'cancelled') bg = '#FEE2E2';
     if (status === 'no-show') bg = '#FDE68A';
+    if (event.appointmentType === 'personal') bg = '#F3E8FF';
+    if (event.isBlocked) {
+      bg = 'repeating-linear-gradient(45deg, rgba(239,68,68,0.15), rgba(239,68,68,0.15) 8px, rgba(239,68,68,0.3) 8px, rgba(239,68,68,0.3) 16px)';
+    }
     return {
       style: {
         backgroundColor: bg,
@@ -235,6 +246,16 @@ export default function AgendaPage() {
       console.error('Error ajustando turno:', error);
       toast.error('No se pudo ajustar la duración');
     }
+  };
+
+  const handleSelectSlot = (slot: SlotInfo) => {
+    const start = slot.start;
+    const end = slot.end;
+    const startStr = format(start, 'HH:mm');
+    const endStr = format(end, 'HH:mm');
+    // Redirigir al formulario con parámetros prellenados
+    const dateStr = format(start, 'yyyy-MM-dd');
+    router.push(`/dashboard?create=appointment&date=${dateStr}&start=${startStr}&end=${endStr}`);
   };
 
   return (
@@ -357,6 +378,7 @@ export default function AgendaPage() {
             onEventResize={handleEventResize}
             min={new Date(1970, 1, 1, minHour, 0, 0)}
             max={new Date(1970, 1, 1, maxHour, 0, 0)}
+            onSelectSlot={handleSelectSlot}
             messages={{
               today: 'Hoy',
               previous: 'Anterior',
@@ -369,6 +391,38 @@ export default function AgendaPage() {
             }}
             eventPropGetter={eventPropGetter}
           />
+        </div>
+
+        {/* Leyenda de estados */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-elegant-700 dark:text-elegant-200">
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-4 h-4 rounded bg-sky-100 border border-sky-200" />
+            Agendado
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-4 h-4 rounded bg-emerald-100 border border-emerald-200" />
+            Confirmado
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-4 h-4 rounded bg-blue-100 border border-blue-200" />
+            Completado
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-4 h-4 rounded bg-red-100 border border-red-200" />
+            Cancelado
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-4 h-4 rounded bg-amber-100 border border-amber-200" />
+            No show
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-4 h-4 rounded bg-purple-100 border border-purple-200" />
+            Evento personal
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-4 h-4 rounded bg-red-50 border border-red-200" style={{ backgroundImage: 'repeating-linear-gradient(45deg, rgba(239,68,68,0.15), rgba(239,68,68,0.15) 8px, rgba(239,68,68,0.3) 8px, rgba(239,68,68,0.3) 16px)' }} />
+            Bloqueo
+          </div>
         </div>
         {/* Lista de franjas bloqueadas */}
         {blockedSlots.length > 0 && (

@@ -55,12 +55,15 @@ service cloud.firestore {
     match /appointments/{appointmentId} {
       allow read: if signedIn() && (isAdmin() || isSecretary() || isOwner(resource.data.userId));
       allow create: if signedIn() && (
-        // Admin crea turnos para cualquiera; eventos personales solo admin
-        (isAdmin()) ||
-        (isProfessional() && request.resource.data.userId == request.auth.uid && request.resource.data.appointmentType != 'personal')
+        // Admin y secretaria crean turnos para cualquiera
+        isAdmin() ||
+        isSecretary() ||
+        // Profesionales crean turnos solo para sí mismos
+        (isProfessional() && request.resource.data.userId == request.auth.uid)
       );
       allow update: if signedIn() && (
         isAdmin() ||
+        isSecretary() ||
         isOwner(resource.data.userId)
       );
       allow delete: if signedIn() && (

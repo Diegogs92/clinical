@@ -10,15 +10,36 @@ const mockAppointments: Appointment[] = loadFromLocalStorage<Appointment>('appoi
 
 export async function createAppointment(data: Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>) {
   const now = new Date().toISOString();
+
+  console.log('[createAppointment] Iniciando creación:', {
+    mockMode,
+    hasDb: !!db,
+    data,
+  });
+
   if (mockMode || !db) {
+    console.log('[createAppointment] Usando modo mock');
     const id = `mock-ap-${Date.now()}`;
     mockAppointments.push({ ...(data as Appointment), id, createdAt: now, updatedAt: now });
     saveToLocalStorage('appointments', mockAppointments);
+    console.log('[createAppointment] Turno guardado en localStorage con ID:', id);
     return id;
   }
-  const colRef = collection(db as Firestore, APPOINTMENTS_COLLECTION);
-  const docRef = await addDoc(colRef, { ...data, createdAt: now, updatedAt: now });
-  return docRef.id;
+
+  try {
+    const colRef = collection(db as Firestore, APPOINTMENTS_COLLECTION);
+    const payload = { ...data, createdAt: now, updatedAt: now };
+    console.log('[createAppointment] Enviando a Firestore:', payload);
+
+    const docRef = await addDoc(colRef, payload);
+    console.log('[createAppointment] Turno guardado en Firestore con ID:', docRef.id);
+    return docRef.id;
+  } catch (error: any) {
+    console.error('[createAppointment] Error al guardar en Firestore:', error);
+    console.error('[createAppointment] Error code:', error?.code);
+    console.error('[createAppointment] Error message:', error?.message);
+    throw error;
+  }
 }
 
 export async function updateAppointment(id: string, data: Partial<Appointment>) {

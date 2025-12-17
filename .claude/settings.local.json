@@ -11,7 +11,14 @@
       "Bash(npm run build:*)",
       "Bash(vercel domains:*)",
       "Bash(vercel ls:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(node scripts/seed-users.js:*)",
+      "Bash(tasklist:*)",
+      "Bash(taskkill:*)",
+      "Bash(npm run dev:*)",
+      "Bash(timeout /t 10)",
+      "Bash(node scripts/verify-all.js:*)",
+      "Bash(firebase deploy:*)"
     ],
     "deny": [],
     "ask": []

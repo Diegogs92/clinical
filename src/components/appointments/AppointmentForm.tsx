@@ -61,7 +61,17 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
   });
 
   const onSubmit = async (values: AppointmentFormValues) => {
-    if (!user) return;
+    if (!user) {
+      console.error('[AppointmentForm] No hay usuario autenticado');
+      toast.error('Debes iniciar sesión para crear turnos');
+      return;
+    }
+
+    console.log('[AppointmentForm] Iniciando creación de turno:', {
+      userId: user.uid,
+      values,
+    });
+
     setLoading(true);
     try {
       const [h, m] = values.startTime.split(':').map(Number);
@@ -127,30 +137,47 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         fee: values.fee,
         notes: values.notes,
         userId: user.uid,
+        appointmentType: 'patient', // Siempre es tipo paciente en este formulario
         createdAt: initialData?.createdAt || '',
         updatedAt: '',
       } as any;
 
+      console.log('[AppointmentForm] Payload a enviar:', payload);
+
       if (initialData) {
+        console.log('[AppointmentForm] Actualizando turno existente:', initialData.id);
         await updateAppointment(initialData.id, payload);
         const updated = { ...payload, id: initialData.id };
 
+        console.log('[AppointmentForm] Turno actualizado exitosamente');
         toast.success('Turno actualizado');
         await refreshAppointments();
         reset();
         onCreated?.(updated);
       } else {
+        console.log('[AppointmentForm] Creando nuevo turno...');
         const id = await createAppointment(payload);
         const created = { ...payload, id };
 
+        console.log('[AppointmentForm] Turno creado exitosamente con ID:', id);
         toast.success('Turno creado');
         await refreshAppointments();
         reset();
         onCreated?.(created);
       }
-    } catch (e) {
-      console.error(e);
-      alert(initialData ? 'Error al actualizar turno' : 'Error al crear turno');
+    } catch (e: any) {
+      console.error('[AppointmentForm] Error completo:', e);
+      console.error('[AppointmentForm] Error code:', e?.code);
+      console.error('[AppointmentForm] Error message:', e?.message);
+
+      // Mensajes de error más específicos
+      if (e?.code === 'permission-denied') {
+        toast.error('No tienes permisos para crear este turno. Verifica las reglas de Firestore.');
+      } else if (e?.message?.includes('index')) {
+        toast.error('Se necesita crear un índice en Firestore. Revisa la consola del navegador.');
+      } else {
+        toast.error(initialData ? `Error al actualizar turno: ${e?.message || 'Error desconocido'}` : `Error al crear turno: ${e?.message || 'Error desconocido'}`);
+      }
     } finally {
       setLoading(false);
     }
