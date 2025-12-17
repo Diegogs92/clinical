@@ -697,10 +697,52 @@ input[type="tel"],
   border-radius: 12px;
   padding: 4px 8px;
   box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.25);
+  color: inherit;
+}
+
+.agenda-calendar .rbc-event-content,
+.agenda-calendar .rbc-event-label {
+  color: inherit;
+  font-weight: 700;
 }
 
 .agenda-calendar .rbc-off-range-bg {
   background: transparent;
+}
+
+/* Toolbar */
+.agenda-calendar .rbc-toolbar {
+  background: #f8fafc;
+  border: 1px solid #dce4ee;
+  border-radius: 12px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+
+.agenda-calendar .rbc-toolbar .rbc-btn-group {
+  gap: 6px;
+}
+
+.agenda-calendar .rbc-toolbar button {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0b162e;
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-weight: 700;
+  box-shadow: 0 4px 10px -6px rgba(15, 23, 42, 0.35);
+}
+
+.agenda-calendar .rbc-toolbar button:hover,
+.agenda-calendar .rbc-toolbar button:focus {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+.agenda-calendar .rbc-toolbar button.rbc-active {
+  background: #0ea5e9;
+  color: #ffffff;
+  border-color: #0284c7;
 }
 
 /* React Big Calendar - Dark Mode Support */
@@ -817,6 +859,38 @@ input[type="tel"],
 .dark .agenda-calendar .rbc-overlay-header {
   border-bottom: 1px solid rgba(148, 163, 184, 0.4);
   color: #e2e8f0;
+}
+
+/* Toolbar dark */
+.dark .agenda-calendar .rbc-toolbar {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 12px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+
+.dark .agenda-calendar .rbc-toolbar button {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: #e2e8f0;
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px -8px rgba(0, 0, 0, 0.65);
+}
+
+.dark .agenda-calendar .rbc-toolbar button:hover,
+.dark .agenda-calendar .rbc-toolbar button:focus {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: rgba(56, 189, 248, 0.45);
+  color: #e0f2fe;
+}
+
+.dark .agenda-calendar .rbc-toolbar button.rbc-active {
+  background: rgba(14, 165, 233, 0.25);
+  color: #e0f2fe;
+  border-color: rgba(56, 189, 248, 0.6);
 }
 
 /* Mejor contraste para las lineas de hora */

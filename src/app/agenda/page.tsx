@@ -197,31 +197,31 @@ export default function AgendaPage() {
     const status = event.status;
     const isDark = document.documentElement.classList.contains('dark');
 
-    let bgLight = '#E0F2FE';
-    let bgDark = 'rgba(56, 189, 248, 0.32)';
-    let borderColor = 'rgba(56, 189, 248, 0.55)';
-    let textColor = isDark ? '#EAF6FF' : '#0F172A';
+    let bgLight = '#CFE5FF';
+    let bgDark = 'rgba(56, 189, 248, 0.42)';
+    let borderColor = 'rgba(56, 189, 248, 0.65)';
+    let textColor = isDark ? '#EAF6FF' : '#0B162E';
 
     if (status === 'confirmed') {
-      bgLight = '#DCFCE7';
-      bgDark = 'rgba(34, 197, 94, 0.32)';
-      borderColor = isDark ? 'rgba(34, 197, 94, 0.6)' : 'rgba(22, 163, 74, 0.4)';
+      bgLight = '#D1F6DD';
+      bgDark = 'rgba(34, 197, 94, 0.42)';
+      borderColor = isDark ? 'rgba(34, 197, 94, 0.72)' : 'rgba(22, 163, 74, 0.55)';
     } else if (status === 'completed') {
-      bgLight = '#DBEAFE';
-      bgDark = 'rgba(59, 130, 246, 0.32)';
-      borderColor = isDark ? 'rgba(96, 165, 250, 0.6)' : 'rgba(37, 99, 235, 0.45)';
+      bgLight = '#D9E8FF';
+      bgDark = 'rgba(59, 130, 246, 0.42)';
+      borderColor = isDark ? 'rgba(96, 165, 250, 0.7)' : 'rgba(37, 99, 235, 0.55)';
     } else if (status === 'cancelled') {
-      bgLight = '#FEE2E2';
-      bgDark = 'rgba(248, 113, 113, 0.32)';
-      borderColor = isDark ? 'rgba(248, 113, 113, 0.65)' : 'rgba(220, 38, 38, 0.45)';
+      bgLight = '#FBD2D2';
+      bgDark = 'rgba(248, 113, 113, 0.42)';
+      borderColor = isDark ? 'rgba(248, 113, 113, 0.75)' : 'rgba(220, 38, 38, 0.6)';
     } else if (status === 'no-show') {
-      bgLight = '#FDE68A';
-      bgDark = 'rgba(234, 179, 8, 0.32)';
-      borderColor = isDark ? 'rgba(234, 179, 8, 0.6)' : 'rgba(202, 138, 4, 0.45)';
+      bgLight = '#FCE7B2';
+      bgDark = 'rgba(234, 179, 8, 0.42)';
+      borderColor = isDark ? 'rgba(234, 179, 8, 0.68)' : 'rgba(202, 138, 4, 0.6)';
     } else if (event.appointmentType === 'personal') {
-      bgLight = '#F3E8FF';
-      bgDark = 'rgba(168, 85, 247, 0.3)';
-      borderColor = isDark ? 'rgba(192, 132, 252, 0.6)' : 'rgba(147, 51, 234, 0.45)';
+      bgLight = '#E8D9FF';
+      bgDark = 'rgba(168, 85, 247, 0.4)';
+      borderColor = isDark ? 'rgba(192, 132, 252, 0.7)' : 'rgba(147, 51, 234, 0.55)';
     }
 
     if (event.isBlocked) {
