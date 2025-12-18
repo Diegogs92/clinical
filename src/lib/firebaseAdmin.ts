@@ -52,15 +52,15 @@ function getServiceAccountFromEnv(): admin.ServiceAccount | null {
 export function getFirebaseAdminApp() {
   if (!admin.apps.length) {
     const serviceAccount = getServiceAccountFromEnv();
-    if (serviceAccount) {
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-      });
-    } else {
-      admin.initializeApp({
-        credential: admin.credential.applicationDefault(),
-      });
+    if (!serviceAccount) {
+      throw new Error(
+        'Firebase Admin SDK no está configurado. Define FIREBASE_ADMIN_CREDENTIALS_BASE64 (recomendado) o FIREBASE_ADMIN_CREDENTIALS / FIREBASE_ADMIN_PROJECT_ID + FIREBASE_ADMIN_CLIENT_EMAIL + FIREBASE_ADMIN_PRIVATE_KEY.'
+      );
     }
+
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
   }
   return admin.app();
 }
@@ -72,4 +72,3 @@ export function getAdminAuth() {
 export function getAdminFirestore() {
   return getFirebaseAdminApp().firestore();
 }
-

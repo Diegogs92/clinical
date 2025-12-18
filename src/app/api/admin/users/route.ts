@@ -19,6 +19,7 @@ function generatePassword() {
 }
 
 export async function POST(req: Request) {
+  console.log('[api/admin/users] POST');
   try {
     const authHeader = req.headers.get('authorization') || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice('Bearer '.length) : '';
@@ -28,9 +29,11 @@ export async function POST(req: Request) {
 
     const adminAuth = getAdminAuth();
     const db = getAdminFirestore();
+    console.log('[api/admin/users] Admin SDK ready');
 
     const decoded = await adminAuth.verifyIdToken(token);
     const requesterUid = decoded.uid;
+    console.log('[api/admin/users] Token verified for uid:', requesterUid);
 
     const requesterProfileSnap = await db.collection('userProfiles').doc(requesterUid).get();
     const requesterRole = (requesterProfileSnap.exists ? (requesterProfileSnap.data() as any).role : null) as
@@ -39,6 +42,7 @@ export async function POST(req: Request) {
     if (requesterRole !== 'administrador') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
+    console.log('[api/admin/users] Requester role:', requesterRole);
 
     const body = await req.json();
     const parsed = requestSchema.safeParse(body);
@@ -49,12 +53,14 @@ export async function POST(req: Request) {
     const { email, displayName, role } = parsed.data;
     const password = parsed.data.password || generatePassword();
     const didGeneratePassword = !parsed.data.password;
+    console.log('[api/admin/users] Creating auth user:', email);
 
     const created = await adminAuth.createUser({
       email,
       password,
       displayName,
     });
+    console.log('[api/admin/users] Auth user created:', created.uid);
 
     const now = new Date().toISOString();
     const username = email.split('@')[0] || '';
@@ -77,6 +83,7 @@ export async function POST(req: Request) {
         },
         { merge: false }
       );
+    console.log('[api/admin/users] Profile created:', created.uid);
 
     return NextResponse.json(
       {

@@ -85,14 +85,18 @@ export default function UsersPage() {
       }
 
       const token = await user.getIdToken();
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 20000);
       const res = await fetch('/api/admin/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
+        signal: controller.signal,
         body: JSON.stringify(data),
       });
+      clearTimeout(timeout);
 
       const payload = await res.json().catch(() => ({}));
 
@@ -120,6 +124,12 @@ export default function UsersPage() {
     } catch (error) {
       console.error('Error creating user:', error);
       if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          const msg =
+            'La creación tardó demasiado y se canceló (20s). Revisa los logs de Vercel del endpoint /api/admin/users.';
+          showToast(msg, 'error');
+          throw new Error(msg);
+        }
         // El modal mostrará el mensaje, evitamos duplicar si ya fue mostrado arriba
         if (!error.message.startsWith('(') && !error.message.includes('email ya existe')) {
           showToast('Error al crear usuario', 'error');
