@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { updateAppointment, deleteAppointment } from '@/lib/appointments';
-import { Appointment } from '@/types';
+import { Appointment, UserProfile } from '@/types';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import AppointmentForm from '@/components/appointments/AppointmentForm';
@@ -25,6 +25,7 @@ import { useCalendarSync } from '@/contexts/CalendarSyncContext';
 import { addDays, addMonths, addYears, startOfMonth, startOfWeek, startOfYear, format } from 'date-fns';
 import { combineDateAndTime } from '@/lib/dateUtils';
 import { usePermissions } from '@/hooks/usePermissions';
+import { listProfessionals } from '@/lib/users';
 
 const statusOptions = [
   { value: '', label: 'Todos los estados' },
@@ -42,6 +43,8 @@ export default function DashboardPage() {
   const confirm = useConfirm();
   const { syncAppointment } = useCalendarSync();
   const permissions = usePermissions();
+  const [professionals, setProfessionals] = useState<UserProfile[]>([]);
+  const [loadingProfessionals, setLoadingProfessionals] = useState(false);
   const [view, setView] = useState<'day' | 'week' | 'month' | 'year'>('week');
   const [showForm, setShowForm] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
@@ -67,6 +70,21 @@ export default function DashboardPage() {
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const loadProfessionals = async () => {
+      try {
+        setLoadingProfessionals(true);
+        const list = await listProfessionals();
+        setProfessionals(list);
+      } catch (error) {
+        console.error('[Dashboard] Error cargando profesionales:', error);
+      } finally {
+        setLoadingProfessionals(false);
+      }
+    };
+    loadProfessionals();
   }, []);
 
   useEffect(() => {
@@ -122,18 +140,25 @@ export default function DashboardPage() {
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
+    const getProfessionalName = (id?: string) => {
+      if (!id) return '';
+      const found = professionals.find(p => p.uid === id);
+      return found?.displayName || found?.email || '';
+    };
+
     return appointments
       .filter(a => {
         const d = new Date(a.date);
         const inDateRange = d >= windowRange.start && d < windowRange.end;
         const matchesPatient = !filterPatient || a.patientId === filterPatient;
         const matchesStatus = !filterStatus || a.status === filterStatus;
-        const searchableText = a.patientName || a.title || '';
+        const professionalName = getProfessionalName(a.userId) || '';
+        const searchableText = `${a.patientName || a.title || ''} ${professionalName}`;
         const matchesSearch = !query || searchableText.toLowerCase().includes(query);
         return inDateRange && matchesPatient && matchesStatus && matchesSearch;
       })
       .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
-  }, [appointments, filterPatient, filterStatus, search, windowRange.end, windowRange.start]);
+  }, [appointments, filterPatient, filterStatus, search, windowRange.end, windowRange.start, professionals]);
 
   const paymentStateFor = useMemo(() => {
     return (appt: Appointment) => {
@@ -446,6 +471,7 @@ export default function DashboardPage() {
                         <th>Fecha</th>
                         <th>Hora</th>
                         <th>Paciente</th>
+                        <th>Profesional</th>
                         <th>Honorarios</th>
                         <th>Estado</th>
                         <th className="text-right">Acciones</th>
@@ -455,11 +481,21 @@ export default function DashboardPage() {
                       {filtered.map(a => {
                         const d = new Date(a.date);
                         const fecha = d.toLocaleDateString();
+                        const professional = professionals.find(p => p.uid === a.userId);
                         return (
                           <tr key={a.id}>
                             <td className="font-medium">{fecha}</td>
                             <td>{a.startTime} - {a.endTime}</td>
                             <td>{a.patientName || a.title || 'Evento'}</td>
+                            <td>
+                              {professional ? (
+                                <span className="text-sm text-gray-600 dark:text-gray-300">
+                                  {professional.displayName || professional.email}
+                                </span>
+                              ) : (
+                                <span className="text-gray-400 text-xs">-</span>
+                              )}
+                            </td>
                             <td>
                               {a.fee ? (
                                 <span className="font-semibold text-elegant-900 dark:text-white">
@@ -539,6 +575,7 @@ export default function DashboardPage() {
                     const d = new Date(a.date);
                     const fecha = d.toLocaleDateString();
                     const paymentState = paymentStateFor(a);
+                    const professional = professionals.find(p => p.uid === a.userId);
                     const paymentLabel =
                       paymentState.status === 'paid'
                         ? 'Pagado'
@@ -569,6 +606,11 @@ export default function DashboardPage() {
                               <p className="text-xs text-elegant-600 dark:text-elegant-400 mt-0.5">
                                 {fecha} · {a.startTime} - {a.endTime}
                               </p>
+                              {professional && (
+                                <p className="text-[11px] text-elegant-500 dark:text-elegant-400 mt-0.5 truncate">
+                                  {professional.displayName || professional.email}
+                                </p>
+                              )}
                             </div>
                             <div className="flex flex-col items-end gap-1.5 shrink-0">
                               <span className={`inline-block px-2 py-1 rounded-full text-[10px] font-bold ${
