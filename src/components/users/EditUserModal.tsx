@@ -7,10 +7,11 @@ import { X, Shield, User, Mail, Phone, MapPin, Briefcase, Clock } from 'lucide-r
 interface EditUserModalProps {
   user: UserProfile;
   onClose: () => void;
-  onSave: (uid: string, data: Partial<UserProfile>) => Promise<void>;
+  onSave: (uid: string, data: Partial<UserProfile> & { email?: string }) => Promise<void>;
+  allowEmailEdit?: boolean;
 }
 
-export default function EditUserModal({ user, onClose, onSave }: EditUserModalProps) {
+export default function EditUserModal({ user, onClose, onSave, allowEmailEdit }: EditUserModalProps) {
   const [formData, setFormData] = useState({
     displayName: user.displayName || '',
     role: user.role,
@@ -19,6 +20,7 @@ export default function EditUserModal({ user, onClose, onSave }: EditUserModalPr
     specialty: user.specialty || '',
     licenseNumber: user.licenseNumber || '',
     defaultAppointmentDuration: user.defaultAppointmentDuration || 30,
+    email: user.email || '',
   });
   const [saving, setSaving] = useState(false);
 
@@ -124,13 +126,16 @@ export default function EditUserModal({ user, onClose, onSave }: EditUserModalPr
               </label>
               <input
                 type="email"
-                value={user.email}
-                className="input-field w-full bg-elegant-50 dark:bg-elegant-800 cursor-not-allowed"
-                disabled
+                value={formData.email}
+                onChange={(e) => handleChange('email', e.target.value)}
+                className={`input-field w-full ${allowEmailEdit ? '' : 'bg-elegant-50 dark:bg-elegant-800 cursor-not-allowed'}`}
+                disabled={!allowEmailEdit}
               />
-              <p className="text-xs text-elegant-500 dark:text-elegant-400">
-                El email no se puede modificar
-              </p>
+              {!allowEmailEdit && (
+                <p className="text-xs text-elegant-500 dark:text-elegant-400">
+                  Solo un Administrador puede modificar el email
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

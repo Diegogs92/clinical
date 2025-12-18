@@ -59,9 +59,44 @@ export default function UsersPage() {
     setEditingUser(user);
   };
 
-  const handleSaveUser = async (uid: string, data: Partial<UserProfile>) => {
+  const handleSaveUser = async (uid: string, data: Partial<UserProfile> & { email?: string }) => {
     try {
-      await updateUserProfile(uid, data);
+      const current = users.find(u => u.uid === uid);
+      const emailChanged = data.email && data.email !== current?.email;
+
+      if (emailChanged) {
+        if (!user) {
+          showToast('Sesión inválida. Vuelve a iniciar sesión.', 'error');
+          throw new Error('Sesión inválida. Vuelve a iniciar sesión.');
+        }
+
+        const token = await user.getIdToken();
+        const res = await fetch(`/api/admin/users/${uid}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ email: data.email }),
+        });
+        const payload = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          if (res.status === 409) {
+            showToast('Ese email ya existe en el sistema', 'error');
+            throw new Error('Ese email ya existe en el sistema');
+          }
+          const msg =
+            (payload?.message ? String(payload.message) : '') ||
+            (payload?.error ? String(payload.error) : '') ||
+            'No se pudo actualizar el email';
+          showToast(`(${res.status}) ${msg}`, 'error');
+          throw new Error(`(${res.status}) ${msg}`);
+        }
+      }
+
+      const { email, ...rest } = data;
+      await updateUserProfile(uid, rest);
       showToast('Usuario actualizado correctamente', 'success');
       setEditingUser(null);
       loadUsers();
@@ -451,6 +486,7 @@ export default function UsersPage() {
           user={editingUser}
           onClose={() => setEditingUser(null)}
           onSave={handleSaveUser}
+          allowEmailEdit={userProfile?.role === 'administrador'}
         />
       )}
 
