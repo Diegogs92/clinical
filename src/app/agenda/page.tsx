@@ -28,6 +28,7 @@ import Modal from '@/components/ui/Modal';
 import { createPayment } from '@/lib/payments';
 import { deleteAppointment } from '@/lib/appointments';
 import { translateAppointmentStatus } from '@/lib/translations';
+import { DollarSign, CheckCircle2, Ban as BanIcon, Edit2, Trash2 } from 'lucide-react';
 
 const locales = { es };
 const localizer = dateFnsLocalizer({
@@ -712,13 +713,16 @@ export default function AgendaPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-2">
-              <button onClick={() => handleRegisterPayment(selectedEvent)} className="btn-primary">
+              <button onClick={() => handleRegisterPayment(selectedEvent)} className="btn-primary inline-flex items-center justify-center gap-2">
+                <DollarSign className="w-4 h-4" />
                 Registrar pago
               </button>
-              <button onClick={() => handleAttendance(selectedEvent)} className="btn-success">
+              <button onClick={() => handleAttendance(selectedEvent)} className="btn-success inline-flex items-center justify-center gap-2">
+                <CheckCircle2 className="w-4 h-4" />
                 Asistencia
               </button>
-              <button onClick={() => handleCancelAppointment(selectedEvent)} className="btn-warning">
+              <button onClick={() => handleCancelAppointment(selectedEvent)} className="btn-warning inline-flex items-center justify-center gap-2">
+                <BanIcon className="w-4 h-4" />
                 Cancelar
               </button>
               <button
@@ -726,11 +730,13 @@ export default function AgendaPage() {
                   toast.info('Arrastra y suelta el turno en la Agenda para reprogramar.');
                   setSelectedEvent(null);
                 }}
-                className="btn-secondary"
+                className="btn-secondary inline-flex items-center justify-center gap-2"
               >
+                <Edit2 className="w-4 h-4" />
                 Reprogramar
               </button>
-              <button onClick={() => handleDelete(selectedEvent)} className="btn-danger">
+              <button onClick={() => handleDelete(selectedEvent)} className="btn-danger inline-flex items-center justify-center gap-2">
+                <Trash2 className="w-4 h-4" />
                 Eliminar
               </button>
             </div>
