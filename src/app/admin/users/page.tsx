@@ -81,7 +81,7 @@ export default function UsersPage() {
     try {
       if (!user) {
         showToast('Sesión inválida. Vuelve a iniciar sesión.', 'error');
-        return;
+        throw new Error('Sesión inválida. Vuelve a iniciar sesión.');
       }
 
       const token = await user.getIdToken();
@@ -99,10 +99,14 @@ export default function UsersPage() {
       if (!res.ok) {
         if (res.status === 409) {
           showToast('Ese email ya existe en el sistema', 'error');
-          return;
+          throw new Error('Ese email ya existe en el sistema');
         }
-        showToast(payload?.error || 'No se pudo crear el usuario', 'error');
-        return;
+        const msg =
+          (payload?.message ? String(payload.message) : '') ||
+          (payload?.error ? String(payload.error) : '') ||
+          'No se pudo crear el usuario';
+        showToast(`(${res.status}) ${msg}`, 'error');
+        throw new Error(`(${res.status}) ${msg}`);
       }
 
       showToast('Usuario creado correctamente', 'success');
@@ -115,7 +119,15 @@ export default function UsersPage() {
       setShowCreateModal(false);
     } catch (error) {
       console.error('Error creating user:', error);
+      if (error instanceof Error) {
+        // El modal mostrará el mensaje, evitamos duplicar si ya fue mostrado arriba
+        if (!error.message.startsWith('(') && !error.message.includes('email ya existe')) {
+          showToast('Error al crear usuario', 'error');
+        }
+        throw error;
+      }
       showToast('Error al crear usuario', 'error');
+      throw new Error('Error al crear usuario');
     }
   };
 

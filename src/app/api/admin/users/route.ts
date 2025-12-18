@@ -89,6 +89,9 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error: any) {
+    // Log completo en server (Vercel Logs) para diagnóstico
+    console.error('[api/admin/users] Failed to create user:', error);
+
     const message = typeof error?.message === 'string' ? error.message : 'Unknown error';
     const code = typeof error?.code === 'string' ? error.code : '';
 
@@ -96,7 +99,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Email already exists' }, { status: 409 });
     }
 
-    return NextResponse.json({ error: 'Failed to create user', message }, { status: 500 });
+    if (message.includes('Firebase ID token has incorrect') || message.includes('verifyIdToken')) {
+      return NextResponse.json({ error: 'Unauthorized', message }, { status: 401 });
+    }
+
+    return NextResponse.json({ error: 'Failed to create user', message, code }, { status: 500 });
   }
 }
-

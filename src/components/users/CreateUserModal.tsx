@@ -41,6 +41,7 @@ export default function CreateUserModal({ onClose, onCreate }: CreateUserModalPr
   });
   const [saving, setSaving] = useState(false);
   const [createdPassword, setCreatedPassword] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const roleHelp = useMemo(() => {
     switch (formData.role) {
@@ -61,6 +62,7 @@ export default function CreateUserModal({ onClose, onCreate }: CreateUserModalPr
     e.preventDefault();
     setSaving(true);
     setCreatedPassword(null);
+    setErrorMessage(null);
 
     try {
       const res = await onCreate({
@@ -76,6 +78,9 @@ export default function CreateUserModal({ onClose, onCreate }: CreateUserModalPr
       } else {
         onClose();
       }
+    } catch (error: any) {
+      const msg = typeof error?.message === 'string' ? error.message : 'No se pudo crear el usuario';
+      setErrorMessage(msg);
     } finally {
       setSaving(false);
     }
@@ -123,6 +128,13 @@ export default function CreateUserModal({ onClose, onCreate }: CreateUserModalPr
 
           {!createdPassword && (
             <>
+              {errorMessage && (
+                <div className="p-4 rounded-xl border border-red-200 bg-red-50 text-red-900">
+                  <div className="font-semibold">No se pudo crear el usuario</div>
+                  <div className="text-sm mt-1 whitespace-pre-line">{errorMessage}</div>
+                </div>
+              )}
+
               <div className="space-y-1">
                 <label className="text-sm font-medium text-elegant-700 dark:text-elegant-300 flex items-center gap-2">
                   <Mail className="w-4 h-4" />
@@ -248,4 +260,3 @@ export default function CreateUserModal({ onClose, onCreate }: CreateUserModalPr
     </div>
   );
 }
-
