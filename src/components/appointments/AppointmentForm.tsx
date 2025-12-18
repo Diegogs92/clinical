@@ -129,7 +129,6 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       const payload = {
         patientId: values.patientId as unknown as string,
         patientName: selected ? `${selected.lastName} ${selected.firstName}` : (values.patientName || ''),
-        officeId: undefined,
         date: startDate.toISOString(),
         startTime: values.startTime,
         endTime: `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`,
@@ -144,6 +143,11 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         createdAt: initialData?.createdAt || '',
         updatedAt: '',
       } as any;
+
+      // Remover officeId para evitar enviar undefined a Firestore
+      if (payload.officeId === undefined) {
+        delete payload.officeId;
+      }
 
       console.log('[AppointmentForm] Payload a enviar:', payload);
 
