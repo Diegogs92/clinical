@@ -7,20 +7,22 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getAllUsers, updateUserProfile } from '@/lib/users';
 import { canManageUsers } from '@/lib/permissions';
 import { UserProfile, UserRole } from '@/types';
-import { Users, Edit, Shield, Mail, Calendar, Trash2 } from 'lucide-react';
+import { Users, Edit, Shield, Mail, Calendar, Trash2, UserPlus } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import EditUserModal from '@/components/users/EditUserModal';
 import { deleteUserProfile } from '@/lib/users';
+import CreateUserModal from '@/components/users/CreateUserModal';
 
 export default function UsersPage() {
-  const { userProfile } = useAuth();
+  const { user, userProfile } = useAuth();
   const router = useRouter();
   const { showToast } = useToast();
   const confirm = useConfirm();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [filterRole, setFilterRole] = useState<UserRole | 'all'>('all');
 
   // Verificar permisos
@@ -66,6 +68,54 @@ export default function UsersPage() {
     } catch (error) {
       console.error('Error updating user:', error);
       showToast('Error al actualizar usuario', 'error');
+    }
+  };
+
+  const handleCreateUser = async (data: {
+    email: string;
+    displayName: string;
+    role: UserRole;
+    password?: string;
+    defaultAppointmentDuration?: number;
+  }) => {
+    try {
+      if (!user) {
+        showToast('Sesión inválida. Vuelve a iniciar sesión.', 'error');
+        return;
+      }
+
+      const token = await user.getIdToken();
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      const payload = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        if (res.status === 409) {
+          showToast('Ese email ya existe en el sistema', 'error');
+          return;
+        }
+        showToast(payload?.error || 'No se pudo crear el usuario', 'error');
+        return;
+      }
+
+      showToast('Usuario creado correctamente', 'success');
+      await loadUsers();
+
+      if (payload?.generatedPassword) {
+        return { generatedPassword: payload.generatedPassword as string };
+      }
+
+      setShowCreateModal(false);
+    } catch (error) {
+      console.error('Error creating user:', error);
+      showToast('Error al crear usuario', 'error');
     }
   };
 
@@ -155,6 +205,13 @@ export default function UsersPage() {
               Administra los usuarios y sus permisos en el sistema
             </p>
           </div>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="btn-primary flex items-center gap-2 whitespace-nowrap"
+          >
+            <UserPlus className="w-4 h-4" />
+            Agregar Usuario
+          </button>
         </div>
 
         {/* Filtros */}
@@ -372,6 +429,13 @@ export default function UsersPage() {
           user={editingUser}
           onClose={() => setEditingUser(null)}
           onSave={handleSaveUser}
+        />
+      )}
+
+      {showCreateModal && (
+        <CreateUserModal
+          onClose={() => setShowCreateModal(false)}
+          onCreate={handleCreateUser}
         />
       )}
     </DashboardLayout>
