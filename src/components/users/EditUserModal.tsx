@@ -9,9 +9,10 @@ interface EditUserModalProps {
   onClose: () => void;
   onSave: (uid: string, data: Partial<UserProfile> & { email?: string }) => Promise<void>;
   allowEmailEdit?: boolean;
+  allowColorEdit?: boolean;
 }
 
-export default function EditUserModal({ user, onClose, onSave, allowEmailEdit }: EditUserModalProps) {
+export default function EditUserModal({ user, onClose, onSave, allowEmailEdit, allowColorEdit }: EditUserModalProps) {
   const [formData, setFormData] = useState({
     displayName: user.displayName || '',
     role: user.role,
@@ -21,6 +22,7 @@ export default function EditUserModal({ user, onClose, onSave, allowEmailEdit }:
     licenseNumber: user.licenseNumber || '',
     defaultAppointmentDuration: user.defaultAppointmentDuration || 30,
     email: user.email || '',
+    color: user.color || '#0ea5e9',
   });
   const [saving, setSaving] = useState(false);
 
@@ -260,6 +262,25 @@ export default function EditUserModal({ user, onClose, onSave, allowEmailEdit }:
                   <option value={90}>90 minutos</option>
                   <option value={120}>120 minutos</option>
                 </select>
+              </div>
+            </div>
+          )}
+
+          {allowColorEdit && (
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-elegant-700 dark:text-elegant-300 flex items-center gap-2">
+                Color en Agenda
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={formData.color}
+                  onChange={(e) => handleChange('color', e.target.value)}
+                  className="h-10 w-16 rounded-lg border border-elegant-200 dark:border-elegant-700 bg-transparent cursor-pointer"
+                />
+                <span className="text-sm text-elegant-600 dark:text-elegant-400">
+                  Se usará para identificar al profesional en la agenda.
+                </span>
               </div>
             </div>
           )}

@@ -487,6 +487,7 @@ export default function UsersPage() {
           onClose={() => setEditingUser(null)}
           onSave={handleSaveUser}
           allowEmailEdit={userProfile?.role === 'administrador'}
+          allowColorEdit={userProfile?.role === 'administrador'}
         />
       )}
 

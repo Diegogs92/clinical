@@ -160,6 +160,7 @@ export interface UserProfile {
   displayName: string;
   photoURL?: string;
   role: UserRole; // Rol del usuario en el sistema
+  color?: string; // Color para identificar profesional en agenda
   specialty?: string;
   licenseNumber?: string;
   phone?: string;

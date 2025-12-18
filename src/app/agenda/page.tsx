@@ -22,6 +22,8 @@ import { Calendar as BigCalendar, Views, dateFnsLocalizer, SlotInfo } from 'reac
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
+import { listProfessionals } from '@/lib/users';
+import { UserProfile } from '@/types';
 
 const locales = { es };
 const localizer = dateFnsLocalizer({
@@ -54,6 +56,7 @@ export default function AgendaPage() {
   const [maxHour, setMaxHour] = useState(21);
   const [stepMinutes, setStepMinutes] = useState<10 | 15 | 20 | 30>(15);
   const [showPreferences, setShowPreferences] = useState(false);
+  const [professionals, setProfessionals] = useState<UserProfile[]>([]);
 
   // Cargar franjas bloqueadas al montar el componente
   useEffect(() => {
@@ -77,6 +80,19 @@ export default function AgendaPage() {
 
     loadBlockedSlots();
   }, [user]);
+
+  // Cargar profesionales (para colores)
+  useEffect(() => {
+    const loadProfessionals = async () => {
+      try {
+        const list = await listProfessionals();
+        setProfessionals(list);
+      } catch (error) {
+        console.error('[Agenda] Error loading professionals:', error);
+      }
+    };
+    loadProfessionals();
+  }, []);
 
   // Calcular semana actual
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Lunes
@@ -174,6 +190,11 @@ export default function AgendaPage() {
 
   // Eventos para agenda interactiva
   const calendarEvents = useMemo(() => {
+    const colorMap = new Map<string, string>();
+    professionals.forEach(p => {
+      if (p.color) colorMap.set(p.uid, p.color);
+    });
+
     return appointments.map(apt => {
       const start = combineDateAndTime(apt.date, apt.startTime);
       const end = apt.endTime ? combineDateAndTime(apt.date, apt.endTime) : new Date(start.getTime() + (apt.duration || 30) * 60000);
@@ -183,32 +204,45 @@ export default function AgendaPage() {
         : patient
           ? `${patient.firstName} ${patient.lastName}`
           : apt.patientName || 'Turno';
+      const professionalColor = colorMap.get(apt.userId || '');
 
       return {
         ...apt,
         title,
         start,
         end,
+        professionalColor,
       };
     });
-  }, [appointments, patients]);
+  }, [appointments, patients, professionals]);
 
   const eventPropGetter = (event: any) => {
     const status = event.status;
     const isDark = document.documentElement.classList.contains('dark');
 
-    let bgLight = '#CFE5FF';
-    let bgDark = 'rgba(56, 189, 248, 0.42)';
-    let borderColor = 'rgba(56, 189, 248, 0.65)';
+    const colorHex = event.professionalColor as string | undefined;
+    const hexToRgba = (hex: string, alpha: number) => {
+      const h = hex.replace('#', '');
+      if (h.length !== 6) return `rgba(14,165,233,${alpha})`;
+      const r = parseInt(h.substring(0, 2), 16);
+      const g = parseInt(h.substring(2, 4), 16);
+      const b = parseInt(h.substring(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    };
+
+    const baseColor = colorHex || '#38bdf8';
+    let bgLight = colorHex ? hexToRgba(baseColor, 0.25) : '#CFE5FF';
+    let bgDark = colorHex ? hexToRgba(baseColor, 0.35) : 'rgba(56, 189, 248, 0.42)';
+    let borderColor = colorHex ? hexToRgba(baseColor, 0.6) : 'rgba(56, 189, 248, 0.65)';
     let textColor = isDark ? '#EAF6FF' : '#0B162E';
 
     if (status === 'confirmed') {
-      bgLight = '#D1F6DD';
-      bgDark = 'rgba(34, 197, 94, 0.42)';
+      bgLight = colorHex ? hexToRgba(baseColor, 0.3) : '#D1F6DD';
+      bgDark = colorHex ? hexToRgba(baseColor, 0.45) : 'rgba(34, 197, 94, 0.42)';
       borderColor = isDark ? 'rgba(34, 197, 94, 0.72)' : 'rgba(22, 163, 74, 0.55)';
     } else if (status === 'completed') {
-      bgLight = '#D9E8FF';
-      bgDark = 'rgba(59, 130, 246, 0.42)';
+      bgLight = colorHex ? hexToRgba(baseColor, 0.3) : '#D9E8FF';
+      bgDark = colorHex ? hexToRgba(baseColor, 0.45) : 'rgba(59, 130, 246, 0.42)';
       borderColor = isDark ? 'rgba(96, 165, 250, 0.7)' : 'rgba(37, 99, 235, 0.55)';
     } else if (status === 'cancelled') {
       bgLight = '#FBD2D2';
