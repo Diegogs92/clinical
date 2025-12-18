@@ -174,3 +174,37 @@ export async function createUserProfile(
     throw error;
   }
 }
+
+/**
+ * Listar profesionales y administradores (para asignar turnos)
+ */
+export async function listProfessionals(): Promise<UserProfile[]> {
+  if (mockMode) {
+    logger.log('[users] Mock mode: listProfessionals');
+    return [];
+  }
+
+  if (!db) {
+    throw new Error('Firestore no está inicializado');
+  }
+
+  try {
+    const usersRef = collection(db, COLLECTION_NAME);
+    const snapshot = await getDocs(usersRef);
+    const users: UserProfile[] = [];
+
+    snapshot.forEach((doc) => {
+      const data = doc.data() as UserProfile;
+      if (data.role === 'profesional' || data.role === 'administrador') {
+        users.push({ ...data, uid: doc.id });
+      }
+    });
+
+    users.sort((a, b) => (a.displayName || '').localeCompare(b.displayName || ''));
+    logger.log(`[users] Loaded ${users.length} professionals`);
+    return users;
+  } catch (error) {
+    logger.error('[users] Error listing professionals:', error);
+    throw error;
+  }
+}

@@ -11,7 +11,6 @@ import { updateAppointment, deleteAppointment } from '@/lib/appointments';
 import { Appointment } from '@/types';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
-import { useOffices } from '@/contexts/OfficesContext';
 import AppointmentForm from '@/components/appointments/AppointmentForm';
 import { CalendarDays, PlusCircle, Edit2, DollarSign, Search, Clock, Ban, Trash2 } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
@@ -38,7 +37,6 @@ const statusOptions = [
 export default function DashboardPage() {
   const { user } = useAuth();
   const { patients } = usePatients();
-  const { offices } = useOffices();
   const { appointments, loading: appointmentsLoading, refreshAppointments } = useAppointments();
   const { payments, pendingPayments, refreshPayments, refreshPendingPayments } = usePayments();
   const confirm = useConfirm();
@@ -448,7 +446,6 @@ export default function DashboardPage() {
                         <th>Fecha</th>
                         <th>Hora</th>
                         <th>Paciente</th>
-                        <th>Consultorio</th>
                         <th>Honorarios</th>
                         <th>Estado</th>
                         <th className="text-right">Acciones</th>
@@ -458,19 +455,11 @@ export default function DashboardPage() {
                       {filtered.map(a => {
                         const d = new Date(a.date);
                         const fecha = d.toLocaleDateString();
-                        const office = offices.find(o => o.id === a.officeId);
                         return (
                           <tr key={a.id}>
                             <td className="font-medium">{fecha}</td>
                             <td>{a.startTime} - {a.endTime}</td>
                             <td>{a.patientName || a.title || 'Evento'}</td>
-                            <td>
-                              {office ? (
-                                <span className="text-sm text-gray-600 dark:text-gray-400">{office.name}</span>
-                              ) : (
-                                <span className="text-gray-400 text-xs">-</span>
-                              )}
-                            </td>
                             <td>
                               {a.fee ? (
                                 <span className="font-semibold text-elegant-900 dark:text-white">
@@ -549,7 +538,6 @@ export default function DashboardPage() {
                   {filtered.map(a => {
                     const d = new Date(a.date);
                     const fecha = d.toLocaleDateString();
-                    const office = offices.find(o => o.id === a.officeId);
                     const paymentState = paymentStateFor(a);
                     const paymentLabel =
                       paymentState.status === 'paid'
@@ -581,11 +569,6 @@ export default function DashboardPage() {
                               <p className="text-xs text-elegant-600 dark:text-elegant-400 mt-0.5">
                                 {fecha} · {a.startTime} - {a.endTime}
                               </p>
-                              {office && (
-                                <p className="text-[10px] text-elegant-500 dark:text-elegant-500 mt-0.5 truncate">
-                                  {office.name}
-                                </p>
-                              )}
                             </div>
                             <div className="flex flex-col items-end gap-1.5 shrink-0">
                               <span className={`inline-block px-2 py-1 rounded-full text-[10px] font-bold ${

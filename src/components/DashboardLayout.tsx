@@ -12,7 +12,6 @@ import {
   Users,
   Shield,
   DollarSign,
-  Building2,
   LogOut,
   Menu,
   X,
@@ -40,7 +39,6 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
     { href: '/dashboard', label: 'Inicio', icon: LayoutDashboard },
     { href: '/agenda', label: 'Agenda', icon: CalendarDays },
     { href: '/patients', label: 'Pacientes', icon: Users },
-    { href: '/offices', label: 'Consultorios', icon: Building2 },
     // { href: '/insurances', label: 'Obras Sociales', icon: Shield }, // Temporalmente oculto
     { href: '/fees', label: 'Honorarios', icon: DollarSign },
     ...(userProfile?.role === 'administrador' ? [{ href: '/admin/users', label: 'Usuarios', icon: UserCog }] : []),

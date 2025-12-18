@@ -6,20 +6,20 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { createAppointment, updateAppointment } from '@/lib/appointments';
 import { getBlockedSlotsInRange } from '@/lib/blockedSlots';
-import { useState, ChangeEvent } from 'react';
-import { Appointment } from '@/types';
+import { useState, useEffect, ChangeEvent } from 'react';
+import { Appointment, UserProfile } from '@/types';
 import { useToast } from '@/contexts/ToastContext';
 import Modal from '@/components/ui/Modal';
 import PatientForm from '@/components/patients/PatientForm';
 import { UserPlus, AlertTriangle } from 'lucide-react';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
-import { useOffices } from '@/contexts/OfficesContext';
+import { listProfessionals } from '@/lib/users';
 
 const schema = z.object({
   patientId: z.string().min(1, 'Selecciona un paciente'),
   patientName: z.string().optional(),
-  officeId: z.string().optional(),
+  professionalId: z.string().min(1, 'Selecciona un profesional'),
   date: z.string().min(1, 'Fecha requerida'), // ISO date yyyy-MM-dd
   startTime: z.string().min(1, 'Hora inicio requerida'), // HH:mm
   duration: z.coerce.number().refine(val => [45, 60, 90, 120, 160].includes(val), {
@@ -42,9 +42,10 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const { patients, refreshPatients } = usePatients();
-  const { offices } = useOffices();
   const { refreshAppointments } = useAppointments();
   const [showQuickPatient, setShowQuickPatient] = useState(false);
+  const [professionals, setProfessionals] = useState<UserProfile[]>([]);
+  const [loadingProfessionals, setLoadingProfessionals] = useState(false);
   const toast = useToast();
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<AppointmentFormValues>({
     resolver: zodResolver(schema),
@@ -53,7 +54,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       type: initialData?.type || 'Consulta',
       fee: initialData?.fee || undefined,
       patientId: initialData?.patientId || '',
-      officeId: initialData?.officeId || '',
+      professionalId: initialData?.userId || user?.uid || '',
       date: initialData?.date ? initialData.date.split('T')[0] : '',
       startTime: initialData?.startTime || '',
       notes: initialData?.notes || '',
@@ -87,14 +88,14 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
 
       // Validar si hay franjas bloqueadas
       console.log('Validando franjas bloqueadas:', {
-        userId: user.uid,
+        userId: values.professionalId,
         date: values.date,
         startTime: values.startTime,
         endTime: endTime,
       });
 
       const blockedSlots = await getBlockedSlotsInRange(
-        user.uid,
+        values.professionalId,
         values.date,
         values.startTime,
         endTime
@@ -123,11 +124,12 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       console.log('No hay franjas bloqueadas, procediendo a crear turno');
 
       const selected = patients.find(p => p.id === (values.patientId as unknown as string));
+      const selectedProfessional = professionals.find(p => p.uid === values.professionalId);
 
       const payload = {
         patientId: values.patientId as unknown as string,
         patientName: selected ? `${selected.lastName} ${selected.firstName}` : (values.patientName || ''),
-        officeId: values.officeId,
+        officeId: undefined,
         date: startDate.toISOString(),
         startTime: values.startTime,
         endTime: `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`,
@@ -136,7 +138,8 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         type: values.type,
         fee: values.fee,
         notes: values.notes,
-        userId: user.uid,
+        userId: values.professionalId,
+        professionalName: selectedProfessional?.displayName || '',
         appointmentType: 'patient', // Siempre es tipo paciente en este formulario
         createdAt: initialData?.createdAt || '',
         updatedAt: '',
@@ -193,6 +196,30 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
     }
   };
 
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoadingProfessionals(true);
+        const list = await listProfessionals();
+        setProfessionals(list);
+      } catch (error) {
+        console.error('[AppointmentForm] Error loading professionals:', error);
+        toast.error('No se pudieron cargar los profesionales');
+      } finally {
+        setLoadingProfessionals(false);
+      }
+    };
+    load();
+  }, [toast]);
+
+  // Si no hay profesional seleccionado, usar el usuario actual como predeterminado
+  const selectedProfessionalId = watch('professionalId');
+  useEffect(() => {
+    if (!selectedProfessionalId && user?.uid) {
+      setValue('professionalId', user.uid);
+    }
+  }, [selectedProfessionalId, user, setValue]);
+
   return (
     <>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -223,13 +250,15 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-primary-dark dark:text-white mb-1.5">Consultorio</label>
-          <select className="input-field" {...register('officeId')}>
-            <option value="">Sin consultorio</option>
-            {offices.map(office => (
-              <option key={office.id} value={office.id}>{office.name} - {office.address}</option>
+          <label className="block text-sm font-semibold text-primary-dark dark:text-white mb-1.5">Profesional</label>
+          <select className="input-field" {...register('professionalId')}>
+            <option value="">Selecciona un profesional</option>
+            {loadingProfessionals && <option value="">Cargando...</option>}
+            {professionals.map(prof => (
+              <option key={prof.uid} value={prof.uid}>{prof.displayName || prof.email}</option>
             ))}
           </select>
+          {errors.professionalId && <p className="text-red-600 text-xs mt-1">{errors.professionalId.message as string}</p>}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
