@@ -24,6 +24,10 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import { listProfessionals } from '@/lib/users';
 import { UserProfile } from '@/types';
+import Modal from '@/components/ui/Modal';
+import { createPayment } from '@/lib/payments';
+import { deleteAppointment } from '@/lib/appointments';
+import { translateAppointmentStatus } from '@/lib/translations';
 
 const locales = { es };
 const localizer = dateFnsLocalizer({
@@ -57,6 +61,7 @@ export default function AgendaPage() {
   const [stepMinutes, setStepMinutes] = useState<10 | 15 | 20 | 30>(15);
   const [showPreferences, setShowPreferences] = useState(false);
   const [professionals, setProfessionals] = useState<UserProfile[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
 
   // Cargar franjas bloqueadas al montar el componente
   useEffect(() => {
@@ -321,6 +326,68 @@ export default function AgendaPage() {
     router.push(`/dashboard?create=appointment&date=${dateStr}&start=${startStr}&end=${endStr}`);
   };
 
+  const selectedProfessionalName = selectedEvent
+    ? professionals.find(p => p.uid === selectedEvent.userId)?.displayName || ''
+    : '';
+
+  const handleAttendance = async (evt: any) => {
+    try {
+      await updateAppointment(evt.id, { status: 'completed' });
+      await refreshAppointments();
+      toast.success('Asistencia registrada');
+    } catch (error) {
+      console.error('Error marcando asistencia:', error);
+      toast.error('No se pudo registrar la asistencia');
+    }
+  };
+
+  const handleCancelAppointment = async (evt: any) => {
+    try {
+      await updateAppointment(evt.id, { status: 'cancelled' });
+      await refreshAppointments();
+      toast.success('Turno cancelado');
+    } catch (error) {
+      console.error('Error cancelando turno:', error);
+      toast.error('No se pudo cancelar el turno');
+    }
+  };
+
+  const handleDelete = async (evt: any) => {
+    try {
+      await deleteAppointment(evt.id);
+      await refreshAppointments();
+      toast.success('Turno eliminado');
+      setSelectedEvent(null);
+    } catch (error) {
+      console.error('Error eliminando turno:', error);
+      toast.error('No se pudo eliminar el turno');
+    }
+  };
+
+  const handleRegisterPayment = async (evt: any) => {
+    if (!evt.fee) {
+      toast.error('Este turno no tiene honorarios cargados');
+      return;
+    }
+    try {
+      await createPayment({
+        appointmentId: evt.id,
+        patientId: evt.patientId || '',
+        patientName: evt.patientName || 'Paciente',
+        amount: evt.fee,
+        method: 'cash',
+        status: 'completed',
+        date: new Date().toISOString(),
+        consultationType: evt.type || '',
+        userId: evt.userId || '',
+      });
+      toast.success('Pago registrado');
+    } catch (error) {
+      console.error('Error registrando pago:', error);
+      toast.error('No se pudo registrar el pago');
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -449,6 +516,7 @@ export default function AgendaPage() {
             min={new Date(1970, 1, 1, minHour, 0, 0)}
             max={new Date(1970, 1, 1, maxHour, 0, 0)}
             onSelectSlot={handleSelectSlot}
+            onSelectEvent={(evt) => setSelectedEvent(evt)}
             messages={{
               today: 'Hoy',
               previous: 'Anterior',
@@ -609,6 +677,65 @@ export default function AgendaPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {selectedEvent && (
+        <Modal open={!!selectedEvent} onClose={() => setSelectedEvent(null)} title="Detalle de turno" maxWidth="max-w-2xl">
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <p className="text-xs text-elegant-500">Paciente</p>
+                <p className="font-semibold text-elegant-900 dark:text-white">{selectedEvent.patientName || 'Sin nombre'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-elegant-500">Profesional</p>
+                <p className="font-semibold text-elegant-900 dark:text-white">{selectedProfessionalName || 'N/D'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-elegant-500">Horario</p>
+                <p className="font-semibold text-elegant-900 dark:text-white">
+                  {format(selectedEvent.start, 'dd/MM/yyyy HH:mm', { locale: es })} - {format(selectedEvent.end, 'HH:mm', { locale: es })}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-elegant-500">Estado</p>
+                <p className="font-semibold text-elegant-900 dark:text-white">{translateAppointmentStatus(selectedEvent.status)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-elegant-500">Honorarios</p>
+                <p className="font-semibold text-elegant-900 dark:text-white">{selectedEvent.fee ? `$${selectedEvent.fee.toLocaleString()}` : '-'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-elegant-500">Notas</p>
+                <p className="font-medium text-elegant-800 dark:text-elegant-200 whitespace-pre-line">{selectedEvent.notes || '-'}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-2">
+              <button onClick={() => handleRegisterPayment(selectedEvent)} className="btn-primary">
+                Registrar pago
+              </button>
+              <button onClick={() => handleAttendance(selectedEvent)} className="btn-success">
+                Asistencia
+              </button>
+              <button onClick={() => handleCancelAppointment(selectedEvent)} className="btn-warning">
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  toast.info('Arrastra y suelta el turno en la Agenda para reprogramar.');
+                  setSelectedEvent(null);
+                }}
+                className="btn-secondary"
+              >
+                Reprogramar
+              </button>
+              <button onClick={() => handleDelete(selectedEvent)} className="btn-danger">
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </Modal>
       )}
     </DashboardLayout>
   );
