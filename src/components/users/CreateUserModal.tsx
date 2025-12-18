@@ -110,7 +110,7 @@ export default function CreateUserModal({ onClose, onCreate }: CreateUserModalPr
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
+        <form id="create-user-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
           {createdPassword && (
             <div className="p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-900">
               <div className="font-semibold">Contraseña generada</div>
@@ -244,7 +244,7 @@ export default function CreateUserModal({ onClose, onCreate }: CreateUserModalPr
             <button type="button" onClick={onClose} className="btn-secondary" disabled={saving}>
               Cancelar
             </button>
-            <button type="submit" className="btn-primary" disabled={saving}>
+            <button type="submit" form="create-user-form" className="btn-primary" disabled={saving}>
               {saving ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
