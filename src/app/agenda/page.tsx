@@ -214,7 +214,8 @@ export default function AgendaPage() {
       if (p.color) colorMap.set(p.uid, p.color);
     });
 
-    return appointments.map(apt => {
+    // Eventos de turnos
+    const appointmentEvents = appointments.map(apt => {
       const start = combineDateAndTime(apt.date, apt.startTime);
       const end = apt.endTime ? combineDateAndTime(apt.date, apt.endTime) : new Date(start.getTime() + (apt.duration || 30) * 60000);
       const patient = getPatientInfo(apt.patientId);
@@ -233,7 +234,29 @@ export default function AgendaPage() {
         professionalColor,
       };
     });
-  }, [appointments, patients, professionals]);
+
+    // Eventos de cumpleaños
+    const currentYear = currentDate.getFullYear();
+    const birthdayEvents = patients
+      .filter(patient => patient.birthDate)
+      .map(patient => {
+        const birthDate = parseISO(patient.birthDate!);
+        const birthdayThisYear = new Date(currentYear, birthDate.getMonth(), birthDate.getDate());
+
+        return {
+          id: `birthday-${patient.id}`,
+          title: `🎂 ${patient.firstName} ${patient.lastName}`,
+          start: birthdayThisYear,
+          end: birthdayThisYear,
+          isBirthday: true,
+          patientId: patient.id,
+          patientName: `${patient.firstName} ${patient.lastName}`,
+          allDay: true,
+        };
+      });
+
+    return [...appointmentEvents, ...birthdayEvents];
+  }, [appointments, patients, professionals, currentDate]);
 
   const eventPropGetter = (event: any) => {
     const status = event.status;
@@ -283,6 +306,13 @@ export default function AgendaPage() {
       borderColor = isDark ? 'rgba(248, 113, 113, 0.7)' : 'rgba(220, 38, 38, 0.55)';
     }
 
+    if (event.isBirthday) {
+      bgLight = '#FFE4E8';
+      bgDark = 'rgba(244, 114, 182, 0.35)';
+      borderColor = isDark ? 'rgba(244, 114, 182, 0.7)' : 'rgba(236, 72, 153, 0.6)';
+      textColor = isDark ? '#FFF1F2' : '#831843';
+    }
+
     return {
       style: {
         backgroundColor: isDark ? bgDark : bgLight,
@@ -299,6 +329,12 @@ export default function AgendaPage() {
   };
 
   const handleEventDrop = async ({ event, start, end }: any) => {
+    // No permitir mover cumpleaños
+    if (event.isBirthday) {
+      toast.error('Los cumpleaños no pueden moverse');
+      return;
+    }
+
     try {
       const duration = Math.max(15, differenceInMinutes(end, start));
       await updateAppointment(event.id, {
@@ -316,6 +352,12 @@ export default function AgendaPage() {
   };
 
   const handleEventResize = async ({ event, start, end }: any) => {
+    // No permitir redimensionar cumpleaños
+    if (event.isBirthday) {
+      toast.error('Los cumpleaños no pueden redimensionarse');
+      return;
+    }
+
     try {
       const duration = Math.max(15, differenceInMinutes(end, start));
       await updateAppointment(event.id, {
@@ -674,6 +716,10 @@ export default function AgendaPage() {
             <span className="inline-block w-5 h-5 rounded bg-red-50 dark:bg-red-500/20 border border-red-300 dark:border-red-400" style={{ backgroundImage: 'repeating-linear-gradient(45deg, rgba(239,68,68,0.15), rgba(239,68,68,0.15) 8px, rgba(239,68,68,0.3) 8px, rgba(239,68,68,0.3) 16px)' }} />
             Bloqueo
           </div>
+          <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-elegant-800/50 border border-elegant-200 dark:border-elegant-700">
+            <span className="inline-block w-5 h-5 rounded bg-pink-100 dark:bg-pink-500/30 border border-pink-300 dark:border-pink-400" />
+            Cumpleaños
+          </div>
         </div>
         {/* Lista de franjas bloqueadas */}
         {blockedSlots.length > 0 && (
@@ -793,66 +839,86 @@ export default function AgendaPage() {
       )}
 
       {selectedEvent && (
-        <Modal open={!!selectedEvent} onClose={() => setSelectedEvent(null)} title="Detalle de turno" maxWidth="max-w-2xl">
-          <div className="space-y-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <Modal open={!!selectedEvent} onClose={() => setSelectedEvent(null)} title={selectedEvent.isBirthday ? "Cumpleaños" : "Detalle de turno"} maxWidth="max-w-2xl">
+          {selectedEvent.isBirthday ? (
+            <div className="space-y-4 text-center">
+              <div className="text-6xl">🎂</div>
               <div>
-                <p className="text-xs text-elegant-500">Paciente</p>
-                <p className="font-semibold text-elegant-900 dark:text-white">{selectedEvent.patientName || 'Sin nombre'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-elegant-500">Profesional</p>
-                <p className="font-semibold text-elegant-900 dark:text-white">{selectedProfessionalName || 'N/D'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-elegant-500">Horario</p>
-                <p className="font-semibold text-elegant-900 dark:text-white">
-                  {format(selectedEvent.start, 'dd/MM/yyyy HH:mm', { locale: es })} - {format(selectedEvent.end, 'HH:mm', { locale: es })}
+                <p className="text-2xl font-bold text-elegant-900 dark:text-white mb-2">
+                  {selectedEvent.patientName}
+                </p>
+                <p className="text-lg text-elegant-600 dark:text-elegant-300">
+                  {format(selectedEvent.start, "d 'de' MMMM", { locale: es })}
                 </p>
               </div>
-              <div>
-                <p className="text-xs text-elegant-500">Estado</p>
-                <p className="font-semibold text-elegant-900 dark:text-white">{translateAppointmentStatus(selectedEvent.status)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-elegant-500">Honorarios</p>
-                <p className="font-semibold text-elegant-900 dark:text-white">{selectedEvent.fee ? `$${selectedEvent.fee.toLocaleString()}` : '-'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-elegant-500">Notas</p>
-                <p className="font-medium text-elegant-800 dark:text-elegant-200 whitespace-pre-line">{selectedEvent.notes || '-'}</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-2">
-              <button onClick={() => openPaymentDialog(selectedEvent)} className="btn-primary inline-flex items-center justify-center gap-2">
-                <DollarSign className="w-4 h-4" />
-                Registrar pago
-              </button>
-              <button onClick={() => handleAttendance(selectedEvent)} className="btn-success inline-flex items-center justify-center gap-2">
-                <CheckCircle2 className="w-4 h-4" />
-                Asistencia
-              </button>
-              <button onClick={() => handleCancelAppointment(selectedEvent)} className="btn-warning inline-flex items-center justify-center gap-2">
-                <BanIcon className="w-4 h-4" />
-                Cancelar
-              </button>
               <button
-                onClick={() => {
-                  toast.info('Arrastra y suelta el turno en la Agenda para reprogramar.');
-                  setSelectedEvent(null);
-                }}
-                className="btn-secondary inline-flex items-center justify-center gap-2"
+                onClick={() => setSelectedEvent(null)}
+                className="btn-primary mx-auto"
               >
-                <Edit2 className="w-4 h-4" />
-                Reprogramar
-              </button>
-              <button onClick={() => handleDelete(selectedEvent)} className="btn-danger inline-flex items-center justify-center gap-2">
-                <Trash2 className="w-4 h-4" />
-                Eliminar
+                Cerrar
               </button>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-elegant-500">Paciente</p>
+                  <p className="font-semibold text-elegant-900 dark:text-white">{selectedEvent.patientName || 'Sin nombre'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-elegant-500">Profesional</p>
+                  <p className="font-semibold text-elegant-900 dark:text-white">{selectedProfessionalName || 'N/D'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-elegant-500">Horario</p>
+                  <p className="font-semibold text-elegant-900 dark:text-white">
+                    {format(selectedEvent.start, 'dd/MM/yyyy HH:mm', { locale: es })} - {format(selectedEvent.end, 'HH:mm', { locale: es })}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-elegant-500">Estado</p>
+                  <p className="font-semibold text-elegant-900 dark:text-white">{translateAppointmentStatus(selectedEvent.status)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-elegant-500">Honorarios</p>
+                  <p className="font-semibold text-elegant-900 dark:text-white">{selectedEvent.fee ? `$${selectedEvent.fee.toLocaleString()}` : '-'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-elegant-500">Notas</p>
+                  <p className="font-medium text-elegant-800 dark:text-elegant-200 whitespace-pre-line">{selectedEvent.notes || '-'}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-2">
+                <button onClick={() => openPaymentDialog(selectedEvent)} className="btn-primary inline-flex items-center justify-center gap-2">
+                  <DollarSign className="w-4 h-4" />
+                  Registrar pago
+                </button>
+                <button onClick={() => handleAttendance(selectedEvent)} className="btn-success inline-flex items-center justify-center gap-2">
+                  <CheckCircle2 className="w-4 h-4" />
+                  Asistencia
+                </button>
+                <button onClick={() => handleCancelAppointment(selectedEvent)} className="btn-warning inline-flex items-center justify-center gap-2">
+                  <BanIcon className="w-4 h-4" />
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => {
+                    toast.info('Arrastra y suelta el turno en la Agenda para reprogramar.');
+                    setSelectedEvent(null);
+                  }}
+                  className="btn-secondary inline-flex items-center justify-center gap-2"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  Reprogramar
+                </button>
+                <button onClick={() => handleDelete(selectedEvent)} className="btn-danger inline-flex items-center justify-center gap-2">
+                  <Trash2 className="w-4 h-4" />
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          )}
         </Modal>
       )}
 
