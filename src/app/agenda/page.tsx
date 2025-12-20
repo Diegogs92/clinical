@@ -63,10 +63,9 @@ export default function AgendaPage() {
     endTime: '10:00',
     reason: '',
   });
-  const [minHour, setMinHour] = useState(7);
-  const [maxHour, setMaxHour] = useState(21);
-  const [stepMinutes, setStepMinutes] = useState<10 | 15 | 20 | 30>(15);
-  const [showPreferences, setShowPreferences] = useState(false);
+  const minHour = 9;
+  const maxHour = 19;
+  const stepMinutes = 15;
   const [professionals, setProfessionals] = useState<UserProfile[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; appointment?: any; mode: 'total' | 'partial'; amount: string }>({
@@ -564,48 +563,6 @@ export default function AgendaPage() {
               <Ban className="w-4 h-4" />
               Anular Franja Horaria
             </button>
-          </div>
-
-          {/* Controles de vista compactos */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-elegant-800 border border-elegant-200 dark:border-elegant-700 shadow-sm">
-              <Clock className="w-4 h-4 text-elegant-500 dark:text-elegant-400" />
-              <select
-                className="bg-transparent border-0 text-sm font-medium text-elegant-700 dark:text-elegant-200 outline-none cursor-pointer pr-1"
-                value={minHour}
-                onChange={(e) => setMinHour(Number(e.target.value))}
-                title="Hora de inicio"
-              >
-                {[6,7,8,9,10].map(h => (
-                  <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>
-                ))}
-              </select>
-              <span className="text-elegant-400 dark:text-elegant-500">-</span>
-              <select
-                className="bg-transparent border-0 text-sm font-medium text-elegant-700 dark:text-elegant-200 outline-none cursor-pointer pr-1"
-                value={maxHour}
-                onChange={(e) => setMaxHour(Number(e.target.value))}
-                title="Hora de fin"
-              >
-                {[18,19,20,21,22].map(h => (
-                  <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-elegant-800 border border-elegant-200 dark:border-elegant-700 shadow-sm">
-              <Calendar className="w-4 h-4 text-elegant-500 dark:text-elegant-400" />
-              <select
-                className="bg-transparent border-0 text-sm font-medium text-elegant-700 dark:text-elegant-200 outline-none cursor-pointer"
-                value={stepMinutes}
-                onChange={(e) => setStepMinutes(Number(e.target.value) as 10 | 15 | 20 | 30)}
-                title="Intervalo de tiempo"
-              >
-                {[10,15,20,30].map(m => (
-                  <option key={m} value={m}>{m} min</option>
-                ))}
-              </select>
-            </div>
           </div>
         </div>
 
