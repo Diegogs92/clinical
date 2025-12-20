@@ -14,13 +14,10 @@ const patientSchema = z.object({
   lastName: z.string().min(1, 'Apellido requerido'),
   dni: z.string().min(6, 'DNI inválido'),
   phone: z.string().min(6, 'Teléfono inválido'),
-  email: z.string().email().optional().or(z.literal('')),
   insuranceType: z.enum(['particular', 'obra-social', 'prepaga']).optional(),
   insuranceName: z.string().optional(),
   insuranceNumber: z.string().optional(),
   birthDate: z.string().optional(),
-  address: z.string().optional(),
-  notes: z.string().optional(),
 });
 
 type PatientFormValues = z.infer<typeof patientSchema>;
@@ -56,13 +53,10 @@ export default function QuickPatientForm({ onSuccess, onCancel }: Props) {
         userId: user.uid,
       };
 
-      if (values.email && values.email.trim()) patientData.email = values.email;
       if (values.insuranceType) patientData.insuranceType = values.insuranceType;
       if (values.insuranceName && values.insuranceName.trim()) patientData.insuranceName = values.insuranceName;
       if (values.insuranceNumber && values.insuranceNumber.trim()) patientData.insuranceNumber = values.insuranceNumber;
       if (values.birthDate && values.birthDate.trim()) patientData.birthDate = values.birthDate;
-      if (values.address && values.address.trim()) patientData.address = values.address;
-      if (values.notes && values.notes.trim()) patientData.notes = values.notes;
 
       const newId = await createPatient(patientData);
       await refreshPatients();
@@ -103,16 +97,9 @@ export default function QuickPatientForm({ onSuccess, onCancel }: Props) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Email</label>
-          <input type="email" className="input-field" {...register('email')} />
-          {errors.email && <p className="text-red-600 text-xs mt-1">{errors.email.message}</p>}
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Fecha de Nacimiento</label>
-          <input type="date" className="input-field" {...register('birthDate')} />
-        </div>
+      <div>
+        <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Fecha de Nacimiento</label>
+        <input type="date" className="input-field" {...register('birthDate')} />
       </div>
 
       <div>
@@ -167,16 +154,6 @@ export default function QuickPatientForm({ onSuccess, onCancel }: Props) {
           </div>
         </div>
       )}
-
-      <div>
-        <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Dirección</label>
-        <input className="input-field" {...register('address')} />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Notas</label>
-        <textarea rows={3} className="input-field" {...register('notes')} />
-      </div>
 
       <div className="flex flex-col md:flex-row gap-3 justify-end pt-2">
         <button type="button" onClick={onCancel} className="btn-secondary">

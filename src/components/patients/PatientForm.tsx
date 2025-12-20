@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { createPatient, updatePatient, getPatient } from '@/lib/patients';
-import { listInsurances } from '@/lib/insurances';
+import { listInsurances, createInsurance } from '@/lib/insurances';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Patient, Insurance } from '@/types';
@@ -18,14 +18,11 @@ const patientSchema = z.object({
   lastName: z.string().min(1, 'Apellido requerido'),
   dni: z.string().min(6, 'DNI inválido'),
   phone: z.string().min(6, 'Teléfono inválido'),
-  email: z.string().email().optional().or(z.literal('')),
   insuranceType: z.enum(['particular', 'obra-social', 'prepaga']).optional(),
   insuranceName: z.string().optional(),
   insuranceId: z.string().optional(),
   insuranceNumber: z.string().optional(),
   birthDate: z.string().optional(),
-  address: z.string().optional(),
-  notes: z.string().optional(),
 });
 
 export type PatientFormValues = z.infer<typeof patientSchema>;
@@ -42,6 +39,8 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
   const [initialPatient, setInitialPatient] = useState<Patient | null>(null);
   const [insurances, setInsurances] = useState<Insurance[]>([]);
   const [selectedType, setSelectedType] = useState<'particular' | 'obra-social' | 'prepaga'>('particular');
+  const [showNewInsuranceInput, setShowNewInsuranceInput] = useState(false);
+  const [newInsuranceName, setNewInsuranceName] = useState('');
   const { refreshPatients } = usePatients();
 
   const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm<PatientFormValues>({
@@ -73,14 +72,11 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
             lastName: p.lastName,
             dni: p.dni,
             phone: p.phone,
-            email: p.email || '',
             insuranceType: p.insuranceType || 'particular',
             insuranceName: p.insuranceName || '',
             insuranceId: p.insuranceId || '',
             insuranceNumber: p.insuranceNumber || '',
             birthDate: p.birthDate || '',
-            address: p.address || '',
-            notes: p.notes || '',
           });
         }
       })();
@@ -100,9 +96,6 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
       };
 
       // Solo agregar campos opcionales si tienen valor
-      if (values.email && values.email.trim()) {
-        patientData.email = values.email;
-      }
       if (values.insuranceType) {
         patientData.insuranceType = values.insuranceType;
       }
@@ -117,12 +110,6 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
       }
       if (values.birthDate && values.birthDate.trim()) {
         patientData.birthDate = values.birthDate;
-      }
-      if (values.address && values.address.trim()) {
-        patientData.address = values.address;
-      }
-      if (values.notes && values.notes.trim()) {
-        patientData.notes = values.notes;
       }
 
       if (patientId && initialPatient) {
@@ -172,16 +159,9 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
           {errors.phone && <p className="text-red-600 text-xs mt-1">{errors.phone.message}</p>}
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Email</label>
-          <input className="input-field" {...register('email')} />
-          {errors.email && <p className="text-red-600 text-xs mt-1">{errors.email.message}</p>}
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Fecha de Nacimiento</label>
-          <input type="date" className="input-field" {...register('birthDate')} />
-        </div>
+      <div>
+        <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Fecha de Nacimiento</label>
+        <input type="date" className="input-field" {...register('birthDate')} />
       </div>
 
       <div>
@@ -243,27 +223,87 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">
               {insuranceType === 'obra-social' ? 'Obra Social' : 'Prepaga'}
             </label>
-            <select
-              className="input-field"
-              {...register('insuranceId')}
-              onChange={(e) => {
-                const selectedInsurance = insurances.find(i => i.id === e.target.value);
-                if (selectedInsurance) {
-                  setValue('insuranceId', selectedInsurance.id);
-                  setValue('insuranceName', selectedInsurance.name);
-                }
-              }}
-            >
-              <option value="">Seleccionar {insuranceType === 'obra-social' ? 'obra social' : 'prepaga'}</option>
-              {insurances
-                .filter(i => i.type === insuranceType)
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .map(insurance => (
-                  <option key={insurance.id} value={insurance.id}>
-                    {insurance.code ? `${insurance.code} - ` : ''}{insurance.acronym ? `${insurance.acronym} - ` : ''}{insurance.name}
-                  </option>
-                ))}
-            </select>
+            {!showNewInsuranceInput ? (
+              <div className="flex gap-2">
+                <select
+                  className="input-field flex-1"
+                  {...register('insuranceId')}
+                  onChange={(e) => {
+                    const selectedInsurance = insurances.find(i => i.id === e.target.value);
+                    if (selectedInsurance) {
+                      setValue('insuranceId', selectedInsurance.id);
+                      setValue('insuranceName', selectedInsurance.name);
+                    }
+                  }}
+                >
+                  <option value="">Seleccionar {insuranceType === 'obra-social' ? 'obra social' : 'prepaga'}</option>
+                  {insurances
+                    .filter(i => i.type === insuranceType)
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map(insurance => (
+                      <option key={insurance.id} value={insurance.id}>
+                        {insurance.code ? `${insurance.code} - ` : ''}{insurance.acronym ? `${insurance.acronym} - ` : ''}{insurance.name}
+                      </option>
+                    ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setShowNewInsuranceInput(true)}
+                  className="btn-secondary whitespace-nowrap"
+                >
+                  + Nueva
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  className="input-field flex-1"
+                  placeholder={`Nombre de la ${insuranceType === 'obra-social' ? 'obra social' : 'prepaga'}`}
+                  value={newInsuranceName}
+                  onChange={(e) => setNewInsuranceName(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!newInsuranceName.trim()) {
+                      toast.error('Ingresa un nombre');
+                      return;
+                    }
+                    try {
+                      const newId = await createInsurance({
+                        name: newInsuranceName.trim(),
+                        type: insuranceType,
+                        userId: user!.uid,
+                      });
+                      setValue('insuranceId', newId);
+                      setValue('insuranceName', newInsuranceName.trim());
+                      const updatedList = await listInsurances(user!.uid);
+                      setInsurances(updatedList);
+                      setNewInsuranceName('');
+                      setShowNewInsuranceInput(false);
+                      toast.success('Cobertura creada exitosamente');
+                    } catch (error) {
+                      console.error('Error creating insurance:', error);
+                      toast.error('Error al crear la cobertura');
+                    }
+                  }}
+                  className="btn-primary whitespace-nowrap"
+                >
+                  Guardar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowNewInsuranceInput(false);
+                    setNewInsuranceName('');
+                  }}
+                  className="btn-secondary"
+                >
+                  Cancelar
+                </button>
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Nº Afiliado</label>
@@ -275,16 +315,6 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
           </div>
         </div>
       )}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Dirección</label>
-          <input className="input-field" {...register('address')} />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Notas</label>
-          <textarea className="input-field resize-none" {...register('notes')} />
-        </div>
-      </div>
 
       {patientId && initialPatient && (
         <PatientFileUpload
