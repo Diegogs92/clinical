@@ -635,10 +635,10 @@ export default function AgendaPage() {
               previous: 'Anterior',
               next: 'Siguiente',
               week: 'Semana',
-              day: 'D?a',
+              day: 'Día',
               month: 'Mes',
               noEventsInRange: 'Sin turnos en este rango',
-              showMore: total => `+${total} m?s`,
+              showMore: total => `+${total} más`,
             }}
             eventPropGetter={eventPropGetter}
           />
