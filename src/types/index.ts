@@ -216,3 +216,17 @@ export interface BlockedSlot {
   createdAt: string;
   updatedAt: string;
 }
+
+// Schedule Preference types
+export interface SchedulePreference {
+  id: string;
+  dayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0 = Sunday, 1 = Monday, etc.
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  professionalId: string; // UserProfile.uid
+  professionalName: string; // For display purposes
+  sessionType?: 'normal' | 'estetica' | 'any'; // Tipo de sesión preferido (any = cualquiera)
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
