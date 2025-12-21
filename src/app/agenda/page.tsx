@@ -10,12 +10,15 @@ import { useToast } from '@/contexts/ToastContext';
 import { format, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, isWithinInterval, differenceInMinutes, parse } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Calendar, Clock, User, Phone, Ban, ChevronLeft, ChevronRight, X, PlusCircle, Eye } from 'lucide-react';
-import { BlockedSlot } from '@/types';
+import { BlockedSlot, SchedulePreference } from '@/types';
 import {
   getBlockedSlotsByUser,
   createBlockedSlot,
   deleteBlockedSlot,
 } from '@/lib/blockedSlots';
+import {
+  getAllSchedulePreferences,
+} from '@/lib/schedulePreferences';
 import { updateAppointment } from '@/lib/appointments';
 import { combineDateAndTime } from '@/lib/dateUtils';
 import { Calendar as BigCalendar, Views, dateFnsLocalizer, SlotInfo } from 'react-big-calendar';
@@ -67,6 +70,7 @@ export default function AgendaPage() {
   const maxHour = 19;
   const stepMinutes = 15;
   const [professionals, setProfessionals] = useState<UserProfile[]>([]);
+  const [schedulePreferences, setSchedulePreferences] = useState<SchedulePreference[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; appointment?: any; mode: 'total' | 'partial'; amount: string }>({
     open: false,
@@ -99,7 +103,7 @@ export default function AgendaPage() {
     loadBlockedSlots();
   }, [user]);
 
-  // Cargar profesionales (para colores)
+  // Cargar profesionales (para colores) y preferencias de horarios
   useEffect(() => {
     const loadProfessionals = async () => {
       try {
@@ -109,7 +113,18 @@ export default function AgendaPage() {
         console.error('[Agenda] Error loading professionals:', error);
       }
     };
+
+    const loadSchedulePreferences = async () => {
+      try {
+        const prefs = await getAllSchedulePreferences();
+        setSchedulePreferences(prefs);
+      } catch (error) {
+        console.error('[Agenda] Error loading schedule preferences:', error);
+      }
+    };
+
     loadProfessionals();
+    loadSchedulePreferences();
   }, []);
 
   // Calcular semana actual
@@ -325,6 +340,57 @@ export default function AgendaPage() {
           : '0 8px 20px -12px rgba(15, 23, 42, 0.35)',
       },
     };
+  };
+
+  // Aplicar estilos a las franjas horarias según preferencias
+  const slotPropGetter = (date: Date) => {
+    const dayOfWeek = date.getDay();
+    const time = format(date, 'HH:mm');
+    const timeMinutes = parseInt(time.split(':')[0]) * 60 + parseInt(time.split(':')[1]);
+
+    // Buscar si hay preferencia para este día y hora
+    const preference = schedulePreferences.find(pref => {
+      if (pref.dayOfWeek !== dayOfWeek) return false;
+
+      const startMinutes = parseInt(pref.startTime.split(':')[0]) * 60 + parseInt(pref.startTime.split(':')[1]);
+      const endMinutes = parseInt(pref.endTime.split(':')[0]) * 60 + parseInt(pref.endTime.split(':')[1]);
+
+      return timeMinutes >= startMinutes && timeMinutes < endMinutes;
+    });
+
+    if (preference) {
+      const professional = professionals.find(p => p.uid === preference.professionalId);
+      const isDark = document.documentElement.classList.contains('dark');
+
+      // Usar el color del profesional si está disponible, sino usar colores por defecto
+      if (professional?.color) {
+        const hexToRgba = (hex: string, alpha: number) => {
+          const h = hex.replace('#', '');
+          if (h.length !== 6) return `rgba(100,116,139,${alpha})`;
+          const r = parseInt(h.substring(0, 2), 16);
+          const g = parseInt(h.substring(2, 4), 16);
+          const b = parseInt(h.substring(4, 6), 16);
+          return `rgba(${r},${g},${b},${alpha})`;
+        };
+
+        return {
+          style: {
+            backgroundColor: isDark ? hexToRgba(professional.color, 0.08) : hexToRgba(professional.color, 0.05),
+            borderLeft: `3px solid ${professional.color}`,
+          },
+        };
+      }
+
+      // Color por defecto si no hay color de profesional
+      return {
+        style: {
+          backgroundColor: isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.05)',
+          borderLeft: '3px solid rgba(59, 130, 246, 0.4)',
+        },
+      };
+    }
+
+    return {};
   };
 
   const handleEventDrop = async ({ event, start, end }: any) => {
@@ -640,6 +706,7 @@ export default function AgendaPage() {
               showMore: total => `+${total} más`,
             }}
             eventPropGetter={eventPropGetter}
+            slotPropGetter={slotPropGetter}
           />
         </div>
 
