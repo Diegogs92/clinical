@@ -26,6 +26,7 @@ const schema = z.object({
     message: 'Selecciona una duración válida'
   }).default(45),
   type: z.string().default('Consulta'),
+  sessionType: z.enum(['normal', 'estetica']).default('normal'),
   fee: z.coerce.number().optional(),
   notes: z.string().optional(),
 });
@@ -52,6 +53,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
     defaultValues: {
       duration: initialData?.duration || 45,
       type: initialData?.type || 'Consulta',
+      sessionType: initialData?.sessionType || 'normal',
       fee: initialData?.fee || undefined,
       patientId: initialData?.patientId || '',
       professionalId: initialData?.userId || user?.uid || '',
@@ -135,6 +137,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         duration: values.duration,
         status: initialData?.status || 'scheduled',
         type: values.type,
+        sessionType: values.sessionType,
         fee: values.fee,
         notes: values.notes,
         userId: values.professionalId,
@@ -285,6 +288,33 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
               <option value="120">120 min</option>
               <option value="160">160 min</option>
             </select>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-2">Tipo de Sesión</label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className={`flex items-center justify-center gap-2 p-3 border-2 rounded-lg cursor-pointer transition-all ${
+              watch('sessionType') === 'normal'
+                ? 'border-primary bg-primary/10 dark:bg-primary/20'
+                : 'border-secondary-lighter dark:border-gray-600 hover:border-primary/50'
+            }`}>
+              <input type="radio" value="normal" {...register('sessionType')} className="sr-only" />
+              <span className={`text-sm font-medium ${watch('sessionType') === 'normal' ? 'text-primary dark:text-white' : 'text-secondary dark:text-gray-400'}`}>
+                Normal
+              </span>
+            </label>
+
+            <label className={`flex items-center justify-center gap-2 p-3 border-2 rounded-lg cursor-pointer transition-all ${
+              watch('sessionType') === 'estetica'
+                ? 'border-primary bg-primary/10 dark:bg-primary/20'
+                : 'border-secondary-lighter dark:border-gray-600 hover:border-primary/50'
+            }`}>
+              <input type="radio" value="estetica" {...register('sessionType')} className="sr-only" />
+              <span className={`text-sm font-medium ${watch('sessionType') === 'estetica' ? 'text-primary dark:text-white' : 'text-secondary dark:text-gray-400'}`}>
+                Estética
+              </span>
+            </label>
           </div>
         </div>
 

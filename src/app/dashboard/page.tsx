@@ -460,7 +460,18 @@ export default function DashboardPage() {
                           )}
                         </p>
                         {patient.phone && (
-                          <p className="text-xs text-elegant-500 dark:text-elegant-400 mt-1">{patient.phone}</p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <p className="text-xs text-elegant-500 dark:text-elegant-400">{patient.phone}</p>
+                            <a
+                              href={`https://wa.me/${patient.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`¡Feliz cumpleaños ${patient.firstName}! 🎂🎉`)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded-md transition-colors flex items-center gap-1"
+                            >
+                              <span>📱</span>
+                              <span>Enviar saludos</span>
+                            </a>
+                          </div>
                         )}
                       </div>
                     </div>

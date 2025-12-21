@@ -68,6 +68,7 @@ export interface Appointment {
   duration: number; // in minutes
   status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled' | 'no-show';
   type?: string; // consultation type (solo para turnos de pacientes)
+  sessionType?: 'normal' | 'estetica'; // Tipo de sesión: normal o estética
   fee?: number; // Honorarios del turno
   notes?: string;
   insuranceId?: string;
