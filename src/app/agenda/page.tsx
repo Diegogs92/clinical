@@ -816,63 +816,93 @@ export default function AgendaPage() {
               </button>
             </div>
           ) : (
-            <div className="space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <p className="text-xs text-elegant-500">Paciente</p>
-                  <p className="font-semibold text-elegant-900 dark:text-white">{selectedEvent.patientName || 'Sin nombre'}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-elegant-500">Profesional</p>
-                  <p className="font-semibold text-elegant-900 dark:text-white">{selectedProfessionalName || 'N/D'}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-elegant-500">Horario</p>
-                  <p className="font-semibold text-elegant-900 dark:text-white">
-                    {format(selectedEvent.start, 'dd/MM/yyyy HH:mm', { locale: es })} - {format(selectedEvent.end, 'HH:mm', { locale: es })}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-elegant-500">Estado</p>
-                  <p className="font-semibold text-elegant-900 dark:text-white">{translateAppointmentStatus(selectedEvent.status)}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-elegant-500">Honorarios</p>
-                  <p className="font-semibold text-elegant-900 dark:text-white">{selectedEvent.fee ? `$${selectedEvent.fee.toLocaleString()}` : '-'}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-elegant-500">Notas</p>
-                  <p className="font-medium text-elegant-800 dark:text-elegant-200 whitespace-pre-line">{selectedEvent.notes || '-'}</p>
+            <div className="space-y-6">
+              {/* Información principal */}
+              <div className="bg-gradient-to-r from-primary/5 to-primary-dark/5 dark:from-primary/10 dark:to-primary-dark/10 rounded-xl p-4 border border-primary/20 dark:border-primary/30">
+                <h3 className="text-2xl font-bold text-elegant-900 dark:text-white mb-2">
+                  {selectedEvent.patientName || 'Sin nombre'}
+                </h3>
+                <div className="flex flex-wrap items-center gap-3 text-sm text-elegant-600 dark:text-elegant-300">
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4" />
+                    <span>{format(selectedEvent.start, 'dd/MM/yyyy HH:mm', { locale: es })} - {format(selectedEvent.end, 'HH:mm', { locale: es })}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <User className="w-4 h-4" />
+                    <span>{selectedProfessionalName || 'N/D'}</span>
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-2">
-                <button onClick={() => openPaymentDialog(selectedEvent)} className="btn-primary inline-flex items-center justify-center gap-2">
-                  <DollarSign className="w-4 h-4" />
-                  Registrar pago
-                </button>
-                <button onClick={() => handleAttendance(selectedEvent)} className="btn-success inline-flex items-center justify-center gap-2">
-                  <CheckCircle2 className="w-4 h-4" />
-                  Asistencia
-                </button>
-                <button onClick={() => handleCancelAppointment(selectedEvent)} className="btn-warning inline-flex items-center justify-center gap-2">
-                  <BanIcon className="w-4 h-4" />
-                  Cancelar
-                </button>
-                <button
-                  onClick={() => {
-                    toast.info('Arrastra y suelta el turno en la Agenda para reprogramar.');
-                    setSelectedEvent(null);
-                  }}
-                  className="btn-secondary inline-flex items-center justify-center gap-2"
-                >
-                  <Edit2 className="w-4 h-4" />
-                  Reprogramar
-                </button>
-                <button onClick={() => handleDelete(selectedEvent)} className="btn-danger inline-flex items-center justify-center gap-2">
-                  <Trash2 className="w-4 h-4" />
-                  Eliminar
-                </button>
+              {/* Detalles adicionales */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-elegant-50 dark:bg-elegant-800/50 rounded-lg p-3">
+                  <p className="text-xs font-medium text-elegant-500 dark:text-elegant-400 mb-1">Estado</p>
+                  <p className="text-lg font-semibold text-elegant-900 dark:text-white">{translateAppointmentStatus(selectedEvent.status)}</p>
+                </div>
+                <div className="bg-elegant-50 dark:bg-elegant-800/50 rounded-lg p-3">
+                  <p className="text-xs font-medium text-elegant-500 dark:text-elegant-400 mb-1">Honorarios</p>
+                  <p className="text-lg font-semibold text-primary dark:text-primary-light">{selectedEvent.fee ? `$${selectedEvent.fee.toLocaleString()}` : '-'}</p>
+                </div>
+              </div>
+
+              {selectedEvent.notes && (
+                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
+                  <p className="text-xs font-medium text-amber-800 dark:text-amber-400 mb-1">Notas</p>
+                  <p className="text-sm text-amber-900 dark:text-amber-200 whitespace-pre-line">{selectedEvent.notes}</p>
+                </div>
+              )}
+
+              {/* Acciones principales */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-elegant-500 dark:text-elegant-400 uppercase tracking-wide">Acciones rápidas</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => openPaymentDialog(selectedEvent)}
+                    className="btn-primary flex items-center justify-center gap-2 py-3"
+                  >
+                    <DollarSign className="w-5 h-5" />
+                    <span>Registrar pago</span>
+                  </button>
+                  <button
+                    onClick={() => handleAttendance(selectedEvent)}
+                    className="btn-success flex items-center justify-center gap-2 py-3"
+                  >
+                    <CheckCircle2 className="w-5 h-5" />
+                    <span>Asistencia</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Acciones secundarias */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-elegant-500 dark:text-elegant-400 uppercase tracking-wide">Otras acciones</p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => {
+                      toast.info('Arrastra y suelta el turno en la Agenda para reprogramar.');
+                      setSelectedEvent(null);
+                    }}
+                    className="btn-secondary flex items-center gap-2 text-sm"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                    Reprogramar
+                  </button>
+                  <button
+                    onClick={() => handleCancelAppointment(selectedEvent)}
+                    className="btn-warning flex items-center gap-2 text-sm"
+                  >
+                    <BanIcon className="w-4 h-4" />
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(selectedEvent)}
+                    className="btn-danger flex items-center gap-2 text-sm"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Eliminar
+                  </button>
+                </div>
               </div>
             </div>
           )}
