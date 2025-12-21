@@ -456,7 +456,7 @@ export default function DashboardPage() {
                           {isToday ? (
                             <span className="font-semibold text-pink-600 dark:text-pink-400">¡Hoy!</span>
                           ) : (
-                            format(birthday, "d 'de' MMMM", { locale: { code: 'es' } })
+                            format(birthday, "d 'de' MMMM", { locale: es })
                           )}
                         </p>
                         {patient.phone && (
