@@ -426,7 +426,7 @@ export default function DashboardPage() {
           <StatsOverview />
 
           {upcomingBirthdays.length > 0 && (
-            <div className="card birthday-hover bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20 border-pink-200 dark:border-pink-800">
+            <div className="card bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20 border-pink-200 dark:border-pink-800">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-xl bg-pink-500/10 dark:bg-pink-500/20 flex items-center justify-center">
                   <span className="text-2xl">🎂</span>
