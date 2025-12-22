@@ -5,7 +5,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { createAppointment, deleteAppointment, updateAppointment } from '@/lib/appointments';
 import { Appointment } from '@/types';
-import { getTokenInfo, clearTokenInfo } from '@/lib/tokenRefresh';
 
 const CALENDAR_ENABLED = true;
 const disabledValue: CalendarSyncContextType = {
@@ -41,12 +40,11 @@ interface Props {
 }
 
 export function CalendarSyncProvider({ children }: Props) {
-  const { user, googleAccessToken, signInWithGoogle } = useAuth();
+  const { user } = useAuth();
   const { refreshAppointments } = useAppointments();
   const [isConnected, setIsConnected] = useState(false);
   const [isTokenExpired, setIsTokenExpired] = useState(false);
   const [syncing, setSyncing] = useState(false);
-  const [isReconnecting, setIsReconnecting] = useState(false);
 
   if (!CALENDAR_ENABLED) {
     return (
@@ -56,59 +54,64 @@ export function CalendarSyncProvider({ children }: Props) {
     );
   }
 
-  useEffect(() => {
-    console.log('[CalendarSync] useEffect - Estado actual:', {
-      hasUser: !!user,
-      hasToken: !!googleAccessToken,
-      tokenLength: googleAccessToken?.length || 0
-    });
-
-    // Si el usuario está autenticado con Google, está "conectado" para Calendar
-    if (user && googleAccessToken) {
-      console.log('[CalendarSync] ✅ Usuario conectado con token válido');
-      setIsConnected(true);
-      // Verificar si el token está expirado
-      checkTokenExpiration();
-    } else {
-      console.log('[CalendarSync] ❌ Usuario NO conectado:', {
-        reason: !user ? 'no user' : 'no token'
-      });
-      setIsConnected(false);
-      setIsTokenExpired(false);
-    }
-
-    // Verificar expiración periódicamente cada 5 minutos
-    const intervalId = setInterval(() => {
-      if (user && googleAccessToken) {
-        const expired = checkTokenExpiration();
-        if (expired) {
-          console.log('[CalendarSync] Token expirado detectado en chequeo periódico');
-        }
-      }
-    }, 5 * 60 * 1000); // 5 minutos
-
-    return () => clearInterval(intervalId);
-  }, [user, googleAccessToken]);
+  const getAuthHeader = useCallback(async () => {
+    if (!user) return null;
+    const idToken = await user.getIdToken();
+    return `Bearer ${idToken}`;
+  }, [user]);
 
   const checkTokenExpiration = (): boolean => {
-    const tokenInfo = getTokenInfo();
-    if (!tokenInfo) {
+    if (!user) {
+      setIsConnected(false);
       setIsTokenExpired(false);
       return false;
     }
 
-    const now = Date.now();
-    const expired = tokenInfo.expiresAt <= now;
+    setIsTokenExpired(!isConnected);
+    return !isConnected;
+  };
 
-    if (expired) {
-      console.warn('[CalendarSync] Token expirado. Necesitas volver a iniciar sesión.');
-      setIsTokenExpired(true);
-      return true;
+  const refreshConnectionStatus = useCallback(async () => {
+    if (!user) {
+      setIsConnected(false);
+      setIsTokenExpired(false);
+      return false;
     }
 
-    setIsTokenExpired(false);
-    return false;
-  };
+    const authHeader = await getAuthHeader();
+    if (!authHeader) return false;
+
+    try {
+      const response = await fetch('/api/google/calendar/status', {
+        headers: {
+          Authorization: authHeader,
+        },
+      });
+      const data = await response.json();
+      const connected = !!data.connected;
+      setIsConnected(connected);
+      setIsTokenExpired(!connected);
+      return connected;
+    } catch (error) {
+      console.error('[CalendarSync] Error verificando estado:', error);
+      setIsConnected(false);
+      setIsTokenExpired(true);
+      return false;
+    }
+  }, [user, getAuthHeader]);
+
+  useEffect(() => {
+    refreshConnectionStatus();
+  }, [refreshConnectionStatus]);
+
+  useEffect(() => {
+    if (!user) return;
+    const intervalId = setInterval(() => {
+      refreshConnectionStatus();
+    }, 5 * 60 * 1000);
+
+    return () => clearInterval(intervalId);
+  }, [user, refreshConnectionStatus]);
 
   const formatTime = (date: Date): string => {
     const hours = String(date.getHours()).padStart(2, '0');
@@ -117,10 +120,7 @@ export function CalendarSyncProvider({ children }: Props) {
   };
 
   const syncFromGoogleCalendar = useCallback(async () => {
-    if (!user || !googleAccessToken || syncing || !isConnected) return;
-
-    const expired = checkTokenExpiration();
-    if (expired) return;
+    if (!user || syncing || !isConnected) return;
 
     setSyncing(true);
     try {
@@ -130,11 +130,16 @@ export function CalendarSyncProvider({ children }: Props) {
       const timeMax = new Date(now);
       timeMax.setMonth(timeMax.getMonth() + 6);
 
+      const authHeader = await getAuthHeader();
+      if (!authHeader) return;
+
       const response = await fetch('/api/calendar/pull', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: authHeader,
+        },
         body: JSON.stringify({
-          accessToken: googleAccessToken,
           timeMin: timeMin.toISOString(),
           timeMax: timeMax.toISOString(),
         }),
@@ -144,9 +149,8 @@ export function CalendarSyncProvider({ children }: Props) {
         const errorData = await response.json();
         console.error('[CalendarSync] Error al obtener eventos:', errorData);
         if (response.status === 401) {
-          clearTokenInfo();
-          setIsTokenExpired(true);
           setIsConnected(false);
+          setIsTokenExpired(true);
         }
         return;
       }
@@ -242,45 +246,45 @@ export function CalendarSyncProvider({ children }: Props) {
     } finally {
       setSyncing(false);
     }
-  }, [user, googleAccessToken, syncing, isConnected, refreshAppointments]);
+  }, [user, syncing, isConnected, refreshAppointments, getAuthHeader]);
 
-  // DESHABILITADO TEMPORALMENTE: Causa bucle infinito
-  // TODO: Arreglar dependencias para evitar re-renderizados infinitos
-  /*
   useEffect(() => {
-    if (!isConnected || !googleAccessToken) return;
+    if (!isConnected) return;
     syncFromGoogleCalendar();
     const intervalId = setInterval(() => {
       syncFromGoogleCalendar();
     }, 5 * 60 * 1000);
 
     return () => clearInterval(intervalId);
-  }, [isConnected, googleAccessToken, syncFromGoogleCalendar]);
-  */
+  }, [isConnected, syncFromGoogleCalendar]);
 
   const reconnectCalendar = async (): Promise<boolean> => {
-    if (isReconnecting) {
-      console.log('[CalendarSync] Ya hay una reconexión en progreso');
-      return false;
-    }
+    if (!user) return false;
 
-    setIsReconnecting(true);
+    const authHeader = await getAuthHeader();
+    if (!authHeader) return false;
+
     try {
-      console.log('[CalendarSync] 🔄 Intentando reconexión automática con Google Calendar...');
-      await signInWithGoogle();
+      const response = await fetch('/api/google/calendar/connect', {
+        method: 'POST',
+        headers: {
+          Authorization: authHeader,
+        },
+      });
 
-      // Esperar un momento para que el token se guarde
-      await new Promise(resolve => setTimeout(resolve, 500));
+      if (!response.ok) {
+        return false;
+      }
 
-      console.log('[CalendarSync] ✅ Reconexión exitosa');
-      setIsTokenExpired(false);
-      setIsConnected(true);
-      return true;
-    } catch (error) {
-      console.error('[CalendarSync] ❌ Error al reconectar:', error);
+      const data = await response.json();
+      if (data?.url) {
+        window.location.assign(data.url);
+        return true;
+      }
       return false;
-    } finally {
-      setIsReconnecting(false);
+    } catch (error) {
+      console.error('[CalendarSync] Error conectando Calendar:', error);
+      return false;
     }
   };
 
@@ -290,110 +294,41 @@ export function CalendarSyncProvider({ children }: Props) {
     eventId?: string,
     officeColorId?: string
   ): Promise<string | null> => {
-    // Función interna para hacer el sync real
-    const doSync = async (token: string): Promise<string | null> => {
+    if (!isConnected || !user) {
+      console.warn('[CalendarSync] No conectado a Google Calendar');
+      return null;
+    }
+
+    const authHeader = await getAuthHeader();
+    if (!authHeader) return null;
+
+    try {
       const response = await fetch('/api/calendar/sync', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: authHeader,
+        },
         body: JSON.stringify({
           appointment: { ...appointment, googleCalendarEventId: eventId },
           action,
-          accessToken: token,
           officeColorId,
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-
-        // Si es un error 401, retornar un error especial
+        console.error('[CalendarSync] Error del servidor:', errorData);
         if (response.status === 401) {
-          throw new Error('TOKEN_EXPIRED');
+          setIsConnected(false);
+          setIsTokenExpired(true);
         }
-
-        throw new Error(errorData.error || 'Failed to sync');
+        return null;
       }
 
       const data = await response.json();
       return data.eventId;
-    };
-
-    // Verificar si el token está expirado ANTES de intentar sincronizar
-    const expired = checkTokenExpiration();
-    if (expired) {
-      console.warn('[CalendarSync] Token expirado detectado. Intentando reconexión automática...');
-      const reconnected = await reconnectCalendar();
-
-      if (!reconnected) {
-        console.error('[CalendarSync] No se pudo reconectar automáticamente');
-        return null;
-      }
-
-      // Obtener el nuevo token
-      const newToken = localStorage.getItem('google_access_token');
-      if (!newToken) {
-        console.error('[CalendarSync] No se pudo obtener nuevo token después de reconectar');
-        return null;
-      }
-
-      console.log('[CalendarSync] Reintentando sincronización con nuevo token...');
-      try {
-        const eventId = await doSync(newToken);
-        console.log('[CalendarSync] ✅ Sincronizado exitosamente después de reconectar. Event ID:', eventId);
-        return eventId;
-      } catch (error) {
-        console.error('[CalendarSync] Error al sincronizar después de reconectar:', error);
-        return null;
-      }
-    }
-
-    if (!isConnected) {
-      console.warn('[CalendarSync] No conectado a Google Calendar');
-      return null;
-    }
-
-    if (!googleAccessToken) {
-      console.warn('[CalendarSync] No hay access token de Google. Inicia sesión con Google para sincronizar.');
-      return null;
-    }
-
-    console.log('[CalendarSync] Iniciando sincronización:', { action, officeColorId });
-
-    try {
-      const eventId = await doSync(googleAccessToken);
-      console.log('[CalendarSync] ✅ Sincronizado exitosamente. Event ID:', eventId);
-      return eventId;
-    } catch (error: any) {
-      // Si el token expiró durante la sincronización, intentar reconectar y reintentar UNA VEZ
-      if (error.message === 'TOKEN_EXPIRED') {
-        console.warn('[CalendarSync] Token expiró durante sincronización. Intentando reconexión automática...');
-        clearTokenInfo();
-        setIsTokenExpired(true);
-        setIsConnected(false);
-
-        const reconnected = await reconnectCalendar();
-        if (!reconnected) {
-          console.error('[CalendarSync] No se pudo reconectar automáticamente');
-          return null;
-        }
-
-        const newToken = localStorage.getItem('google_access_token');
-        if (!newToken) {
-          console.error('[CalendarSync] No se pudo obtener nuevo token');
-          return null;
-        }
-
-        console.log('[CalendarSync] Reintentando sincronización con nuevo token...');
-        try {
-          const eventId = await doSync(newToken);
-          console.log('[CalendarSync] ✅ Sincronizado exitosamente después de reconectar. Event ID:', eventId);
-          return eventId;
-        } catch (retryError) {
-          console.error('[CalendarSync] Error al reintentar después de reconectar:', retryError);
-          return null;
-        }
-      }
-
+    } catch (error) {
       console.error('[CalendarSync] Error syncing appointment:', error);
       return null;
     }

@@ -133,6 +133,15 @@ service cloud.firestore {
       allow delete: if signedIn() && request.auth.token.email == email;
     }
 
+    // Google Calendar tokens (solo servidor)
+    match /googleCalendarTokens/{id} {
+      allow read, write: if false;
+    }
+
+    match /googleCalendarOAuthStates/{id} {
+      allow read, write: if false;
+    }
+
     // Deny all other collections by default
     match /{document=**} {
       allow read, write: if false;

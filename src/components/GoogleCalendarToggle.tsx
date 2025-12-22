@@ -32,7 +32,7 @@ export default function GoogleCalendarToggle() {
         onClick={handleReconnect}
         disabled={isReconnecting}
         className="relative flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors disabled:opacity-50"
-        aria-label="Reconectar con Google Calendar"
+        aria-label="Conectar con Google Calendar"
       >
         {isReconnecting ? (
           <RefreshCw className="w-4 h-4 animate-spin" />
@@ -40,7 +40,7 @@ export default function GoogleCalendarToggle() {
           <AlertCircle className="w-4 h-4" />
         )}
         <span className="hidden sm:inline whitespace-nowrap">
-          {isReconnecting ? 'Reconectando...' : 'Reconectar Calendar'}
+          {isReconnecting ? 'Conectando...' : 'Conectar Calendar'}
         </span>
       </button>
     );

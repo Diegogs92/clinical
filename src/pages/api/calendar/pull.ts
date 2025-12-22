@@ -1,5 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { google } from 'googleapis';
+import { requireUserId } from '@/lib/serverAuth';
+import { getOAuthClient, getRefreshToken } from '@/lib/googleCalendarAuth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -7,22 +9,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { accessToken, timeMin, timeMax } = req.body as {
-      accessToken?: string;
+    const { timeMin, timeMax } = req.body as {
       timeMin?: string;
       timeMax?: string;
     };
 
-    if (!accessToken) {
-      return res.status(401).json({ error: 'Access token requerido' });
+    const uid = await requireUserId(req);
+    const refreshToken = await getRefreshToken(uid);
+    if (!refreshToken) {
+      return res.status(401).json({ error: 'Google Calendar no esta conectado', code: 'calendar_not_connected' });
     }
 
     const calendarId = process.env.GOOGLE_CALENDAR_ID || 'primary';
-    const oauth2Client = new google.auth.OAuth2(
-      process.env.GOOGLE_CLIENT_ID,
-      process.env.GOOGLE_CLIENT_SECRET
-    );
-    oauth2Client.setCredentials({ access_token: accessToken });
+    const oauth2Client = getOAuthClient();
+    oauth2Client.setCredentials({ refresh_token: refreshToken });
 
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
     const response = await calendar.events.list({
@@ -37,10 +37,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json({ items: response.data.items || [] });
   } catch (error: any) {
     console.error('Calendar pull error:', error);
-
     if (error.code === 401 || error.message?.includes('invalid_grant')) {
       return res.status(401).json({
-        error: 'Token de acceso expirado. Por favor, vuelve a iniciar sesiИn.'
+        error: 'Conexion con Google Calendar expirada. Reconecta tu cuenta.',
+        code: 'calendar_reauth'
       });
     }
 

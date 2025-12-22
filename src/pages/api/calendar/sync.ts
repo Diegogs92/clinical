@@ -2,6 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { google } from 'googleapis';
 import { Appointment } from '@/types';
 import { combineDateAndTime } from '@/lib/dateUtils';
+import { requireUserId } from '@/lib/serverAuth';
+import { getOAuthClient, getRefreshToken } from '@/lib/googleCalendarAuth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -9,26 +11,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { appointment, action, accessToken, officeColorId } = req.body as {
+    const { appointment, action, officeColorId } = req.body as {
       appointment: Appointment;
       action: 'create' | 'update' | 'delete';
-      accessToken?: string;
       officeColorId?: string;
     };
 
-    if (!accessToken) {
-      return res.status(401).json({ error: 'Access token requerido' });
+    const uid = await requireUserId(req);
+    const refreshToken = await getRefreshToken(uid);
+    if (!refreshToken) {
+      return res.status(401).json({ error: 'Google Calendar no esta conectado', code: 'calendar_not_connected' });
     }
 
-    // Initialize OAuth2 client
-    const oauth2Client = new google.auth.OAuth2(
-      process.env.GOOGLE_CLIENT_ID,
-      process.env.GOOGLE_CLIENT_SECRET
-    );
-
-    oauth2Client.setCredentials({
-      access_token: accessToken,
-    });
+    const oauth2Client = getOAuthClient();
+    oauth2Client.setCredentials({ refresh_token: refreshToken });
 
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
     const calendarId = process.env.GOOGLE_CALENDAR_ID || 'primary';
@@ -118,7 +114,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Manejo específico de errores de Google Calendar
     if (error.code === 401 || error.message?.includes('invalid_grant')) {
       return res.status(401).json({
-        error: 'Token de acceso expirado. Por favor, vuelve a iniciar sesión.'
+        error: 'Conexion con Google Calendar expirada. Reconecta tu cuenta.',
+        code: 'calendar_reauth'
       });
     }
 
