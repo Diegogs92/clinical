@@ -30,7 +30,8 @@ service cloud.firestore {
 
     // User profiles
     match /userProfiles/{userId} {
-      allow read: if signedIn() && (isOwner(userId) || isAdmin());
+      // Cualquier usuario autenticado puede leer perfiles (necesario para listar profesionales)
+      allow read: if signedIn();
       allow create: if signedIn() && isOwner(userId);
       // Admin puede actualizar cualquier perfil; el dueño puede actualizar salvo el campo role
       allow update: if signedIn() && (
