@@ -123,6 +123,16 @@ service cloud.firestore {
       allow delete: if signedIn() && isAdmin() && isOwner(resource.data.userId);
     }
 
+    // Pending users (invitaciones)
+    match /pendingUsers/{email} {
+      // Admin puede crear invitaciones
+      allow create: if isAdmin();
+      // Usuarios autenticados pueden leer su propia invitación pendiente
+      allow read: if signedIn() && request.auth.token.email == email;
+      // Usuarios autenticados pueden eliminar su propia invitación después de registrarse
+      allow delete: if signedIn() && request.auth.token.email == email;
+    }
+
     // Deny all other collections by default
     match /{document=**} {
       allow read, write: if false;

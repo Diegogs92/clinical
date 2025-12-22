@@ -8,7 +8,6 @@ type CreateUserForm = {
   email: string;
   displayName: string;
   role: UserRole;
-  password: string;
   defaultAppointmentDuration: number;
 };
 
@@ -18,29 +17,20 @@ interface CreateUserModalProps {
     email: string;
     displayName: string;
     role: UserRole;
-    password?: string;
     defaultAppointmentDuration?: number;
-  }) => Promise<{ generatedPassword?: string } | void>;
+  }) => Promise<void>;
 }
 
-function generateClientPassword() {
-  const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%*?';
-  const length = 12;
-  let out = '';
-  for (let i = 0; i < length; i++) out += charset[Math.floor(Math.random() * charset.length)];
-  return out;
-}
 
 export default function CreateUserModal({ onClose, onCreate }: CreateUserModalProps) {
   const [formData, setFormData] = useState<CreateUserForm>({
     email: '',
     displayName: '',
     role: 'profesional',
-    password: '',
     defaultAppointmentDuration: 30,
   });
   const [saving, setSaving] = useState(false);
-  const [createdPassword, setCreatedPassword] = useState<string | null>(null);
+  const [invitationSent, setInvitationSent] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const roleHelp = useMemo(() => {
@@ -61,23 +51,18 @@ export default function CreateUserModal({ onClose, onCreate }: CreateUserModalPr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    setCreatedPassword(null);
+    setInvitationSent(false);
     setErrorMessage(null);
 
     try {
-      const res = await onCreate({
+      await onCreate({
         email: formData.email.trim(),
         displayName: formData.displayName.trim(),
         role: formData.role,
-        password: formData.password.trim() ? formData.password : undefined,
         defaultAppointmentDuration: formData.role === 'profesional' ? formData.defaultAppointmentDuration : undefined,
       });
 
-      if (res && typeof res === 'object' && res.generatedPassword) {
-        setCreatedPassword(res.generatedPassword);
-      } else {
-        onClose();
-      }
+      setInvitationSent(true);
     } catch (error: any) {
       const msg = typeof error?.message === 'string' ? error.message : 'No se pudo crear el usuario';
       setErrorMessage(msg);
@@ -111,22 +96,27 @@ export default function CreateUserModal({ onClose, onCreate }: CreateUserModalPr
         </div>
 
         <form id="create-user-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
-          {createdPassword && (
-            <div className="p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-900">
-              <div className="font-semibold">Contraseña generada</div>
-              <div className="text-sm mt-1">Cópiala ahora, no se vuelve a mostrar:</div>
-              <div className="mt-2 font-mono text-sm bg-white/70 rounded-lg px-3 py-2 border border-amber-200 select-all">
-                {createdPassword}
+          {invitationSent && (
+            <div className="p-4 rounded-xl border border-green-200 bg-green-50 text-green-900 dark:bg-green-900/20 dark:text-green-100 dark:border-green-800">
+              <div className="font-semibold flex items-center gap-2">
+                <Mail className="w-5 h-5" />
+                Usuario creado exitosamente
               </div>
-              <div className="mt-3 flex justify-end">
+              <div className="text-sm mt-2">
+                El usuario ha sido creado y debe iniciar sesión con Google usando el email <strong>{formData.email}</strong>
+              </div>
+              <div className="text-xs mt-2 text-green-700 dark:text-green-300">
+                El usuario podrá acceder al sistema haciendo clic en "Continuar con Google" en la página de inicio de sesión.
+              </div>
+              <div className="mt-4 flex justify-end">
                 <button type="button" className="btn-primary" onClick={onClose}>
-                  Listo
+                  Entendido
                 </button>
               </div>
             </div>
           )}
 
-          {!createdPassword && (
+          {!invitationSent && (
             <>
               {errorMessage && (
                 <div className="p-4 rounded-xl border border-red-200 bg-red-50 text-red-900">
@@ -189,31 +179,15 @@ export default function CreateUserModal({ onClose, onCreate }: CreateUserModalPr
                 <p className="text-xs text-elegant-500 dark:text-elegant-400">{roleHelp}</p>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-elegant-700 dark:text-elegant-300 flex items-center gap-2">
-                  <KeyRound className="w-4 h-4" />
-                  Contraseña (opcional)
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={formData.password}
-                    onChange={(e) => handleChange('password', e.target.value)}
-                    className="input-field w-full"
-                    placeholder="Si se deja vacío, se genera una automáticamente"
-                  />
-                  <button
-                    type="button"
-                    className="btn-secondary whitespace-nowrap"
-                    onClick={() => handleChange('password', generateClientPassword())}
-                    disabled={saving}
-                  >
-                    Generar
-                  </button>
+              <div className="p-4 rounded-xl border border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
+                <div className="flex items-start gap-3">
+                  <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-blue-900 dark:text-blue-100">
+                    <div className="font-semibold mb-1">Autenticación con Google</div>
+                    <p>El usuario deberá iniciar sesión utilizando su cuenta de Google con el email ingresado arriba.</p>
+                    <p className="mt-2">No se requiere contraseña ya que la autenticación es completamente gestionada por Google.</p>
+                  </div>
                 </div>
-                <p className="text-xs text-elegant-500 dark:text-elegant-400">
-                  Recomendado: mínimo 8 caracteres. Si queda vacía, el servidor generará una y se mostrará una sola vez.
-                </p>
               </div>
 
               {formData.role === 'profesional' && (
@@ -239,7 +213,7 @@ export default function CreateUserModal({ onClose, onCreate }: CreateUserModalPr
           )}
         </form>
 
-        {!createdPassword && (
+        {!invitationSent && (
           <div className="px-6 py-4 border-t border-elegant-200 dark:border-elegant-700 bg-elegant-50 dark:bg-elegant-800/50 flex justify-end gap-3">
             <button type="button" onClick={onClose} className="btn-secondary" disabled={saving}>
               Cancelar

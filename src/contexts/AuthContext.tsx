@@ -8,7 +8,7 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged
 } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { auth, db, mockMode } from '@/lib/firebase';
 import { UserProfile } from '@/types';
 import { logger } from '@/lib/logger';
@@ -103,19 +103,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             logger.log('[AuthContext] Perfil encontrado');
             setUserProfile(profileSnap.data() as UserProfile);
           } else {
-            logger.log('[AuthContext] Creando nuevo perfil');
+            logger.log('[AuthContext] Perfil no existe, verificando invitaciones pendientes');
+
+            // Verificar si hay una invitación pendiente para este email
+            const pendingRef = doc(db!, 'pendingUsers', user.email || '');
+            const pendingSnap = await getDoc(pendingRef);
+
             const username = (user.email || '').split('@')[0] || '';
-            const newProfile: UserProfile = {
-              uid: user.uid,
-              email: user.email || '',
-              username,
-              displayName: user.displayName || username || '',
-              photoURL: user.photoURL || '',
-              role: 'profesional', // Por defecto, nuevos usuarios son profesionales
-              defaultAppointmentDuration: 30,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            };
+            let newProfile: UserProfile;
+
+            if (pendingSnap.exists()) {
+              logger.log('[AuthContext] Invitación pendiente encontrada, creando perfil con rol asignado');
+              const pendingData = pendingSnap.data();
+              newProfile = {
+                uid: user.uid,
+                email: user.email || '',
+                username,
+                displayName: pendingData.displayName || user.displayName || username || '',
+                photoURL: user.photoURL || '',
+                role: pendingData.role || 'profesional',
+                defaultAppointmentDuration: pendingData.defaultAppointmentDuration || 30,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              };
+
+              // Eliminar la invitación pendiente
+              await deleteDoc(pendingRef);
+              logger.log('[AuthContext] Invitación pendiente eliminada');
+            } else {
+              logger.log('[AuthContext] No hay invitación pendiente, creando perfil por defecto');
+              newProfile = {
+                uid: user.uid,
+                email: user.email || '',
+                username,
+                displayName: user.displayName || username || '',
+                photoURL: user.photoURL || '',
+                role: 'profesional', // Por defecto, nuevos usuarios son profesionales
+                defaultAppointmentDuration: 30,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              };
+            }
+
             await setDoc(profileRef, newProfile);
             logger.log('[AuthContext] Perfil creado exitosamente');
             setUserProfile(newProfile);

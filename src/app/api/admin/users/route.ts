@@ -7,16 +7,10 @@ export const runtime = 'nodejs';
 
 const requestSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8).optional(),
   displayName: z.string().min(1),
   role: z.enum(['administrador', 'profesional', 'secretaria']),
   defaultAppointmentDuration: z.number().int().min(10).max(240).optional(),
 });
-
-function generatePassword() {
-  // 16 chars-ish, URL-safe
-  return crypto.randomBytes(12).toString('base64url');
-}
 
 export async function POST(req: Request) {
   console.log('[api/admin/users] POST');
@@ -51,47 +45,44 @@ export async function POST(req: Request) {
     }
 
     const { email, displayName, role } = parsed.data;
-    const password = parsed.data.password || generatePassword();
-    const didGeneratePassword = !parsed.data.password;
-    console.log('[api/admin/users] Creating auth user:', email);
+    console.log('[api/admin/users] Creating userProfile for Google auth:', email);
 
-    const created = await adminAuth.createUser({
-      email,
-      password,
-      displayName,
-    });
-    console.log('[api/admin/users] Auth user created:', created.uid);
+    // Generar un UID temporal para el perfil
+    // El usuario se autenticará con Google y su perfil se actualizará automáticamente
+    const tempUid = `pending_${crypto.randomBytes(16).toString('hex')}`;
+    console.log('[api/admin/users] Generated temp UID:', tempUid);
 
     const now = new Date().toISOString();
     const username = email.split('@')[0] || '';
     const defaultAppointmentDuration = parsed.data.defaultAppointmentDuration ?? 30;
 
+    // Guardar en una colección temporal de invitaciones
     await db
-      .collection('userProfiles')
-      .doc(created.uid)
+      .collection('pendingUsers')
+      .doc(email)
       .set(
         {
-          uid: created.uid,
           email,
           username,
           displayName,
-          photoURL: '',
           role,
           defaultAppointmentDuration,
-          createdAt: now,
-          updatedAt: now,
+          invitedAt: now,
+          invitedBy: requesterUid,
         },
         { merge: false }
       );
-    console.log('[api/admin/users] Profile created:', created.uid);
+    console.log('[api/admin/users] Pending invitation created for:', email);
+
+    // TODO: Opcional - Enviar email de invitación con link al login
+    // Para ahora, el usuario simplemente usará "Continuar con Google" en /login
 
     return NextResponse.json(
       {
-        uid: created.uid,
         email,
         displayName,
         role,
-        ...(didGeneratePassword ? { generatedPassword: password } : {}),
+        message: 'Usuario invitado. Debe iniciar sesión con Google.',
       },
       { status: 201 }
     );

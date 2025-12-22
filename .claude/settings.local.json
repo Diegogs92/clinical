@@ -21,7 +21,8 @@
       "Bash(firebase deploy:*)",
       "Bash(where firebase:*)",
       "Bash(echo:*)",
-      "Bash(vercel --version:*)"
+      "Bash(vercel --version:*)",
+      "Bash(node scripts/generate-icons.js:*)"
     ],
     "deny": [],
     "ask": []

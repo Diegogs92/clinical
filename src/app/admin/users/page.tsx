@@ -110,7 +110,6 @@ export default function UsersPage() {
     email: string;
     displayName: string;
     role: UserRole;
-    password?: string;
     defaultAppointmentDuration?: number;
   }) => {
     try {
@@ -148,13 +147,8 @@ export default function UsersPage() {
         throw new Error(`(${res.status}) ${msg}`);
       }
 
-      showToast('Usuario creado correctamente', 'success');
+      showToast('Usuario invitado correctamente. Debe iniciar sesión con Google.', 'success');
       await loadUsers();
-
-      if (payload?.generatedPassword) {
-        return { generatedPassword: payload.generatedPassword as string };
-      }
-
       setShowCreateModal(false);
     } catch (error) {
       console.error('Error creating user:', error);
