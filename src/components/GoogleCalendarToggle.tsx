@@ -1,20 +1,18 @@
 'use client';
 
 import { useCalendarSync } from '@/contexts/CalendarSyncContext';
-import { useAuth } from '@/contexts/AuthContext';
 import { Calendar, AlertCircle, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 
 export default function GoogleCalendarToggle() {
-  const { isConnected, isTokenExpired } = useCalendarSync();
-  const { signInWithGoogle } = useAuth();
+  const { isConnected, isTokenExpired, reconnectCalendar } = useCalendarSync();
   const [isHovered, setIsHovered] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(false);
 
   const handleReconnect = async () => {
     setIsReconnecting(true);
     try {
-      await signInWithGoogle();
+      await reconnectCalendar();
     } catch (error) {
       console.error('Error al reconectar con Google Calendar:', error);
     } finally {
