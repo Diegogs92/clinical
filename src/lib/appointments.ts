@@ -114,6 +114,96 @@ export async function getAllAppointments(): Promise<Appointment[]> {
   return appointments.sort((a, b) => a.date.localeCompare(b.date));
 }
 
+/**
+ * Verifica si un turno se solapa con otros turnos existentes del mismo profesional
+ * @param professionalId ID del profesional
+ * @param date Fecha del turno en formato YYYY-MM-DD
+ * @param startTime Hora de inicio en formato HH:mm
+ * @param endTime Hora de fin en formato HH:mm
+ * @param excludeAppointmentId ID del turno a excluir (para ediciones)
+ * @returns Array de turnos que se solapan
+ */
+export async function getOverlappingAppointments(
+  professionalId: string,
+  date: string,
+  startTime: string,
+  endTime: string,
+  excludeAppointmentId?: string
+): Promise<Appointment[]> {
+  console.log('[getOverlappingAppointments] Validando:', {
+    professionalId,
+    date,
+    startTime,
+    endTime,
+    excludeAppointmentId,
+  });
+
+  // Obtener todos los turnos del profesional
+  let appointments: Appointment[];
+  if (mockMode || !db) {
+    appointments = mockAppointments.filter(a => a.userId === professionalId);
+  } else {
+    const colRef = collection(db as Firestore, APPOINTMENTS_COLLECTION);
+    const q = query(colRef, where('userId', '==', professionalId));
+    const snap = await getDocs(q);
+    appointments = snap.docs.map(d => ({ ...d.data() as Appointment, id: d.id }));
+  }
+
+  // Normalizar la fecha del turno a comparar (solo la parte de fecha)
+  const targetDateStr = date.includes('T') ? date.split('T')[0] : date;
+
+  // Filtrar turnos del mismo día
+  const sameDayAppointments = appointments.filter(a => {
+    // Excluir el turno que estamos editando
+    if (excludeAppointmentId && a.id === excludeAppointmentId) return false;
+
+    // Normalizar la fecha del turno existente
+    const appointmentDateStr = a.date.includes('T') ? a.date.split('T')[0] : a.date;
+
+    return appointmentDateStr === targetDateStr;
+  });
+
+  console.log('[getOverlappingAppointments] Turnos del mismo día:', sameDayAppointments.length);
+
+  // Función auxiliar para convertir HH:mm a minutos desde medianoche
+  const timeToMinutes = (time: string): number => {
+    const [h, m] = time.split(':').map(Number);
+    return h * 60 + m;
+  };
+
+  const targetStart = timeToMinutes(startTime);
+  const targetEnd = timeToMinutes(endTime);
+
+  // Verificar solapamiento
+  const overlapping = sameDayAppointments.filter(a => {
+    const appointmentStart = timeToMinutes(a.startTime);
+    const appointmentEnd = timeToMinutes(a.endTime);
+
+    // Dos rangos se solapan si:
+    // - El inicio del nuevo turno está dentro del rango existente
+    // - El fin del nuevo turno está dentro del rango existente
+    // - El nuevo turno envuelve completamente al existente
+    const overlaps = (
+      (targetStart >= appointmentStart && targetStart < appointmentEnd) || // Inicio se solapa
+      (targetEnd > appointmentStart && targetEnd <= appointmentEnd) ||     // Fin se solapa
+      (targetStart <= appointmentStart && targetEnd >= appointmentEnd)     // Envuelve completamente
+    );
+
+    if (overlaps) {
+      console.log('[getOverlappingAppointments] Solapamiento detectado:', {
+        existing: `${a.startTime}-${a.endTime}`,
+        new: `${startTime}-${endTime}`,
+        patientName: a.patientName,
+      });
+    }
+
+    return overlaps;
+  });
+
+  console.log('[getOverlappingAppointments] Total solapamientos:', overlapping.length);
+  return overlapping;
+}
+
 // Utility to expand recurrence (client-side only for now)
 export function expandRecurrence(base: Appointment, maxOccurrences: number = 100): Appointment[] {
   if (!base.isRecurrent || !base.recurrenceRule) return [base];

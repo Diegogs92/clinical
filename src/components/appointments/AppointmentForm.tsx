@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCalendarSync } from '@/contexts/CalendarSyncContext';
-import { createAppointment, updateAppointment } from '@/lib/appointments';
+import { createAppointment, updateAppointment, getOverlappingAppointments } from '@/lib/appointments';
 import { getBlockedSlotsInRange } from '@/lib/blockedSlots';
 import { useState, useEffect, ChangeEvent } from 'react';
 import { Appointment, UserProfile } from '@/types';
@@ -125,7 +125,36 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         return;
       }
 
-      console.log('No hay franjas bloqueadas, procediendo a crear turno');
+      console.log('No hay franjas bloqueadas, validando solapamiento con otros turnos');
+
+      // Validar si se solapa con otros turnos
+      const overlappingAppointments = await getOverlappingAppointments(
+        values.professionalId,
+        values.date,
+        values.startTime,
+        endTime,
+        initialData?.id // Excluir el turno actual si estamos editando
+      );
+
+      if (overlappingAppointments.length > 0) {
+        const overlapDetails = overlappingAppointments.map(appt => {
+          const patientInfo = appt.appointmentType === 'patient'
+            ? `Paciente: ${appt.patientName || 'Sin nombre'}`
+            : `Evento personal: ${appt.title || 'Sin título'}`;
+          return `${appt.startTime} - ${appt.endTime} (${patientInfo})`;
+        }).join('\n');
+
+        console.log('Bloqueando creacion de turno por solapamiento:', overlapDetails);
+
+        toast.error(
+          `No se puede agendar el turno porque se solapa con otros turnos:\n\n${overlapDetails}`,
+          { duration: 8000 }
+        );
+        setLoading(false);
+        return;
+      }
+
+      console.log('No hay solapamientos, procediendo a crear turno');
 
       const selected = patients.find(p => p.id === (values.patientId as unknown as string));
       const selectedProfessional = professionals.find(p => p.uid === values.professionalId);
