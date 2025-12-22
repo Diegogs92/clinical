@@ -3,6 +3,7 @@
 import ProtectedRoute from '@/components/ProtectedRoute';
 import DashboardLayout from '@/components/DashboardLayout';
 import { usePayments } from '@/contexts/PaymentsContext';
+import { useAppointments } from '@/contexts/AppointmentsContext';
 import { useState } from 'react';
 import { Payment } from '@/types';
 import { updatePayment, deletePayment } from '@/lib/payments';
@@ -10,10 +11,12 @@ import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import { Edit2, Trash2 } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
+import { combineDateAndTime } from '@/lib/dateUtils';
 export const dynamic = 'force-dynamic';
 
 export default function FeesPage() {
   const { payments, pendingPayments: pending, refreshPayments, refreshPendingPayments } = usePayments();
+  const { appointments } = useAppointments();
   const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
   const [editAmount, setEditAmount] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,7 +24,35 @@ export default function FeesPage() {
   const confirm = useConfirm();
 
   const totalRevenue = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
-  const pendingTotal = pending.reduce((sum, p) => sum + p.amount, 0);
+  const allPayments = [...payments, ...pending].reduce((acc, payment) => {
+    acc.set(payment.id, payment);
+    return acc;
+  }, new Map<string, Payment>());
+
+  const paymentTotalsByAppointment = Array.from(allPayments.values()).reduce((acc, payment) => {
+    if (!payment.appointmentId) return acc;
+    if (payment.status !== 'completed' && payment.status !== 'pending') return acc;
+    const prev = acc.get(payment.appointmentId) || 0;
+    acc.set(payment.appointmentId, prev + payment.amount);
+    return acc;
+  }, new Map<string, number>());
+
+  const pendingSummary = appointments.reduce(
+    (acc, appointment) => {
+      if (!appointment.fee) return acc;
+      const isPast = ['completed', 'cancelled', 'no-show'].includes(appointment.status) ||
+        combineDateAndTime(appointment.date, appointment.endTime) < new Date();
+      if (!isPast) return acc;
+      const paid = paymentTotalsByAppointment.get(appointment.id) || 0;
+      const remaining = Math.max(0, appointment.fee - paid);
+      if (remaining > 0) {
+        acc.amount += remaining;
+        acc.count += 1;
+      }
+      return acc;
+    },
+    { amount: 0, count: 0 }
+  );
 
   const handleEdit = (payment: Payment) => {
     setEditingPayment(payment);
@@ -96,7 +127,7 @@ export default function FeesPage() {
             </div>
             <div className="card">
               <div className="text-xs font-semibold text-navy-darkest dark:text-white">Pendientes</div>
-              <div className="text-4xl font-bold text-navy-darkest dark:text-white">${pendingTotal.toLocaleString()}</div>
+              <div className="text-4xl font-bold text-navy-darkest dark:text-white">${pendingSummary.amount.toLocaleString()}</div>
             </div>
             <div className="card">
               <div className="text-xs font-semibold text-navy-darkest dark:text-white">Cobros</div>
@@ -104,7 +135,7 @@ export default function FeesPage() {
             </div>
             <div className="card">
               <div className="text-xs font-semibold text-navy-darkest dark:text-white">Pendientes Cobro</div>
-              <div className="text-4xl font-bold text-navy-darkest dark:text-white">{pending.length}</div>
+              <div className="text-4xl font-bold text-navy-darkest dark:text-white">{pendingSummary.count}</div>
             </div>
           </div>
           <div className="grid md:grid-cols-2 gap-6">

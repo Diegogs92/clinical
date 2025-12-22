@@ -3,6 +3,7 @@
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { usePayments } from '@/contexts/PaymentsContext';
+import { combineDateAndTime } from '@/lib/dateUtils';
 
 interface Stat {
   label: string;
@@ -29,7 +30,35 @@ export default function StatsOverview() {
     })
     .reduce((sum, p) => sum + p.amount, 0);
 
-  const pendingAmount = pendingPayments.reduce((sum, p) => sum + p.amount, 0);
+  const allPayments = [...payments, ...pendingPayments].reduce((acc, payment) => {
+    acc.set(payment.id, payment);
+    return acc;
+  }, new Map<string, typeof payments[number]>());
+
+  const paymentTotalsByAppointment = Array.from(allPayments.values()).reduce((acc, payment) => {
+    if (!payment.appointmentId) return acc;
+    if (payment.status !== 'completed' && payment.status !== 'pending') return acc;
+    const prev = acc.get(payment.appointmentId) || 0;
+    acc.set(payment.appointmentId, prev + payment.amount);
+    return acc;
+  }, new Map<string, number>());
+
+  const pendingSummary = appointments.reduce(
+    (acc, appointment) => {
+      if (!appointment.fee) return acc;
+      const isPast = ['completed', 'cancelled', 'no-show'].includes(appointment.status) ||
+        combineDateAndTime(appointment.date, appointment.endTime) < new Date();
+      if (!isPast) return acc;
+      const paid = paymentTotalsByAppointment.get(appointment.id) || 0;
+      const remaining = Math.max(0, appointment.fee - paid);
+      if (remaining > 0) {
+        acc.amount += remaining;
+        acc.count += 1;
+      }
+      return acc;
+    },
+    { amount: 0, count: 0 }
+  );
 
   const stats: Stat[] = [
     {
@@ -52,8 +81,8 @@ export default function StatsOverview() {
     },
     {
       label: 'Pendientes Cobro',
-      value: `$${pendingAmount.toLocaleString()}`,
-      sub: `${pendingPayments.length} pendiente${pendingPayments.length !== 1 ? 's' : ''}`,
+      value: `$${pendingSummary.amount.toLocaleString()}`,
+      sub: `${pendingSummary.count} pendiente${pendingSummary.count !== 1 ? 's' : ''}`,
       color: 'from-amber-500 to-amber-600'
     },
   ];

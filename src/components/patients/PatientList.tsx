@@ -15,6 +15,7 @@ import PatientForm from './PatientForm';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { usePermissions } from '@/hooks/usePermissions';
+import { combineDateAndTime } from '@/lib/dateUtils';
 
 export default function PatientList() {
   const { user } = useAuth();
@@ -35,9 +36,21 @@ export default function PatientList() {
 
   // Helper function to calculate patient debt
   const getPatientDebt = (patientId: string) => {
-    const patientPayments = payments.filter(p => p.patientId === patientId);
-    const pending = patientPayments.filter(p => p.status === 'pending');
-    return pending.reduce((sum, p) => sum + p.amount, 0);
+    const now = new Date();
+    const patientAppointments = appointments.filter(a => a.patientId === patientId && a.fee);
+    const totalFees = patientAppointments
+      .filter(a => {
+        if (['completed', 'cancelled', 'no-show'].includes(a.status)) return true;
+        const end = combineDateAndTime(a.date, a.endTime);
+        return end < now;
+      })
+      .reduce((sum, a) => sum + (a.fee || 0), 0);
+
+    const totalPaid = payments
+      .filter(p => p.patientId === patientId && (p.status === 'completed' || p.status === 'pending'))
+      .reduce((sum, p) => sum + p.amount, 0);
+
+    return Math.max(0, totalFees - totalPaid);
   };
 
   // Helper function to calculate total paid
