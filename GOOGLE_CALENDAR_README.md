@@ -135,10 +135,43 @@ vercel env ls
 vercel env pull .env.local
 ```
 
+## Reconexión Automática
+
+**¡NUEVA FUNCIONALIDAD!** La sincronización ahora incluye reconexión automática:
+
+### ¿Cómo funciona?
+
+Cuando cambias el estado de un turno (crear, modificar, eliminar) y el token de Google Calendar está expirado:
+
+1. **Detección automática**: El sistema detecta que el token expiró
+2. **Popup de Google**: Se abre automáticamente el popup de autenticación de Google
+3. **Nuevo token**: Obtienes un nuevo token al aceptar los permisos
+4. **Retry automático**: La sincronización se reintenta automáticamente con el nuevo token
+
+### Ventajas
+
+- **Sin intervención manual**: No necesitas hacer clic en "Reconectar Calendar"
+- **Flujo transparente**: Todo sucede en el momento que intentas cambiar un turno
+- **Una sola autorización**: Solo necesitas aceptar los permisos de Google una vez por sesión
+
+### Logs de debugging
+
+Puedes ver el flujo completo en la consola del navegador:
+
+```
+[CalendarSync] Token expirado detectado. Intentando reconexión automática...
+[CalendarSync] 🔄 Intentando reconexión automática con Google Calendar...
+[AuthContext] Iniciando signInWithPopup con scopes de Calendar
+[AuthContext] Access token obtenido
+[CalendarSync] ✅ Reconexión exitosa
+[CalendarSync] Reintentando sincronización con nuevo token...
+[CalendarSync] ✅ Sincronizado exitosamente después de reconectar
+```
+
 ## Mejoras futuras
 
+- [x] Agregar retry automático cuando falla la sincronización ✅
 - [ ] Implementar refresh token automático del lado del servidor
-- [ ] Agregar retry automático cuando falla la sincronización
 - [ ] Mostrar notificación cuando un turno no se pudo sincronizar
 - [ ] Permitir seleccionar calendario específico (no solo "primary")
 - [ ] Agregar opción para deshabilitar sincronización por usuario

@@ -244,6 +244,9 @@ export function CalendarSyncProvider({ children }: Props) {
     }
   }, [user, googleAccessToken, syncing, isConnected, refreshAppointments]);
 
+  // DESHABILITADO TEMPORALMENTE: Causa bucle infinito
+  // TODO: Arreglar dependencias para evitar re-renderizados infinitos
+  /*
   useEffect(() => {
     if (!isConnected || !googleAccessToken) return;
     syncFromGoogleCalendar();
@@ -253,6 +256,7 @@ export function CalendarSyncProvider({ children }: Props) {
 
     return () => clearInterval(intervalId);
   }, [isConnected, googleAccessToken, syncFromGoogleCalendar]);
+  */
 
   const reconnectCalendar = async (): Promise<boolean> => {
     if (isReconnecting) {
