@@ -31,10 +31,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    const calendarId = process.env.GOOGLE_CALENDAR_ID || 'primary';
 
     if (action === 'delete' && appointment.googleCalendarEventId) {
       await calendar.events.delete({
-        calendarId: 'primary',
+        calendarId,
         eventId: appointment.googleCalendarEventId,
       });
       return res.status(200).json({ success: true, eventId: null });
@@ -71,6 +72,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const event: any = {
       summary: eventSummary,
       description: appointment.notes || '',
+      extendedProperties: {
+        private: {
+          appointmentId: appointment.id,
+          userId: appointment.userId,
+          appointmentType: appointment.appointmentType,
+          patientId: appointment.patientId || '',
+          patientName: appointment.patientName || '',
+        },
+      },
       start: {
         dateTime: formatDateTimeForCalendar(startDateTime),
         timeZone: 'America/Argentina/Buenos_Aires',
@@ -88,7 +98,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (action === 'update' && appointment.googleCalendarEventId) {
       const response = await calendar.events.update({
-        calendarId: 'primary',
+        calendarId,
         eventId: appointment.googleCalendarEventId,
         requestBody: event,
       });
@@ -97,7 +107,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Create new event
     const response = await calendar.events.insert({
-      calendarId: 'primary',
+      calendarId,
       requestBody: event,
     });
 

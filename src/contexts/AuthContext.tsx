@@ -6,10 +6,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signOut as firebaseSignOut,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  updateProfile
+  onAuthStateChanged
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db, mockMode } from '@/lib/firebase';
@@ -23,8 +20,6 @@ interface AuthContextType {
   error: string | null;
   googleAccessToken: string | null;
   signInWithGoogle: () => Promise<void>;
-  signInWithEmail: (email: string, password: string) => Promise<void>;
-  registerWithEmail: (email: string, password: string, displayName?: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -191,34 +186,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signInWithEmail = async (email: string, password: string) => {
-    if (mockMode) return; // mock ya autenticado
-    if (!auth) return;
-    setError(null);
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch (e: any) {
-      setError(e.message || 'Error al iniciar sesión');
-      throw e;
-    }
-  };
-
-  const registerWithEmail = async (email: string, password: string, displayName?: string) => {
-    if (mockMode) return;
-    if (!auth) return;
-    setError(null);
-    try {
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
-      if (displayName) {
-        await updateProfile(cred.user, { displayName });
-      }
-      // Perfil se crea en el listener si no existe, podemos forzar displayName
-    } catch (e: any) {
-      setError(e.message || 'Error al registrar usuario');
-      throw e;
-    }
-  };
-
   const signOut = async () => {
     if (mockMode) {
       setUser(null);
@@ -237,7 +204,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, userProfile, loading, error, googleAccessToken, signInWithGoogle, signInWithEmail, registerWithEmail, signOut }}>
+    <AuthContext.Provider value={{ user, userProfile, loading, error, googleAccessToken, signInWithGoogle, signOut }}>
       {children}
     </AuthContext.Provider>
   );

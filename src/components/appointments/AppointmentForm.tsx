@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCalendarSync } from '@/contexts/CalendarSyncContext';
 import { createAppointment, updateAppointment } from '@/lib/appointments';
 import { getBlockedSlotsInRange } from '@/lib/blockedSlots';
 import { useState, useEffect, ChangeEvent } from 'react';
@@ -41,6 +42,7 @@ interface Props {
 
 export default function AppointmentForm({ initialData, onCreated, onCancel }: Props) {
   const { user } = useAuth();
+  const { syncAppointment } = useCalendarSync();
   const [loading, setLoading] = useState(false);
   const { patients, refreshPatients } = usePatients();
   const { refreshAppointments } = useAppointments();
@@ -157,7 +159,16 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       if (initialData) {
         console.log('[AppointmentForm] Actualizando turno existente:', initialData.id);
         await updateAppointment(initialData.id, payload);
-        const updated = { ...payload, id: initialData.id };
+        const updated = { ...payload, id: initialData.id, googleCalendarEventId: initialData.googleCalendarEventId };
+
+        const nextEventId = await syncAppointment(
+          updated as Appointment,
+          initialData.googleCalendarEventId ? 'update' : 'create',
+          initialData.googleCalendarEventId
+        );
+        if (nextEventId && nextEventId !== initialData.googleCalendarEventId) {
+          await updateAppointment(initialData.id, { googleCalendarEventId: nextEventId });
+        }
 
         console.log('[AppointmentForm] Turno actualizado exitosamente');
         toast.success('Turno actualizado');
@@ -168,6 +179,11 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         console.log('[AppointmentForm] Creando nuevo turno...');
         const id = await createAppointment(payload);
         const created = { ...payload, id };
+
+        const eventId = await syncAppointment(created as Appointment, 'create');
+        if (eventId) {
+          await updateAppointment(id, { googleCalendarEventId: eventId });
+        }
 
         console.log('[AppointmentForm] Turno creado exitosamente con ID:', id);
         toast.success('Turno creado');

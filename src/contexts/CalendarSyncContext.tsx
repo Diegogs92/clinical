@@ -1,11 +1,13 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAppointments } from '@/contexts/AppointmentsContext';
+import { createAppointment, deleteAppointment, updateAppointment } from '@/lib/appointments';
 import { Appointment } from '@/types';
 import { getTokenInfo, clearTokenInfo } from '@/lib/tokenRefresh';
 
-const CALENDAR_ENABLED = false;
+const CALENDAR_ENABLED = true;
 const disabledValue: CalendarSyncContextType = {
   isConnected: false,
   isTokenExpired: false,
@@ -37,8 +39,10 @@ interface Props {
 
 export function CalendarSyncProvider({ children }: Props) {
   const { user, googleAccessToken } = useAuth();
+  const { refreshAppointments } = useAppointments();
   const [isConnected, setIsConnected] = useState(false);
   const [isTokenExpired, setIsTokenExpired] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   if (!CALENDAR_ENABLED) {
     return (
@@ -82,6 +86,16 @@ export function CalendarSyncProvider({ children }: Props) {
     return () => clearInterval(intervalId);
   }, [user, googleAccessToken]);
 
+  useEffect(() => {
+    if (!isConnected || !googleAccessToken) return;
+    syncFromGoogleCalendar();
+    const intervalId = setInterval(() => {
+      syncFromGoogleCalendar();
+    }, 5 * 60 * 1000);
+
+    return () => clearInterval(intervalId);
+  }, [isConnected, googleAccessToken, syncFromGoogleCalendar]);
+
   const checkTokenExpiration = (): boolean => {
     const tokenInfo = getTokenInfo();
     if (!tokenInfo) {
@@ -101,6 +115,140 @@ export function CalendarSyncProvider({ children }: Props) {
     setIsTokenExpired(false);
     return false;
   };
+
+  const formatTime = (date: Date): string => {
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+
+  const syncFromGoogleCalendar = useCallback(async () => {
+    if (!user || !googleAccessToken || syncing || !isConnected) return;
+
+    const expired = checkTokenExpiration();
+    if (expired) return;
+
+    setSyncing(true);
+    try {
+      const now = new Date();
+      const timeMin = new Date(now);
+      timeMin.setMonth(timeMin.getMonth() - 1);
+      const timeMax = new Date(now);
+      timeMax.setMonth(timeMax.getMonth() + 6);
+
+      const response = await fetch('/api/calendar/pull', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accessToken: googleAccessToken,
+          timeMin: timeMin.toISOString(),
+          timeMax: timeMax.toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('[CalendarSync] Error al obtener eventos:', errorData);
+        if (response.status === 401) {
+          clearTokenInfo();
+          setIsTokenExpired(true);
+          setIsConnected(false);
+        }
+        return;
+      }
+
+      const data = await response.json();
+      const events = Array.isArray(data.items) ? data.items : [];
+      if (!events.length) return;
+
+      const currentAppointments = await refreshAppointments();
+      const byEventId = new Map(
+        currentAppointments
+          .filter(a => a.googleCalendarEventId)
+          .map(a => [a.googleCalendarEventId as string, a])
+      );
+      const byId = new Map(currentAppointments.map(a => [a.id, a]));
+
+      for (const event of events) {
+        if (!event?.id) continue;
+
+        const privateMeta = event.extendedProperties?.private || {};
+        const target =
+          (privateMeta.appointmentId && byId.get(privateMeta.appointmentId)) ||
+          byEventId.get(event.id);
+
+        if (event.status === 'cancelled') {
+          if (target) {
+            await deleteAppointment(target.id);
+          }
+          continue;
+        }
+
+        const startDateTime = event.start?.dateTime;
+        const endDateTime = event.end?.dateTime;
+        if (!startDateTime || !endDateTime) {
+          console.warn('[CalendarSync] Evento sin dateTime, se omite:', event.id);
+          continue;
+        }
+
+        const startDate = new Date(startDateTime);
+        const endDate = new Date(endDateTime);
+        const duration = Math.max(1, Math.round((endDate.getTime() - startDate.getTime()) / 60000));
+        const date = startDate.toISOString();
+        const startTime = formatTime(startDate);
+        const endTime = formatTime(endDate);
+
+        const hasPatientMeta = privateMeta.patientName || privateMeta.patientId;
+        const appointmentType = privateMeta.appointmentType === 'patient' && hasPatientMeta ? 'patient' : 'personal';
+
+        const basePayload: Partial<Appointment> = {
+          appointmentType,
+          patientId: privateMeta.patientId || undefined,
+          patientName: privateMeta.patientName || undefined,
+          title: event.summary || 'Evento',
+          notes: event.description || '',
+          date,
+          startTime,
+          endTime,
+          duration,
+          status: 'scheduled',
+          userId: privateMeta.userId || user.uid,
+          googleCalendarEventId: event.id,
+        };
+
+        if (target) {
+          const updatePayload: Partial<Appointment> = {};
+
+          if (target.date !== basePayload.date) updatePayload.date = basePayload.date;
+          if (target.startTime !== basePayload.startTime) updatePayload.startTime = basePayload.startTime;
+          if (target.endTime !== basePayload.endTime) updatePayload.endTime = basePayload.endTime;
+          if (target.duration !== basePayload.duration) updatePayload.duration = basePayload.duration;
+
+          if (appointmentType === 'personal') {
+            if (target.title !== basePayload.title) updatePayload.title = basePayload.title;
+            if (target.notes !== basePayload.notes) updatePayload.notes = basePayload.notes;
+          }
+
+          if (!target.googleCalendarEventId) {
+            updatePayload.googleCalendarEventId = basePayload.googleCalendarEventId;
+          }
+
+          if (Object.keys(updatePayload).length > 0) {
+            await updateAppointment(target.id, updatePayload);
+          }
+        } else {
+          await createAppointment({
+            ...basePayload,
+            status: 'scheduled',
+          } as Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>);
+        }
+      }
+    } catch (error) {
+      console.error('[CalendarSync] Error sincronizando desde Google:', error);
+    } finally {
+      setSyncing(false);
+    }
+  }, [user, googleAccessToken, syncing, isConnected, refreshAppointments]);
 
   const syncAppointment = async (
     appointment: Appointment,

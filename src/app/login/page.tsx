@@ -8,16 +8,10 @@ import ECGLoader from '@/components/ui/ECGLoader';
 import { debugFirebaseAuth } from '@/lib/authDebug';
 
 export default function LoginPage() {
-  const { user, loading: authLoading, signInWithEmail, registerWithEmail, error } = useAuth();
+  const { user, loading: authLoading, signInWithGoogle, error } = useAuth();
   const [loading, setLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
-  const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
   const router = useRouter();
-
-  const buildEmail = (u: string) => `${u.trim().toLowerCase()}@dentify.local`;
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -32,16 +26,11 @@ export default function LoginPage() {
     }
   }, []);
 
-  const handleSubmit = async () => {
+  const handleGoogleSignIn = async () => {
     setLoading(true);
     setLocalError(null);
     try {
-      const aliasEmail = buildEmail(username);
-      if (mode === 'login') {
-        await signInWithEmail(aliasEmail, password);
-      } else {
-        await registerWithEmail(aliasEmail, password, displayName || username);
-      }
+      await signInWithGoogle();
     } catch (err: any) {
       setLocalError(err?.message || 'Error de autenticación');
     } finally {
@@ -71,67 +60,17 @@ export default function LoginPage() {
         </div>
 
         <div className="card glass-panel border border-white/50 dark:border-elegant-800/70 shadow-xl">
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <button
-              className={`flex-1 py-2 rounded-full font-semibold transition ${mode === 'login' ? 'bg-primary text-white shadow' : 'text-primary-dark dark:text-white bg-elegant-100 dark:bg-elegant-800'}`}
-              onClick={() => setMode('login')}
-            >
-              Iniciar sesión
-            </button>
-            <button
-              className={`flex-1 py-2 rounded-full font-semibold transition ${mode === 'register' ? 'bg-primary text-white shadow' : 'text-primary-dark dark:text-white bg-elegant-100 dark:bg-elegant-800'}`}
-              onClick={() => setMode('register')}
-            >
-              Crear cuenta
-            </button>
-          </div>
 
           {(error || localError) && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
               {error || localError}
             </div>
           )}
-
           <div className="space-y-4">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-secondary dark:text-gray-300">Usuario</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="input-field w-full"
-                placeholder="Ej: romina"
-                autoComplete="username"
-              />
-            </div>
-            {mode === 'register' && (
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-secondary dark:text-gray-300">Nombre</label>
-                <input
-                  type="text"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  className="input-field w-full"
-                  placeholder="Ej: Romina Fernández"
-                  autoComplete="name"
-                />
-              </div>
-            )}
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-secondary dark:text-gray-300">Contraseña</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input-field w-full"
-                placeholder="********"
-                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-              />
-            </div>
             <button
-              onClick={handleSubmit}
-              disabled={loading || !username || !password}
-              className="w-full flex items-center justify-center gap-2 bg-primary text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleGoogleSignIn}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-3 bg-white text-primary-dark font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
@@ -144,16 +83,24 @@ export default function LoginPage() {
                       strokeLinecap="round"
                     />
                   </svg>
-                  {mode === 'login' ? 'Ingresando...' : 'Creando cuenta...'}
+                  Iniciando...
                 </span>
               ) : (
-                <span>{mode === 'login' ? 'Entrar' : 'Crear cuenta'}</span>
+                <>
+                  <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+                    <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.935 32.42 29.385 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.965 3.035l5.657-5.657C34.058 6.053 29.279 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20c11.045 0 20-8.955 20-20 0-1.341-.138-2.651-.389-3.917z"/>
+                    <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 16.138 19.01 12 24 12c3.059 0 5.842 1.154 7.965 3.035l5.657-5.657C34.058 6.053 29.279 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/>
+                    <path fill="#4CAF50" d="M24 44c5.292 0 10.05-2.026 13.621-5.314l-6.285-5.316C29.245 35.086 26.76 36 24 36c-5.364 0-9.906-3.556-11.289-8.443l-6.5 5.012C9.52 39.556 16.218 44 24 44z"/>
+                    <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-1.055 2.828-3.16 5.188-6.017 6.57l6.285 5.316C39.969 36.206 44 30.702 44 24c0-1.341-.138-2.651-.389-3.917z"/>
+                  </svg>
+                  Continuar con Google
+                </>
               )}
             </button>
           </div>
 
           <div className="mt-6 text-center text-sm text-secondary">
-            <p>Acceso por email y contraseña. Sin Google Calendar por ahora.</p>
+            <p>Acceso exclusivo con Google para habilitar la sincronización de Calendar.</p>
           </div>
         </div>
 

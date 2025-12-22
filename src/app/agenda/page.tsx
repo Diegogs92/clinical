@@ -408,6 +408,21 @@ export default function AgendaPage() {
         endTime: format(end, 'HH:mm'),
         duration,
       });
+      const updated = {
+        ...event,
+        date: start.toISOString(),
+        startTime: format(start, 'HH:mm'),
+        endTime: format(end, 'HH:mm'),
+        duration,
+      };
+      const nextEventId = await syncAppointment(
+        updated,
+        event.googleCalendarEventId ? 'update' : 'create',
+        event.googleCalendarEventId
+      );
+      if (nextEventId && !event.googleCalendarEventId) {
+        await updateAppointment(event.id, { googleCalendarEventId: nextEventId });
+      }
       await refreshAppointments();
       toast.success('Turno reprogramado');
     } catch (error) {
@@ -429,6 +444,19 @@ export default function AgendaPage() {
         endTime: format(end, 'HH:mm'),
         duration,
       });
+      const updated = {
+        ...event,
+        endTime: format(end, 'HH:mm'),
+        duration,
+      };
+      const nextEventId = await syncAppointment(
+        updated,
+        event.googleCalendarEventId ? 'update' : 'create',
+        event.googleCalendarEventId
+      );
+      if (nextEventId && !event.googleCalendarEventId) {
+        await updateAppointment(event.id, { googleCalendarEventId: nextEventId });
+      }
       await refreshAppointments();
       toast.success('Duración ajustada');
     } catch (error) {
