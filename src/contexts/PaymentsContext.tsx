@@ -36,7 +36,7 @@ export function PaymentsProvider({ children }: { children: React.ReactNode }) {
       console.error('Error loading payments:', error);
       return [];
     }
-  }, [user]);
+  }, [user, canViewAllPayments]);
 
   const refreshPendingPayments = useCallback(async () => {
     if (!user) {

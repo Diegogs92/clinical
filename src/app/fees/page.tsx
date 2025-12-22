@@ -23,7 +23,9 @@ export default function FeesPage() {
   const toast = useToast();
   const confirm = useConfirm();
 
-  const totalRevenue = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
+  const totalRevenue = payments
+    .filter(p => p.status === 'completed' || p.status === 'pending')
+    .reduce((sum, p) => sum + p.amount, 0);
   const allPayments = [...payments, ...pending].reduce((acc, payment) => {
     acc.set(payment.id, payment);
     return acc;
@@ -40,10 +42,8 @@ export default function FeesPage() {
   const pendingSummary = appointments.reduce(
     (acc, appointment) => {
       if (!appointment.fee) return acc;
-      const isPast = ['completed', 'cancelled', 'no-show'].includes(appointment.status) ||
-        combineDateAndTime(appointment.date, appointment.endTime) < new Date();
-      if (!isPast) return acc;
       const paid = paymentTotalsByAppointment.get(appointment.id) || 0;
+      if (appointment.status === 'cancelled' && paid === 0) return acc;
       const remaining = Math.max(0, appointment.fee - paid);
       if (remaining > 0) {
         acc.amount += remaining;

@@ -26,7 +26,9 @@ export default function StatsOverview() {
   const monthlyIncome = payments
     .filter(p => {
       const d = new Date(p.date);
-      return p.status === 'completed' && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      return (p.status === 'completed' || p.status === 'pending') &&
+        d.getMonth() === currentMonth &&
+        d.getFullYear() === currentYear;
     })
     .reduce((sum, p) => sum + p.amount, 0);
 
@@ -46,10 +48,8 @@ export default function StatsOverview() {
   const pendingSummary = appointments.reduce(
     (acc, appointment) => {
       if (!appointment.fee) return acc;
-      const isPast = ['completed', 'cancelled', 'no-show'].includes(appointment.status) ||
-        combineDateAndTime(appointment.date, appointment.endTime) < new Date();
-      if (!isPast) return acc;
       const paid = paymentTotalsByAppointment.get(appointment.id) || 0;
+      if (appointment.status === 'cancelled' && paid === 0) return acc;
       const remaining = Math.max(0, appointment.fee - paid);
       if (remaining > 0) {
         acc.amount += remaining;
@@ -76,7 +76,7 @@ export default function StatsOverview() {
     {
       label: 'Ingresos Mes',
       value: `$${monthlyIncome.toLocaleString()}`,
-      sub: `${payments.filter(p => p.status === 'completed' && new Date(p.date).getMonth() === currentMonth && new Date(p.date).getFullYear() === currentYear).length} pago(s)`,
+      sub: `${payments.filter(p => (p.status === 'completed' || p.status === 'pending') && new Date(p.date).getMonth() === currentMonth && new Date(p.date).getFullYear() === currentYear).length} pago(s)`,
       color: 'from-green-500 to-green-600'
     },
     {
