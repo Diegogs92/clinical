@@ -178,8 +178,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Solicitar scopes de Google Calendar
       provider.addScope('https://www.googleapis.com/auth/calendar');
       provider.addScope('https://www.googleapis.com/auth/calendar.events');
+
+      // Si el usuario ya está autenticado, forzar la selección de cuenta
+      // para obtener un nuevo token con los scopes necesarios
       provider.setCustomParameters({
-        prompt: 'select_account',
+        prompt: user ? 'consent' : 'select_account',
         access_type: 'offline'
       });
 
@@ -196,6 +199,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('google_access_token', credential.accessToken);
         localStorage.setItem('google_token_expires_at', expiresAt.toString());
         logger.log('[AuthContext] Token guardado, expira en 1 hora');
+      } else {
+        logger.warn('[AuthContext] No se pudo obtener access token del credential');
       }
     } catch (e: any) {
       logger.error('[AuthContext] Error en signInWithGoogle:', e);

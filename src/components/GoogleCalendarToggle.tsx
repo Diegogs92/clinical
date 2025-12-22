@@ -1,15 +1,51 @@
 'use client';
 
 import { useCalendarSync } from '@/contexts/CalendarSyncContext';
-import { Calendar } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Calendar, AlertCircle, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 
 export default function GoogleCalendarToggle() {
-  const { isConnected } = useCalendarSync();
+  const { isConnected, isTokenExpired } = useCalendarSync();
+  const { signInWithGoogle } = useAuth();
   const [isHovered, setIsHovered] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(false);
 
-  if (!isConnected) {
+  const handleReconnect = async () => {
+    setIsReconnecting(true);
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      console.error('Error al reconectar con Google Calendar:', error);
+    } finally {
+      setIsReconnecting(false);
+    }
+  };
+
+  // No mostrar nada si el usuario no tiene Google auth
+  if (!isConnected && !isTokenExpired) {
     return null;
+  }
+
+  // Mostrar alerta si el token expiró
+  if (isTokenExpired) {
+    return (
+      <button
+        onClick={handleReconnect}
+        disabled={isReconnecting}
+        className="relative flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors disabled:opacity-50"
+        aria-label="Reconectar con Google Calendar"
+      >
+        {isReconnecting ? (
+          <RefreshCw className="w-4 h-4 animate-spin" />
+        ) : (
+          <AlertCircle className="w-4 h-4" />
+        )}
+        <span className="hidden sm:inline whitespace-nowrap">
+          {isReconnecting ? 'Reconectando...' : 'Reconectar Calendar'}
+        </span>
+      </button>
+    );
   }
 
   return (

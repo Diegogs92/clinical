@@ -22,7 +22,9 @@
       "Bash(where firebase:*)",
       "Bash(echo:*)",
       "Bash(vercel --version:*)",
-      "Bash(node scripts/generate-icons.js:*)"
+      "Bash(node scripts/generate-icons.js:*)",
+      "Bash(timeout /t 5)",
+      "Bash(vercel env:*)"
     ],
     "deny": [],
     "ask": []
