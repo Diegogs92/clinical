@@ -86,16 +86,6 @@ export function CalendarSyncProvider({ children }: Props) {
     return () => clearInterval(intervalId);
   }, [user, googleAccessToken]);
 
-  useEffect(() => {
-    if (!isConnected || !googleAccessToken) return;
-    syncFromGoogleCalendar();
-    const intervalId = setInterval(() => {
-      syncFromGoogleCalendar();
-    }, 5 * 60 * 1000);
-
-    return () => clearInterval(intervalId);
-  }, [isConnected, googleAccessToken, syncFromGoogleCalendar]);
-
   const checkTokenExpiration = (): boolean => {
     const tokenInfo = getTokenInfo();
     if (!tokenInfo) {
@@ -249,6 +239,16 @@ export function CalendarSyncProvider({ children }: Props) {
       setSyncing(false);
     }
   }, [user, googleAccessToken, syncing, isConnected, refreshAppointments]);
+
+  useEffect(() => {
+    if (!isConnected || !googleAccessToken) return;
+    syncFromGoogleCalendar();
+    const intervalId = setInterval(() => {
+      syncFromGoogleCalendar();
+    }, 5 * 60 * 1000);
+
+    return () => clearInterval(intervalId);
+  }, [isConnected, googleAccessToken, syncFromGoogleCalendar]);
 
   const syncAppointment = async (
     appointment: Appointment,
