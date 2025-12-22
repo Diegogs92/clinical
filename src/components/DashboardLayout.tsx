@@ -7,6 +7,8 @@ import GlassNavbar from './GlassNavbar';
 import ThemeToggle from './ThemeToggle';
 import { Footer } from './Footer';
 import InstallPrompt from './InstallPrompt';
+import GoogleCalendarToggle from './GoogleCalendarToggle';
+import TokenExpirationBanner from './TokenExpirationBanner';
 import {
   LayoutDashboard,
   Users,
@@ -74,6 +76,7 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
             <div className="hidden md:flex items-center gap-4">
               <GlassNavbar items={navItems} />
               <div className="flex items-center gap-2">
+                <GoogleCalendarToggle />
                 <ThemeToggle />
                 <button
                   onClick={handleLogout}
@@ -87,6 +90,7 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
             </div>
 
             <div className="md:hidden flex items-center gap-1.5">
+              <GoogleCalendarToggle />
               <ThemeToggle />
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -147,6 +151,7 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
 
       <Footer />
 
+      <TokenExpirationBanner />
       <MobileNavBar items={navItems} action={mobileAction} />
       <InstallPrompt />
     </div>
