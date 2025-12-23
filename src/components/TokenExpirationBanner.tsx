@@ -36,7 +36,7 @@ export default function TokenExpirationBanner() {
           <div className="flex-1">
             <p className="font-semibold text-sm mb-1">Google Calendar desconectado</p>
             <p className="text-xs opacity-90 mb-3">
-              Para mantener la sincronizaci?n autom?tica, conecta tu cuenta de Google Calendar.
+              Para mantener la sincronizacion automatica, conecta tu cuenta de Google Calendar.
             </p>
             <div className="flex items-center gap-2">
               <button
@@ -50,7 +50,7 @@ export default function TokenExpirationBanner() {
                 onClick={() => setDismissed(true)}
                 className="text-white/80 hover:text-white text-xs underline"
               >
-                M?s tarde
+                Mas tarde
               </button>
             </div>
           </div>
