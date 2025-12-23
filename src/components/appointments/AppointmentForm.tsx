@@ -55,7 +55,9 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
     resolver: zodResolver(schema),
     defaultValues: {
       duration: initialData?.duration || 45,
-      type: initialData?.type || 'odontologia-general',
+      type: (initialData?.type && ['odontologia-general', 'ortodoncia', 'endodoncia', 'armonizacion'].includes(initialData.type)
+        ? initialData.type
+        : 'odontologia-general') as 'odontologia-general' | 'ortodoncia' | 'endodoncia' | 'armonizacion',
       sessionType: initialData?.sessionType || 'normal',
       fee: initialData?.fee || undefined,
       deposit: initialData?.deposit || undefined,
