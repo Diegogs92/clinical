@@ -70,6 +70,7 @@ export interface Appointment {
   type?: string; // consultation type (solo para turnos de pacientes)
   sessionType?: 'normal' | 'estetica'; // Tipo de sesión: normal o estética
   fee?: number; // Honorarios del turno
+  deposit?: number; // Seña del turno
   notes?: string;
   insuranceId?: string;
   authorizationCode?: string;

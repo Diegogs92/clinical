@@ -26,9 +26,10 @@ const schema = z.object({
   duration: z.coerce.number().refine(val => [45, 60, 90, 120, 160].includes(val), {
     message: 'Selecciona una duración válida'
   }).default(45),
-  type: z.string().default('Consulta'),
+  type: z.enum(['odontologia-general', 'ortodoncia', 'endodoncia', 'armonizacion']).default('odontologia-general'),
   sessionType: z.enum(['normal', 'estetica']).default('normal'),
   fee: z.coerce.number().optional(),
+  deposit: z.coerce.number().optional(),
   notes: z.string().optional(),
 });
 
@@ -54,9 +55,10 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
     resolver: zodResolver(schema),
     defaultValues: {
       duration: initialData?.duration || 45,
-      type: initialData?.type || 'Consulta',
+      type: initialData?.type || 'odontologia-general',
       sessionType: initialData?.sessionType || 'normal',
       fee: initialData?.fee || undefined,
+      deposit: initialData?.deposit || undefined,
       patientId: initialData?.patientId || '',
       professionalId: initialData?.userId || user?.uid || '',
       date: initialData?.date ? initialData.date.split('T')[0] : '',
@@ -170,6 +172,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         type: values.type,
         sessionType: values.sessionType,
         fee: values.fee,
+        deposit: values.deposit,
         notes: values.notes,
         userId: values.professionalId,
         professionalName: selectedProfessional?.displayName || '',
@@ -248,10 +251,10 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
     }
   };
 
-  // Generar opciones de horario desde 10:00 hasta 19:30 en intervalos de 15 minutos
+  // Generar opciones de horario desde 09:00 hasta 19:30 en intervalos de 15 minutos
   const generateTimeOptions = () => {
     const options = [];
-    const startHour = 10;
+    const startHour = 9;
     const endHour = 19;
     const endMinute = 30;
 
@@ -361,6 +364,17 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         </div>
 
         <div>
+          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Tipo de Tratamiento</label>
+          <select className="input-field" {...register('type')}>
+            <option value="odontologia-general">Odontología General</option>
+            <option value="ortodoncia">Ortodoncia</option>
+            <option value="endodoncia">Endodoncia</option>
+            <option value="armonizacion">Armonización</option>
+          </select>
+          {errors.type && <p className="text-red-600 text-xs mt-1">{errors.type.message}</p>}
+        </div>
+
+        <div>
           <label className="block text-sm font-medium text-primary-dark dark:text-white mb-2">Tipo de Sesión</label>
           <div className="grid grid-cols-2 gap-3">
             <label className={`flex items-center justify-center gap-2 p-3 border-2 rounded-lg cursor-pointer transition-all ${
@@ -387,10 +401,14 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Honorarios</label>
             <input type="number" className="input-field" placeholder="0" {...register('fee', { valueAsNumber: true })} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Seña</label>
+            <input type="number" className="input-field" placeholder="0" {...register('deposit', { valueAsNumber: true })} />
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Notas</label>
