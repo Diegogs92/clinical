@@ -269,8 +269,24 @@ export default function AgendaPage() {
         };
       });
 
-    return [...appointmentEvents, ...birthdayEvents];
-  }, [appointments, patients, professionals, currentDate]);
+    // Eventos de franjas bloqueadas
+    const blockedEvents = blockedSlots.map(slot => {
+      const start = combineDateAndTime(slot.date, slot.startTime);
+      const end = combineDateAndTime(slot.date, slot.endTime);
+
+      return {
+        id: `blocked-${slot.id}`,
+        title: `🚫 ${slot.reason}`,
+        start,
+        end,
+        isBlocked: true,
+        blockedSlotId: slot.id,
+        reason: slot.reason,
+      };
+    });
+
+    return [...appointmentEvents, ...birthdayEvents, ...blockedEvents];
+  }, [appointments, patients, professionals, currentDate, blockedSlots]);
 
   const eventPropGetter = (event: any) => {
     const status = event.status;
@@ -394,9 +410,32 @@ export default function AgendaPage() {
   };
 
   const handleEventDrop = async ({ event, start, end }: any) => {
-    // No permitir mover cumpleaños
+    // No permitir mover cumpleaños ni franjas bloqueadas
     if (event.isBirthday) {
       toast.error('Los cumpleaños no pueden moverse');
+      return;
+    }
+
+    if (event.isBlocked) {
+      toast.error('Las franjas bloqueadas no pueden moverse. Elimínala y crea una nueva si es necesario.');
+      return;
+    }
+
+    // Verificar si el nuevo horario colisiona con alguna franja bloqueada
+    const hasConflict = blockedSlots.some(slot => {
+      const slotStart = combineDateAndTime(slot.date, slot.startTime);
+      const slotEnd = combineDateAndTime(slot.date, slot.endTime);
+
+      // Verificar si hay solapamiento
+      return (
+        (start >= slotStart && start < slotEnd) || // El inicio del turno cae dentro del bloqueo
+        (end > slotStart && end <= slotEnd) ||     // El fin del turno cae dentro del bloqueo
+        (start <= slotStart && end >= slotEnd)     // El turno envuelve completamente el bloqueo
+      );
+    });
+
+    if (hasConflict) {
+      toast.error('No se puede mover el turno a una franja horaria bloqueada');
       return;
     }
 
@@ -432,9 +471,32 @@ export default function AgendaPage() {
   };
 
   const handleEventResize = async ({ event, start, end }: any) => {
-    // No permitir redimensionar cumpleaños
+    // No permitir redimensionar cumpleaños ni franjas bloqueadas
     if (event.isBirthday) {
       toast.error('Los cumpleaños no pueden redimensionarse');
+      return;
+    }
+
+    if (event.isBlocked) {
+      toast.error('Las franjas bloqueadas no pueden redimensionarse. Elimínala y crea una nueva si es necesario.');
+      return;
+    }
+
+    // Verificar si el nuevo horario colisiona con alguna franja bloqueada
+    const hasConflict = blockedSlots.some(slot => {
+      const slotStart = combineDateAndTime(slot.date, slot.startTime);
+      const slotEnd = combineDateAndTime(slot.date, slot.endTime);
+
+      // Verificar si hay solapamiento
+      return (
+        (start >= slotStart && start < slotEnd) ||
+        (end > slotStart && end <= slotEnd) ||
+        (start <= slotStart && end >= slotEnd)
+      );
+    });
+
+    if (hasConflict) {
+      toast.error('No se puede redimensionar el turno para que ocupe una franja horaria bloqueada');
       return;
     }
 
@@ -891,7 +953,7 @@ export default function AgendaPage() {
       )}
 
       {selectedEvent && (
-        <Modal open={!!selectedEvent} onClose={() => setSelectedEvent(null)} title={selectedEvent.isBirthday ? "Cumpleaños" : "Detalle de turno"} maxWidth="max-w-2xl">
+        <Modal open={!!selectedEvent} onClose={() => setSelectedEvent(null)} title={selectedEvent.isBirthday ? "Cumpleaños" : selectedEvent.isBlocked ? "Franja bloqueada" : "Detalle de turno"} maxWidth="max-w-2xl">
           {selectedEvent.isBirthday ? (
             <div className="space-y-4 text-center">
               <div className="text-6xl">🎂</div>
@@ -909,6 +971,46 @@ export default function AgendaPage() {
               >
                 Cerrar
               </button>
+            </div>
+          ) : selectedEvent.isBlocked ? (
+            <div className="space-y-4">
+              <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-200 dark:border-red-800">
+                <div className="text-center mb-4">
+                  <div className="text-6xl mb-3">🚫</div>
+                  <h3 className="text-xl font-bold text-elegant-900 dark:text-white mb-2">
+                    {selectedEvent.reason}
+                  </h3>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2 text-elegant-700 dark:text-elegant-200">
+                    <Calendar className="w-4 h-4" />
+                    <span className="font-semibold">Fecha:</span>
+                    <span>{format(selectedEvent.start, "d 'de' MMMM yyyy", { locale: es })}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-elegant-700 dark:text-elegant-200">
+                    <Clock className="w-4 h-4" />
+                    <span className="font-semibold">Horario:</span>
+                    <span>{format(selectedEvent.start, 'HH:mm')} - {format(selectedEvent.end, 'HH:mm')}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setSelectedEvent(null)}
+                  className="btn-secondary flex-1"
+                >
+                  Cerrar
+                </button>
+                <button
+                  onClick={() => {
+                    removeBlock(selectedEvent.blockedSlotId);
+                    setSelectedEvent(null);
+                  }}
+                  className="btn-danger flex-1"
+                >
+                  Eliminar bloqueo
+                </button>
+              </div>
             </div>
           ) : (
             <div className="space-y-6">
