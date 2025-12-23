@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCalendarSync } from '@/contexts/CalendarSyncContext';
 import { createAppointment, updateAppointment, getOverlappingAppointments } from '@/lib/appointments';
 import { getBlockedSlotsInRange } from '@/lib/blockedSlots';
+import { createPayment } from '@/lib/payments';
 import { useState, useEffect, ChangeEvent } from 'react';
 import { Appointment, UserProfile } from '@/types';
 import { useToast } from '@/contexts/ToastContext';
@@ -216,8 +217,26 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
           await updateAppointment(id, { googleCalendarEventId: eventId });
         }
 
+        // Si hay seña, crear un pago automáticamente
+        if (values.deposit && values.deposit > 0) {
+          console.log('[AppointmentForm] Creando pago de seña:', values.deposit);
+          await createPayment({
+            appointmentId: id,
+            patientId: values.patientId as unknown as string,
+            patientName: selected ? `${selected.lastName} ${selected.firstName}` : (values.patientName || ''),
+            amount: values.deposit,
+            method: 'cash',
+            status: 'completed',
+            date: new Date().toISOString(),
+            consultationType: values.type,
+            notes: 'Seña del turno',
+            userId: values.professionalId,
+          });
+          console.log('[AppointmentForm] Pago de seña creado exitosamente');
+        }
+
         console.log('[AppointmentForm] Turno creado exitosamente con ID:', id);
-        toast.success('Turno creado');
+        toast.success(values.deposit && values.deposit > 0 ? 'Turno creado y seña registrada' : 'Turno creado');
         await refreshAppointments();
         reset();
         onCreated?.(created);
