@@ -56,6 +56,8 @@ export const AppointmentsProvider = ({ children }: { children: React.ReactNode }
 
   // Auto-refresh cuando la ventana vuelve al foco
   useEffect(() => {
+    if (!user || !userProfile) return;
+
     const handleFocus = () => {
       console.log('[AppointmentsContext] Window focused, refreshing data');
       refreshAppointments();
@@ -75,7 +77,8 @@ export const AppointmentsProvider = ({ children }: { children: React.ReactNode }
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [refreshAppointments]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, userProfile?.role]);
 
   return (
     <AppointmentsContext.Provider value={{ appointments, loading, refreshAppointments }}>
