@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAppointmentsByUser, getAllAppointments } from "@/lib/appointments";
 import { Appointment } from "@/types";
@@ -18,6 +18,7 @@ export const AppointmentsProvider = ({ children }: { children: React.ReactNode }
   const { user, userProfile } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(false);
+  const refreshRef = useRef<() => Promise<Appointment[]>>();
 
   const refreshAppointments = useCallback(async () => {
     if (!user || !userProfile) {
@@ -47,6 +48,11 @@ export const AppointmentsProvider = ({ children }: { children: React.ReactNode }
     }
   }, [user, userProfile]);
 
+  // Mantener referencia actualizada
+  useEffect(() => {
+    refreshRef.current = refreshAppointments;
+  }, [refreshAppointments]);
+
   useEffect(() => {
     if (user && userProfile) {
       refreshAppointments();
@@ -56,17 +62,15 @@ export const AppointmentsProvider = ({ children }: { children: React.ReactNode }
 
   // Auto-refresh cuando la ventana vuelve al foco
   useEffect(() => {
-    if (!user || !userProfile) return;
-
     const handleFocus = () => {
       console.log('[AppointmentsContext] Window focused, refreshing data');
-      refreshAppointments();
+      refreshRef.current?.();
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         console.log('[AppointmentsContext] Tab visible, refreshing data');
-        refreshAppointments();
+        refreshRef.current?.();
       }
     };
 
@@ -77,8 +81,7 @@ export const AppointmentsProvider = ({ children }: { children: React.ReactNode }
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid, userProfile?.role]);
+  }, []);
 
   return (
     <AppointmentsContext.Provider value={{ appointments, loading, refreshAppointments }}>
