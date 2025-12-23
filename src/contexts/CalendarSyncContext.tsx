@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { createAppointment, deleteAppointment, updateAppointment } from '@/lib/appointments';
@@ -45,6 +45,7 @@ export function CalendarSyncProvider({ children }: Props) {
   const [isConnected, setIsConnected] = useState(false);
   const [isTokenExpired, setIsTokenExpired] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const syncingRef = useRef(false);
 
   if (!CALENDAR_ENABLED) {
     return (
@@ -120,8 +121,9 @@ export function CalendarSyncProvider({ children }: Props) {
   };
 
   const syncFromGoogleCalendar = useCallback(async () => {
-    if (!user || syncing || !isConnected) return;
+    if (!user || syncingRef.current || !isConnected) return;
 
+    syncingRef.current = true;
     setSyncing(true);
     try {
       const now = new Date();
@@ -244,9 +246,10 @@ export function CalendarSyncProvider({ children }: Props) {
     } catch (error) {
       console.error('[CalendarSync] Error sincronizando desde Google:', error);
     } finally {
+      syncingRef.current = false;
       setSyncing(false);
     }
-  }, [user, syncing, isConnected, refreshAppointments, getAuthHeader]);
+  }, [user, isConnected, refreshAppointments, getAuthHeader]);
 
   useEffect(() => {
     if (!isConnected) return;
