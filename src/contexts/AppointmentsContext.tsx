@@ -48,8 +48,11 @@ export const AppointmentsProvider = ({ children }: { children: React.ReactNode }
   }, [user, userProfile]);
 
   useEffect(() => {
-    refreshAppointments();
-  }, [refreshAppointments]);
+    if (user && userProfile) {
+      refreshAppointments();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, userProfile?.role]);
 
   // Auto-refresh cuando la ventana vuelve al foco
   useEffect(() => {
