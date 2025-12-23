@@ -248,6 +248,25 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
     }
   };
 
+  // Generar opciones de horario desde 10:00 hasta 19:30 en intervalos de 15 minutos
+  const generateTimeOptions = () => {
+    const options = [];
+    const startHour = 10;
+    const endHour = 19;
+    const endMinute = 30;
+
+    for (let hour = startHour; hour <= endHour; hour++) {
+      for (let minute = 0; minute < 60; minute += 15) {
+        // Si es la última hora (19), solo permitir hasta 19:30
+        if (hour === endHour && minute > endMinute) break;
+
+        const timeString = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+        options.push(timeString);
+      }
+    }
+    return options;
+  };
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -321,7 +340,12 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Hora</label>
-            <input type="time" className="input-field" {...register('startTime')} />
+            <select className="input-field" {...register('startTime')}>
+              <option value="">Selecciona una hora</option>
+              {generateTimeOptions().map(time => (
+                <option key={time} value={time}>{time}</option>
+              ))}
+            </select>
             {errors.startTime && <p className="text-red-600 text-xs mt-1">{errors.startTime.message}</p>}
           </div>
           <div>
