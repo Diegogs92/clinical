@@ -27,7 +27,6 @@ const schema = z.object({
     message: 'Selecciona una duración válida'
   }).default(45),
   type: z.enum(['odontologia-general', 'ortodoncia', 'endodoncia', 'armonizacion']).default('odontologia-general'),
-  sessionType: z.enum(['normal', 'estetica']).default('normal'),
   fee: z.coerce.number().optional(),
   deposit: z.coerce.number().optional(),
   notes: z.string().optional(),
@@ -58,7 +57,6 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       type: (initialData?.type && ['odontologia-general', 'ortodoncia', 'endodoncia', 'armonizacion'].includes(initialData.type)
         ? initialData.type
         : 'odontologia-general') as 'odontologia-general' | 'ortodoncia' | 'endodoncia' | 'armonizacion',
-      sessionType: initialData?.sessionType || 'normal',
       fee: initialData?.fee || undefined,
       deposit: initialData?.deposit || undefined,
       patientId: initialData?.patientId || '',
@@ -172,7 +170,6 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         duration: values.duration,
         status: initialData?.status || 'scheduled',
         type: values.type,
-        sessionType: values.sessionType,
         fee: values.fee,
         deposit: values.deposit,
         notes: values.notes,
@@ -374,33 +371,6 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
             <option value="armonizacion">Armonización</option>
           </select>
           {errors.type && <p className="text-red-600 text-xs mt-1">{errors.type.message}</p>}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-2">Tipo de Sesión</label>
-          <div className="grid grid-cols-2 gap-3">
-            <label className={`flex items-center justify-center gap-2 p-3 border-2 rounded-lg cursor-pointer transition-all ${
-              watch('sessionType') === 'normal'
-                ? 'border-primary bg-primary/10 dark:bg-primary/20'
-                : 'border-secondary-lighter dark:border-gray-600 hover:border-primary/50'
-            }`}>
-              <input type="radio" value="normal" {...register('sessionType')} className="sr-only" />
-              <span className={`text-sm font-medium ${watch('sessionType') === 'normal' ? 'text-primary dark:text-white' : 'text-secondary dark:text-gray-400'}`}>
-                Normal
-              </span>
-            </label>
-
-            <label className={`flex items-center justify-center gap-2 p-3 border-2 rounded-lg cursor-pointer transition-all ${
-              watch('sessionType') === 'estetica'
-                ? 'border-primary bg-primary/10 dark:bg-primary/20'
-                : 'border-secondary-lighter dark:border-gray-600 hover:border-primary/50'
-            }`}>
-              <input type="radio" value="estetica" {...register('sessionType')} className="sr-only" />
-              <span className={`text-sm font-medium ${watch('sessionType') === 'estetica' ? 'text-primary dark:text-white' : 'text-secondary dark:text-gray-400'}`}>
-                Estética
-              </span>
-            </label>
-          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
