@@ -77,6 +77,9 @@ export interface Appointment {
   isRecurrent?: boolean;
   recurrenceRule?: RecurrenceRule;
   googleCalendarEventId?: string; // ID del evento en Google Calendar
+  followUpMonths?: number; // Meses para recordar seguimiento (1, 3, 6, 12)
+  followUpReason?: string; // Motivo del seguimiento
+  followUpDate?: string; // Fecha calculada para el seguimiento
   createdAt: string;
   updatedAt: string;
   userId: string; // Professional ID

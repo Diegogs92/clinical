@@ -31,6 +31,8 @@ const schema = z.object({
   fee: z.coerce.number().optional(),
   deposit: z.coerce.number().optional(),
   notes: z.string().optional(),
+  followUpMonths: z.coerce.number().optional(),
+  followUpReason: z.string().optional(),
 });
 
 export type AppointmentFormValues = z.infer<typeof schema>;
@@ -65,6 +67,8 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       date: initialData?.date ? initialData.date.split('T')[0] : '',
       startTime: initialData?.startTime || '',
       notes: initialData?.notes || '',
+      followUpMonths: initialData?.followUpMonths || undefined,
+      followUpReason: initialData?.followUpReason || '',
     },
   });
 
@@ -162,6 +166,14 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       const selected = patients.find(p => p.id === (values.patientId as unknown as string));
       const selectedProfessional = professionals.find(p => p.uid === values.professionalId);
 
+      // Calcular fecha de seguimiento si se especificó
+      let followUpDate: string | undefined = undefined;
+      if (values.followUpMonths && values.followUpMonths > 0) {
+        const appointmentDate = new Date(startDate);
+        appointmentDate.setMonth(appointmentDate.getMonth() + values.followUpMonths);
+        followUpDate = appointmentDate.toISOString();
+      }
+
       const payload = {
         patientId: values.patientId as unknown as string,
         patientName: selected ? `${selected.lastName} ${selected.firstName}` : (values.patientName || ''),
@@ -174,6 +186,9 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         fee: values.fee,
         deposit: values.deposit,
         notes: values.notes,
+        followUpMonths: values.followUpMonths,
+        followUpReason: values.followUpReason,
+        followUpDate: followUpDate,
         userId: values.professionalId,
         professionalName: selectedProfessional?.displayName || '',
         appointmentType: 'patient', // Siempre es tipo paciente en este formulario
@@ -404,6 +419,31 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Notas</label>
             <textarea className="input-field resize-none" placeholder="Indicaciones..." {...register('notes')} />
+          </div>
+        </div>
+
+        <div className="border-t border-elegant-200 dark:border-gray-700 pt-4 mt-4">
+          <h4 className="text-sm font-semibold text-primary-dark dark:text-white mb-3">Recordatorio de Seguimiento</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Recordar en</label>
+              <select className="input-field" {...register('followUpMonths', { valueAsNumber: true })}>
+                <option value="">Sin recordatorio</option>
+                <option value="1">1 mes</option>
+                <option value="3">3 meses</option>
+                <option value="6">6 meses</option>
+                <option value="12">12 meses</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Motivo del seguimiento</label>
+              <input
+                type="text"
+                className="input-field"
+                placeholder="Ej: Control de ortodoncia, Limpieza, etc."
+                {...register('followUpReason')}
+              />
+            </div>
           </div>
         </div>
 
