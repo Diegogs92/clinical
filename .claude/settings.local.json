@@ -24,7 +24,9 @@
       "Bash(vercel --version:*)",
       "Bash(node scripts/generate-icons.js:*)",
       "Bash(timeout /t 5)",
-      "Bash(vercel env:*)"
+      "Bash(vercel env:*)",
+      "Bash(temp_client_id.txt)",
+      "Bash(node scripts/check-oauth-config.js:*)"
     ],
     "deny": [],
     "ask": []

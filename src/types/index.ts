@@ -234,3 +234,11 @@ export interface SchedulePreference {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface FollowUpReason {
+  id: string;
+  label: string;
+  userId: string; // Professional ID
+  createdAt: string;
+  updatedAt: string;
+}

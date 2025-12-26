@@ -123,6 +123,18 @@ service cloud.firestore {
       allow delete: if signedIn() && isAdmin() && isOwner(resource.data.userId);
     }
 
+    // Follow-up reasons
+    match /followUpReasons/{reasonId} {
+      allow read: if signedIn() && (isAdmin() || isSecretary() || isOwner(resource.data.userId));
+      allow create: if signedIn() && (
+        isAdmin() ||
+        isSecretary() ||
+        (isProfessional() && request.resource.data.userId == request.auth.uid)
+      );
+      allow update: if signedIn() && (isAdmin() || isSecretary() || isOwner(resource.data.userId));
+      allow delete: if signedIn() && (isAdmin() || isOwner(resource.data.userId));
+    }
+
     // Pending users (invitaciones)
     match /pendingUsers/{email} {
       // Admin puede crear invitaciones

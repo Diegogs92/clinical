@@ -9,7 +9,7 @@ import { createAppointment, updateAppointment, getOverlappingAppointments } from
 import { getBlockedSlotsInRange } from '@/lib/blockedSlots';
 import { createPayment } from '@/lib/payments';
 import { useState, useEffect, ChangeEvent } from 'react';
-import { Appointment, UserProfile } from '@/types';
+import { Appointment, UserProfile, FollowUpReason } from '@/types';
 import { useToast } from '@/contexts/ToastContext';
 import Modal from '@/components/ui/Modal';
 import PatientForm from '@/components/patients/PatientForm';
@@ -17,6 +17,7 @@ import { UserPlus, AlertTriangle } from 'lucide-react';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { listProfessionals } from '@/lib/users';
+import { listFollowUpReasons, createFollowUpReason } from '@/lib/followUpReasons';
 
 const schema = z.object({
   patientId: z.string().min(1, 'Selecciona un paciente'),
@@ -52,6 +53,9 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
   const [showQuickPatient, setShowQuickPatient] = useState(false);
   const [professionals, setProfessionals] = useState<UserProfile[]>([]);
   const [loadingProfessionals, setLoadingProfessionals] = useState(false);
+  const [followUpReasons, setFollowUpReasons] = useState<FollowUpReason[]>([]);
+  const [loadingFollowUpReasons, setLoadingFollowUpReasons] = useState(false);
+  const [savingFollowUpReason, setSavingFollowUpReason] = useState(false);
   const toast = useToast();
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<AppointmentFormValues>({
     resolver: zodResolver(schema),
@@ -71,6 +75,50 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       followUpReason: initialData?.followUpReason || '',
     },
   });
+
+  const normalizeReason = (value: string) => value.trim().toLowerCase();
+
+  const saveFollowUpReason = async (reason: string, reasonUserId: string, showFeedback: boolean) => {
+    const trimmed = reason.trim();
+    if (!trimmed) {
+      if (showFeedback) {
+        toast.error('Ingresa un motivo para guardar');
+      }
+      return;
+    }
+
+    const alreadyExists = followUpReasons.some(item => normalizeReason(item.label) === normalizeReason(trimmed));
+    if (alreadyExists) {
+      if (showFeedback) {
+        toast.info('El motivo ya existe');
+      }
+      return;
+    }
+
+    try {
+      if (showFeedback) {
+        setSavingFollowUpReason(true);
+      }
+      const id = await createFollowUpReason(reasonUserId, trimmed);
+      const now = new Date().toISOString();
+      setFollowUpReasons(prev => (
+        [...prev, { id, label: trimmed, userId: reasonUserId, createdAt: now, updatedAt: now }]
+          .sort((a, b) => a.label.localeCompare(b.label))
+      ));
+      if (showFeedback) {
+        toast.success('Motivo guardado');
+      }
+    } catch (error) {
+      console.error('[AppointmentForm] Error saving follow-up reason:', error);
+      if (showFeedback) {
+        toast.error('No se pudo guardar el motivo');
+      }
+    } finally {
+      if (showFeedback) {
+        setSavingFollowUpReason(false);
+      }
+    }
+  };
 
   const onSubmit = async (values: AppointmentFormValues) => {
     if (!user) {
@@ -220,6 +268,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         console.log('[AppointmentForm] Turno actualizado exitosamente');
         toast.success('Turno actualizado');
         await refreshAppointments();
+        await saveFollowUpReason(values.followUpReason || '', values.professionalId, false);
         reset();
         onCreated?.(updated);
       } else {
@@ -251,8 +300,9 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         }
 
         console.log('[AppointmentForm] Turno creado exitosamente con ID:', id);
-        toast.success(values.deposit && values.deposit > 0 ? 'Turno creado y seña registrada' : 'Turno creado');
+        toast.success(values.deposit && values.deposit > 0 ? 'Turno creado y sena registrada' : 'Turno creado');
         await refreshAppointments();
+        await saveFollowUpReason(values.followUpReason || '', values.professionalId, false);
         reset();
         onCreated?.(created);
       }
@@ -326,6 +376,40 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       setValue('professionalId', user.uid);
     }
   }, [selectedProfessionalId, user, setValue]);
+
+  useEffect(() => {
+    const reasonUserId = selectedProfessionalId || user?.uid;
+    if (!reasonUserId) return;
+    let active = true;
+
+    const loadReasons = async () => {
+      try {
+        setLoadingFollowUpReasons(true);
+        const list = await listFollowUpReasons(reasonUserId);
+        if (active) {
+          setFollowUpReasons(list);
+        }
+      } catch (error) {
+        console.error('[AppointmentForm] Error loading follow-up reasons:', error);
+        toast.error('No se pudieron cargar los motivos de seguimiento');
+      } finally {
+        if (active) {
+          setLoadingFollowUpReasons(false);
+        }
+      }
+    };
+
+    loadReasons();
+    return () => {
+      active = false;
+    };
+  }, [selectedProfessionalId, user?.uid, toast]);
+
+  const handleSaveFollowUpReason = async () => {
+    const reasonUserId = selectedProfessionalId || user?.uid;
+    if (!reasonUserId) return;
+    await saveFollowUpReason(watch('followUpReason') || '', reasonUserId, true);
+  };
 
   return (
     <>
@@ -426,23 +510,42 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
           <h4 className="text-sm font-semibold text-primary-dark dark:text-white mb-3">Recordatorio de Seguimiento</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Recordar en</label>
-              <select className="input-field" {...register('followUpMonths', { valueAsNumber: true })}>
-                <option value="">Sin recordatorio</option>
-                <option value="1">1 mes</option>
-                <option value="3">3 meses</option>
-                <option value="6">6 meses</option>
-                <option value="12">12 meses</option>
-              </select>
+              <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Recordar en (meses)</label>
+              <input
+                type="number"
+                className="input-field"
+                placeholder="Número de meses"
+                min="0"
+                {...register('followUpMonths', { valueAsNumber: true })}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Motivo del seguimiento</label>
-              <input
-                type="text"
-                className="input-field"
-                placeholder="Ej: Control de ortodoncia, Limpieza, etc."
-                {...register('followUpReason')}
-              />
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  list="follow-up-reasons"
+                  className="input-field flex-1"
+                  placeholder="Ej: Control de ortodoncia, Limpieza, etc."
+                  {...register('followUpReason')}
+                />
+                <button
+                  type="button"
+                  onClick={handleSaveFollowUpReason}
+                  className="btn-secondary text-xs px-3 py-2 whitespace-nowrap"
+                  disabled={savingFollowUpReason}
+                >
+                  {savingFollowUpReason ? 'Guardando...' : 'Guardar motivo'}
+                </button>
+              </div>
+              <datalist id="follow-up-reasons">
+                {followUpReasons.map(reason => (
+                  <option key={reason.id} value={reason.label} />
+                ))}
+              </datalist>
+              {loadingFollowUpReasons && (
+                <p className="text-xs text-gray-500 mt-1">Cargando motivos guardados...</p>
+              )}
             </div>
           </div>
         </div>
