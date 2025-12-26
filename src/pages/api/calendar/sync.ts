@@ -65,9 +65,54 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ? `🔒 ${appointment.title || 'Evento Personal'}`
       : `👤 Turno: ${appointment.patientName || 'Sin nombre'}`;
 
+    // Construir descripción con información de pago y tratamiento
+    const buildDescription = () => {
+      if (isPersonalEvent) {
+        return appointment.notes || '';
+      }
+
+      const parts: string[] = [];
+
+      // Agregar tratamiento
+      if (appointment.type) {
+        const treatmentNames: { [key: string]: string } = {
+          'odontologia-general': 'Odontología General',
+          'ortodoncia': 'Ortodoncia',
+          'endodoncia': 'Endodoncia',
+          'armonizacion': 'Armonización'
+        };
+        const treatmentName = treatmentNames[appointment.type] || appointment.type;
+        parts.push(`Tratamiento: ${treatmentName}`);
+      }
+
+      // Calcular monto pendiente
+      const fee = appointment.fee || 0;
+      const deposit = appointment.deposit || 0;
+      const pending = fee - deposit;
+
+      if (fee > 0) {
+        parts.push(`Honorarios: $${fee.toLocaleString('es-AR')}`);
+        if (deposit > 0) {
+          parts.push(`Seña: $${deposit.toLocaleString('es-AR')}`);
+        }
+        if (pending > 0) {
+          parts.push(`Pendiente: $${pending.toLocaleString('es-AR')}`);
+        } else if (pending === 0 && fee > 0) {
+          parts.push('Estado: Pagado ✓');
+        }
+      }
+
+      // Agregar notas si existen
+      if (appointment.notes) {
+        parts.push(`\nNotas: ${appointment.notes}`);
+      }
+
+      return parts.join('\n');
+    };
+
     const event: any = {
       summary: eventSummary,
-      description: appointment.notes || '',
+      description: buildDescription(),
       extendedProperties: {
         private: {
           appointmentId: appointment.id,
