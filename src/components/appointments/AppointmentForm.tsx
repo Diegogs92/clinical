@@ -444,63 +444,67 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-sm font-semibold text-primary-dark dark:text-white">Paciente</label>
-            <button
-              type="button"
-              onClick={() => setShowQuickPatient(true)}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary-dark dark:text-primary-light transition active:scale-95"
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {/* Paciente y Profesional */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-primary-dark dark:text-white">Paciente</label>
+              <button
+                type="button"
+                onClick={() => setShowQuickPatient(true)}
+                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark dark:text-primary-light transition"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                Nuevo
+              </button>
+            </div>
+            <select
+              className="input-field"
+              value={watch('patientId')}
+              onChange={handlePatientSelect}
             >
-              <UserPlus className="w-3.5 h-3.5" />
-              Nuevo
-            </button>
+              <option value="">Selecciona un paciente</option>
+              {patients.map(p => (
+                <option key={p.id} value={p.id}>{p.lastName} {p.firstName} · DNI {p.dni}</option>
+              ))}
+              <option value="__new">+ Crear nuevo paciente</option>
+            </select>
+            {errors.patientId && <p className="text-red-600 text-xs mt-0.5">{errors.patientId.message as string}</p>}
           </div>
-          <select
-            className="input-field"
-            value={watch('patientId')}
-            onChange={handlePatientSelect}
-          >
-            <option value="">Selecciona un paciente</option>
-            {patients.map(p => (
-              <option key={p.id} value={p.id}>{p.lastName} {p.firstName} · DNI {p.dni}</option>
-            ))}
-            <option value="__new">+ Crear nuevo paciente</option>
-          </select>
-          {errors.patientId && <p className="text-red-600 text-xs mt-1">{errors.patientId.message as string}</p>}
-        </div>
 
-        <div>
-          <label className="block text-sm font-semibold text-primary-dark dark:text-white mb-1.5">Profesional</label>
-          <select className="input-field" {...register('professionalId')}>
-            <option value="">Selecciona un profesional</option>
-            {loadingProfessionals && <option value="">Cargando...</option>}
-            {professionals.map(prof => (
-              <option key={prof.uid} value={prof.uid}>{prof.displayName || prof.email}</option>
-            ))}
-          </select>
-          {errors.professionalId && <p className="text-red-600 text-xs mt-1">{errors.professionalId.message as string}</p>}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           <div>
-            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Fecha</label>
+            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Profesional</label>
+            <select className="input-field" {...register('professionalId')}>
+              <option value="">Selecciona un profesional</option>
+              {loadingProfessionals && <option value="">Cargando...</option>}
+              {professionals.map(prof => (
+                <option key={prof.uid} value={prof.uid}>{prof.displayName || prof.email}</option>
+              ))}
+            </select>
+            {errors.professionalId && <p className="text-red-600 text-xs mt-0.5">{errors.professionalId.message as string}</p>}
+          </div>
+        </div>
+
+        {/* Fecha, Hora y Duración */}
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Fecha</label>
             <input type="date" className="input-field" {...register('date')} />
-            {errors.date && <p className="text-red-600 text-xs mt-1">{errors.date.message}</p>}
+            {errors.date && <p className="text-red-600 text-xs mt-0.5">{errors.date.message}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Hora</label>
+            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Hora</label>
             <select className="input-field" {...register('startTime')}>
-              <option value="">Selecciona una hora</option>
+              <option value="">Hora</option>
               {generateTimeOptions().map(time => (
                 <option key={time} value={time}>{time}</option>
               ))}
             </select>
-            {errors.startTime && <p className="text-red-600 text-xs mt-1">{errors.startTime.message}</p>}
+            {errors.startTime && <p className="text-red-600 text-xs mt-0.5">{errors.startTime.message}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Duración</label>
+            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Duración</label>
             <select className="input-field" {...register('duration', { valueAsNumber: true })}>
               <option value="45">45 min</option>
               <option value="60">60 min</option>
@@ -511,24 +515,24 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Tipo de Tratamiento</label>
-          <select className="input-field" {...register('type')}>
-            <option value="odontologia-general">Odontología General</option>
-            <option value="ortodoncia">Ortodoncia</option>
-            <option value="endodoncia">Endodoncia</option>
-            <option value="armonizacion">Armonización</option>
-          </select>
-          {errors.type && <p className="text-red-600 text-xs mt-1">{errors.type.message}</p>}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+        {/* Tipo y Honorarios */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
-            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Honorarios</label>
+            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Tratamiento</label>
+            <select className="input-field" {...register('type')}>
+              <option value="odontologia-general">Odontología General</option>
+              <option value="ortodoncia">Ortodoncia</option>
+              <option value="endodoncia">Endodoncia</option>
+              <option value="armonizacion">Armonización</option>
+            </select>
+            {errors.type && <p className="text-red-600 text-xs mt-0.5">{errors.type.message}</p>}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Honorarios</label>
             <input type="number" className="input-field" placeholder="0" {...register('fee', { valueAsNumber: true })} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Seña</label>
+            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Seña</label>
             <input
               type="number"
               className="input-field"
@@ -536,10 +540,10 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
               disabled={noDeposit}
               {...register('deposit', { valueAsNumber: true })}
             />
-            <label className="mt-1 inline-flex items-center gap-2 text-xs text-gray-500">
+            <label className="mt-1 inline-flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
               <input
                 type="checkbox"
-                className="accent-primary"
+                className="accent-primary cursor-pointer"
                 checked={noDeposit}
                 onChange={(event) => {
                   const checked = event.target.checked;
@@ -550,36 +554,43 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
               Sin seña
             </label>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Notas</label>
-            <textarea className="input-field resize-none" placeholder="Indicaciones..." {...register('notes')} />
-          </div>
         </div>
 
-        <div className="border-t border-elegant-200 dark:border-gray-700 pt-4 mt-4">
-          <h4 className="text-sm font-semibold text-primary-dark dark:text-white mb-3">Recordatorio de Seguimiento</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        {/* Notas */}
+        <div>
+          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Notas</label>
+          <textarea className="input-field resize-none h-16" placeholder="Indicaciones o comentarios adicionales..." {...register('notes')} />
+        </div>
+
+        {/* Seguimiento (colapsable/minimalista) */}
+        <details className="group">
+          <summary className="text-sm font-medium text-primary-dark dark:text-white cursor-pointer list-none flex items-center gap-2">
+            <svg className="w-4 h-4 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+            Recordatorio de Seguimiento
+          </summary>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 pl-6">
             <div>
-              <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Recordar en (meses)</label>
+              <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Recordar en (meses)</label>
               <input
                 type="number"
                 className="input-field"
-                placeholder="Numero de meses"
+                placeholder="0"
                 min="0"
                 {...register('followUpMonths', { valueAsNumber: true })}
               />
-              <p className="text-xs text-gray-500 mt-1">Usa 0 para no crear recordatorio.</p>
             </div>
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-sm font-medium text-primary-dark dark:text-white">Motivo del seguimiento</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-primary-dark dark:text-white">Motivo</label>
                 <button
                   type="button"
                   onClick={() => {
                     setNewFollowUpReason('');
                     setShowFollowUpReasonModal(true);
                   }}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary-dark dark:text-primary-light transition active:scale-95"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark dark:text-primary-light transition"
                 >
                   Nuevo
                 </button>
@@ -591,12 +602,14 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
                 ))}
               </select>
               {loadingFollowUpReasons && (
-                <p className="text-xs text-gray-500 mt-1">Cargando motivos guardados...</p>
+                <p className="text-xs text-gray-500 mt-0.5">Cargando...</p>
               )}
             </div>
           </div>
-        </div>
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-end gap-2 pt-2">
+        </details>
+
+        {/* Botones */}
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-elegant-200 dark:border-gray-700">
           <button type="button" onClick={onCancel} className="btn-secondary">Cancelar</button>
           <button disabled={loading} className="btn-primary disabled:opacity-50">
             {loading ? 'Guardando...' : (initialData ? 'Actualizar' : 'Crear')}
