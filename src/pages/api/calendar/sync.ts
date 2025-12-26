@@ -4,6 +4,7 @@ import { Appointment } from '@/types';
 import { combineDateAndTime } from '@/lib/dateUtils';
 import { requireUserId } from '@/lib/serverAuth';
 import { getOAuthClient, getRefreshToken } from '@/lib/googleCalendarAuth';
+import { listPaymentsByAppointment } from '@/lib/payments';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -66,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       : `👤 Turno: ${appointment.patientName || 'Sin nombre'}`;
 
     // Construir descripción con información de pago y tratamiento
-    const buildDescription = () => {
+    const buildDescription = async () => {
       if (isPersonalEvent) {
         return appointment.notes || '';
       }
@@ -85,19 +86,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         parts.push(`Tratamiento: ${treatmentName}`);
       }
 
-      // Calcular monto pendiente
+      // Calcular monto pendiente incluyendo pagos registrados
       const fee = appointment.fee || 0;
       const deposit = appointment.deposit || 0;
-      const pending = fee - deposit;
+
+      // Obtener pagos registrados para este turno
+      let paymentsTotal = 0;
+      try {
+        const appointmentPayments = await listPaymentsByAppointment(appointment.id);
+        paymentsTotal = appointmentPayments
+          .filter(p => p.status === 'completed' || p.status === 'pending')
+          .reduce((sum, p) => sum + p.amount, 0);
+      } catch (error) {
+        console.error('[calendar/sync] Error obteniendo pagos:', error);
+      }
+
+      const totalPaid = deposit + paymentsTotal;
+      const pending = Math.max(0, fee - totalPaid);
 
       if (fee > 0) {
         parts.push(`Honorarios: $${fee.toLocaleString('es-AR')}`);
         if (deposit > 0) {
           parts.push(`Seña: $${deposit.toLocaleString('es-AR')}`);
         }
+        if (paymentsTotal > 0) {
+          parts.push(`Pagos: $${paymentsTotal.toLocaleString('es-AR')}`);
+        }
         if (pending > 0) {
           parts.push(`Pendiente: $${pending.toLocaleString('es-AR')}`);
-        } else if (pending === 0 && fee > 0) {
+        } else if (totalPaid >= fee) {
           parts.push('Estado: Pagado ✓');
         }
       }
@@ -112,7 +129,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const event: any = {
       summary: eventSummary,
-      description: buildDescription(),
+      description: await buildDescription(),
       extendedProperties: {
         private: {
           appointmentId: appointment.id,

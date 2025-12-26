@@ -293,26 +293,8 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
           await updateAppointment(id, { googleCalendarEventId: eventId });
         }
 
-        // Si hay seña, crear un pago automáticamente
-        if (values.deposit && values.deposit > 0) {
-          console.log('[AppointmentForm] Creando pago de seña:', values.deposit);
-          await createPayment({
-            appointmentId: id,
-            patientId: values.patientId as unknown as string,
-            patientName: selected ? `${selected.lastName} ${selected.firstName}` : (values.patientName || ''),
-            amount: values.deposit,
-            method: 'cash',
-            status: 'completed',
-            date: new Date().toISOString(),
-            consultationType: values.type,
-            notes: 'Seña del turno',
-            userId: values.professionalId,
-          });
-          console.log('[AppointmentForm] Pago de seña creado exitosamente');
-        }
-
         console.log('[AppointmentForm] Turno creado exitosamente con ID:', id);
-        toast.success(values.deposit && values.deposit > 0 ? 'Turno creado y sena registrada' : 'Turno creado');
+        toast.success(values.deposit && values.deposit > 0 ? 'Turno creado con seña registrada' : 'Turno creado');
         await refreshAppointments();
         await saveFollowUpReason(values.followUpReason || '', values.professionalId, false);
         reset();

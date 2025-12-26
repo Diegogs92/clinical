@@ -188,21 +188,22 @@ export default function DashboardPage() {
   const paymentStateFor = useMemo(() => {
     return (appt: Appointment) => {
       if (!appt.fee) return { color: 'text-elegant-900 dark:text-white', status: 'none', remainingAmount: 0 };
+      const deposit = appt.deposit || 0;
       const completed = payments
         .filter(p => p.appointmentId === appt.id && p.status === 'completed')
         .reduce((sum, p) => sum + p.amount, 0);
       const pending = [...payments, ...pendingPayments]
         .filter(p => p.appointmentId === appt.id && p.status === 'pending')
         .reduce((sum, p) => sum + p.amount, 0);
-      const totalPaid = completed + pending;
+      const totalPaid = deposit + completed + pending;
       const remainingAmount = Math.max(0, (appt.fee || 0) - totalPaid);
       const end = combineDateAndTime(appt.date, appt.endTime);
       const past = end < now;
 
-      if (completed >= (appt.fee || 0)) {
+      if (totalPaid >= (appt.fee || 0)) {
         return { color: 'text-green-600 dark:text-green-400', status: 'paid', remainingAmount: 0 };
       }
-      if (completed > 0 || pending > 0) {
+      if (totalPaid > 0) {
         return { color: 'text-amber-500', status: 'partial', remainingAmount };
       }
       if (past) {
