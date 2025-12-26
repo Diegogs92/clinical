@@ -4,10 +4,13 @@ import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { usePayments } from '@/contexts/PaymentsContext';
 import { combineDateAndTime } from '@/lib/dateUtils';
+import AnimatedCounter from '@/components/ui/AnimatedCounter';
 
 interface Stat {
   label: string;
   value: string | number;
+  numericValue?: number;
+  isMonetary?: boolean;
   sub?: string;
   color?: string;
 }
@@ -77,24 +80,30 @@ export default function StatsOverview() {
     {
       label: 'Pacientes',
       value: patients.length,
+      numericValue: patients.length,
       sub: patients.length === 0 ? 'Sin registros' : `${patients.length} registrado${patients.length !== 1 ? 's' : ''}`,
       color: 'from-blue-500 to-blue-600'
     },
     {
       label: 'Turnos Hoy',
       value: todayAppointments.length,
+      numericValue: todayAppointments.length,
       sub: todayAppointments.length === 0 ? 'Sin turnos' : `${todayAppointments.length} turno${todayAppointments.length !== 1 ? 's' : ''}`,
       color: 'from-primary to-primary-light'
     },
     {
       label: 'Ingresos Mes',
       value: `$${monthlyIncome.toLocaleString()}`,
+      numericValue: monthlyIncome,
+      isMonetary: true,
       sub: `${payments.filter(p => (p.status === 'completed' || p.status === 'pending') && new Date(p.date).getMonth() === currentMonth && new Date(p.date).getFullYear() === currentYear).length} pago(s)`,
       color: 'from-green-500 to-green-600'
     },
     {
       label: 'Pendientes Cobro',
       value: `$${pendingSummary.amount.toLocaleString()}`,
+      numericValue: pendingSummary.amount,
+      isMonetary: true,
       sub: `${pendingSummary.count} pendiente${pendingSummary.count !== 1 ? 's' : ''}`,
       color: 'from-amber-500 to-amber-600'
     },
@@ -102,10 +111,11 @@ export default function StatsOverview() {
 
   return (
     <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4">
-      {stats.map(s => (
+      {stats.map((s, index) => (
         <div
           key={s.label}
-          className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-2xl p-4 md:p-6 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] md:hover:scale-105 hover:-translate-y-0.5 md:hover:-translate-y-1 cursor-pointer group backdrop-blur-lg"
+          className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-2xl p-4 md:p-6 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-2xl hover:scale-[1.02] md:hover:scale-105 hover:-translate-y-0.5 md:hover:-translate-y-1 cursor-pointer group backdrop-blur-lg"
+          style={{ animationDelay: `${index * 0.1}s` }}
         >
           <div className={`absolute inset-0 bg-gradient-to-br ${s.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
 
@@ -113,8 +123,16 @@ export default function StatsOverview() {
             <div className="text-[10px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1.5 md:mb-2 truncate">
               {s.label}
             </div>
-            <div className="text-2xl md:text-4xl font-bold text-black dark:text-white mb-1 md:mb-2 transition-all duration-300 group-hover:scale-110">
-              {s.value}
+            <div className="text-2xl md:text-4xl font-bold font-mono text-black dark:text-white mb-1 md:mb-2 transition-all duration-300 group-hover:scale-110">
+              {s.numericValue !== undefined ? (
+                s.isMonetary ? (
+                  <AnimatedCounter end={s.numericValue} prefix="$" duration={1200} />
+                ) : (
+                  <AnimatedCounter end={s.numericValue} duration={1000} />
+                )
+              ) : (
+                s.value
+              )}
             </div>
             {s.sub && (
               <div className="text-[10px] md:text-xs text-elegant-500 dark:text-elegant-400 font-medium truncate">

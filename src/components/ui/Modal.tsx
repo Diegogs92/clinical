@@ -47,8 +47,8 @@ export default function Modal({
       <div className="absolute inset-0" onClick={onClose} aria-label="Cerrar modal" />
 
       <div
-        className={`relative w-full ${maxWidth} max-h-[85vh] bg-white dark:bg-elegant-900 rounded-xl shadow-2xl border border-elegant-200 dark:border-elegant-800 overflow-hidden flex flex-col transition-all duration-200 ${
-          open ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+        className={`relative w-full ${maxWidth} max-h-[85vh] bg-white dark:bg-elegant-900 rounded-xl shadow-2xl border border-elegant-200 dark:border-elegant-800 overflow-hidden flex flex-col transition-all duration-300 transition-bounce-subtle ${
+          open ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4'
         }`}
       >
         <div className="flex-shrink-0 flex items-center justify-between gap-3 px-5 py-4 border-b border-elegant-200 dark:border-elegant-800">

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Plus_Jakarta_Sans } from 'next/font/google';
+import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import { ThemeProvider } from '@/contexts/ThemeContext';
@@ -19,6 +19,13 @@ const jakarta = Plus_Jakarta_Sans({
   display: 'swap',
   weight: ['400', '500', '600', '700'],
   variable: '--font-sans',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-mono',
 });
 
 export const metadata: Metadata = {
@@ -41,8 +48,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" suppressHydrationWarning className={jakarta.className}>
-      <body className="antialiased bg-pearl dark:bg-elegant-950 text-elegant-900 dark:text-elegant-50 min-h-screen">
+    <html lang="es" suppressHydrationWarning className={`${jakarta.variable} ${jetbrainsMono.variable}`}>
+      <body className="antialiased bg-pearl dark:bg-elegant-950 text-elegant-900 dark:text-elegant-50 min-h-screen font-sans">
         <ErrorBoundary>
           <ThemeProvider>
             <AuthProvider>

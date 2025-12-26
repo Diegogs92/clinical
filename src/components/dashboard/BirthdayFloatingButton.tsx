@@ -6,6 +6,7 @@ import { parseISO, startOfDay, endOfDay, addDays, isSameDay, isAfter, isBefore, 
 import { es } from 'date-fns/locale';
 import { Cake } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
+import IconWithBadge from '@/components/ui/IconWithBadge';
 
 interface BirthdayFloatingButtonProps {
   patients: Patient[];
@@ -48,17 +49,16 @@ export default function BirthdayFloatingButton({ patients }: BirthdayFloatingBut
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 bg-gradient-to-br from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-full p-4 shadow-2xl hover:shadow-pink-500/50 transition-all duration-300 hover:scale-110 z-50 flex items-center gap-3 group"
+        className="fixed bottom-6 right-6 bg-gradient-to-br from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-full p-4 shadow-2xl hover:shadow-pink-500/50 transition-all duration-200 transition-spring hover:scale-110 z-50 flex items-center gap-3 group"
         aria-label="Ver cumpleaños próximos"
       >
-        <div className="relative">
-          <Cake className="w-6 h-6" />
-          {upcomingBirthdays.length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-white text-pink-600 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-pink-500">
-              {upcomingBirthdays.length}
-            </span>
-          )}
-        </div>
+        <IconWithBadge
+          icon={Cake}
+          badge={upcomingBirthdays.length}
+          color="bg-white"
+          iconClassName="w-6 h-6"
+          badgeClassName="!text-pink-600 !border-pink-500"
+        />
         <span className="font-semibold hidden group-hover:inline-block animate-fade-in">
           Cumpleaños
         </span>
