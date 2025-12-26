@@ -8,13 +8,13 @@ import { useCalendarSync } from '@/contexts/CalendarSyncContext';
 import { createAppointment, updateAppointment, getOverlappingAppointments } from '@/lib/appointments';
 import { getBlockedSlotsInRange } from '@/lib/blockedSlots';
 import { createPayment } from '@/lib/payments';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { Appointment, UserProfile, FollowUpReason } from '@/types';
 import { useToast } from '@/hooks/useToast';
 import Modal from '@/components/ui/Modal';
 import PatientForm from '@/components/patients/PatientForm';
 import PatientSelect from '@/components/forms/PatientSelect';
-import CallyDatePicker from '@/components/forms/CallyDatePicker';
+import DateTimePicker from '@/components/forms/DateTimePicker';
 import CurrencyInput from '@/components/forms/CurrencyInput';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
@@ -46,7 +46,7 @@ interface Props {
   onCancel?: () => void;
 }
 
-export default function AppointmentForm({ initialData, onCreated, onCancel }: Props) {
+const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, onCancel }: Props) {
   const { user } = useAuth();
   const { syncAppointment } = useCalendarSync();
   const [loading, setLoading] = useState(false);
@@ -364,17 +364,15 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       }
     };
     load();
-  }, [toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Si no hay profesional seleccionado, usar el usuario actual como predeterminado
-  const professionalIdValue = watch('professionalId');
-  const selectedProfessionalId = useMemo(() => professionalIdValue, [professionalIdValue]);
-
   useEffect(() => {
-    if (!selectedProfessionalId && user?.uid) {
+    if (!initialData && user?.uid) {
       setValue('professionalId', user.uid);
     }
-  }, [selectedProfessionalId, user, setValue]);
+  }, [initialData, user?.uid, setValue]);
 
   useEffect(() => {
     if (!initialData) return;
@@ -384,7 +382,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
   }, [initialData]);
 
   useEffect(() => {
-    const reasonUserId = selectedProfessionalId || user?.uid;
+    const reasonUserId = user?.uid;
     if (!reasonUserId) return;
     let active = true;
 
@@ -409,10 +407,11 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
     return () => {
       active = false;
     };
-  }, [selectedProfessionalId, user?.uid, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid]);
 
   const handleAddFollowUpReason = async () => {
-    const reasonUserId = selectedProfessionalId || user?.uid;
+    const reasonUserId = user?.uid;
     if (!reasonUserId) return;
     const trimmed = newFollowUpReason.trim();
     if (!trimmed) {
@@ -479,7 +478,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
               name="date"
               control={control}
               render={({ field }) => (
-                <CallyDatePicker
+                <DateTimePicker
                   selected={field.value ? new Date(field.value) : null}
                   onChange={(date) => {
                     if (date) {
@@ -675,4 +674,6 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       </Modal>
     </>
   );
-}
+});
+
+export default AppointmentForm;
