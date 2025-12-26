@@ -4,6 +4,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 export const dynamic = 'force-dynamic';
 import DashboardLayout from '@/components/DashboardLayout';
 import StatsOverview from '@/components/dashboard/StatsOverview';
+import BirthdayFloatingButton from '@/components/dashboard/BirthdayFloatingButton';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -160,30 +161,6 @@ export default function DashboardPage() {
       })
       .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
   }, [appointments, filterPatient, filterStatus, search, windowRange.end, windowRange.start, professionals]);
-
-  const upcomingBirthdays = useMemo(() => {
-    const today = startOfDay(now);
-    const next7Days = endOfDay(addDays(now, 7));
-
-    return patients
-      .filter(patient => patient.birthDate)
-      .map(patient => {
-        const birthDate = parseISO(patient.birthDate!);
-        const currentYear = now.getFullYear();
-        const birthdayThisYear = new Date(currentYear, birthDate.getMonth(), birthDate.getDate());
-
-        return {
-          patient,
-          birthday: birthdayThisYear,
-          isToday: isSameDay(birthdayThisYear, today),
-        };
-      })
-      .filter(({ birthday }) =>
-        (isSameDay(birthday, today) || (isAfter(birthday, today) && isBefore(birthday, next7Days)))
-      )
-      .sort((a, b) => a.birthday.getTime() - b.birthday.getTime())
-      .slice(0, 5); // Mostrar máximo 5 cumpleaños próximos
-  }, [patients, now]);
 
   const paymentStateFor = useMemo(() => {
     return (appt: Appointment) => {
@@ -425,62 +402,6 @@ export default function DashboardPage() {
           </div>
 
           <StatsOverview />
-
-          {upcomingBirthdays.length > 0 && (
-            <div className="card bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20 border-pink-200 dark:border-pink-800">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-pink-500/10 dark:bg-pink-500/20 flex items-center justify-center">
-                  <span className="text-2xl">🎂</span>
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-pink-900 dark:text-pink-100">Cumpleaños</h2>
-                  <p className="text-sm text-pink-700 dark:text-pink-300">Próximos cumpleaños de pacientes</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {upcomingBirthdays.map(({ patient, birthday, isToday }) => (
-                  <div
-                    key={patient.id}
-                    className={`p-4 rounded-xl border-2 ${
-                      isToday
-                        ? 'bg-pink-100 dark:bg-pink-800/40 border-pink-400 dark:border-pink-600'
-                        : 'bg-white dark:bg-elegant-800 border-pink-200 dark:border-pink-800'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="text-3xl">🎂</div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-elegant-900 dark:text-white truncate">
-                          {patient.firstName} {patient.lastName}
-                        </p>
-                        <p className="text-sm text-elegant-600 dark:text-elegant-300">
-                          {isToday ? (
-                            <span className="font-semibold text-pink-600 dark:text-pink-400">¡Hoy!</span>
-                          ) : (
-                            format(birthday, "d 'de' MMMM", { locale: es })
-                          )}
-                        </p>
-                        {patient.phone && (
-                          <div className="flex items-center gap-2 mt-2">
-                            <p className="text-xs text-elegant-500 dark:text-elegant-400">{patient.phone}</p>
-                            <a
-                              href={`https://wa.me/${patient.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`¡Feliz cumpleaños ${patient.firstName}!`)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded-md transition-colors flex items-center gap-1"
-                            >
-                              <span>📱</span>
-                              <span>Enviar saludos</span>
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           <div className="card relative overflow-hidden">
             <div className="absolute inset-x-0 -top-24 h-40 bg-gradient-to-r from-primary/10 via-secondary/5 to-primary/10 blur-3xl pointer-events-none" />
@@ -850,6 +771,8 @@ export default function DashboardPage() {
           </div>
         )}
       </Modal>
+
+      <BirthdayFloatingButton patients={patients} />
       </DashboardLayout>
     </ProtectedRoute>
   );
