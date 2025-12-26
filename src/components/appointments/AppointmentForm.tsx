@@ -13,7 +13,7 @@ import { Appointment, UserProfile, FollowUpReason } from '@/types';
 import { useToast } from '@/contexts/ToastContext';
 import Modal from '@/components/ui/Modal';
 import PatientForm from '@/components/patients/PatientForm';
-import { UserPlus, AlertTriangle } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { listProfessionals } from '@/lib/users';
@@ -56,6 +56,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
   const [followUpReasons, setFollowUpReasons] = useState<FollowUpReason[]>([]);
   const [loadingFollowUpReasons, setLoadingFollowUpReasons] = useState(false);
   const [savingFollowUpReason, setSavingFollowUpReason] = useState(false);
+  const [newFollowUpReason, setNewFollowUpReason] = useState('');
   const toast = useToast();
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<AppointmentFormValues>({
     resolver: zodResolver(schema),
@@ -84,7 +85,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       if (showFeedback) {
         toast.error('Ingresa un motivo para guardar');
       }
-      return;
+      return false;
     }
 
     const alreadyExists = followUpReasons.some(item => normalizeReason(item.label) === normalizeReason(trimmed));
@@ -92,7 +93,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       if (showFeedback) {
         toast.info('El motivo ya existe');
       }
-      return;
+      return false;
     }
 
     try {
@@ -108,11 +109,13 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       if (showFeedback) {
         toast.success('Motivo guardado');
       }
+      return true;
     } catch (error) {
       console.error('[AppointmentForm] Error saving follow-up reason:', error);
       if (showFeedback) {
         toast.error('No se pudo guardar el motivo');
       }
+      return false;
     } finally {
       if (showFeedback) {
         setSavingFollowUpReason(false);
@@ -405,10 +408,28 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
     };
   }, [selectedProfessionalId, user?.uid, toast]);
 
-  const handleSaveFollowUpReason = async () => {
+  const handleAddFollowUpReason = async () => {
     const reasonUserId = selectedProfessionalId || user?.uid;
     if (!reasonUserId) return;
-    await saveFollowUpReason(watch('followUpReason') || '', reasonUserId, true);
+    const trimmed = newFollowUpReason.trim();
+    if (!trimmed) {
+      toast.error('Ingresa un motivo para agregar');
+      return;
+    }
+
+    const existing = followUpReasons.find(item => normalizeReason(item.label) === normalizeReason(trimmed));
+    if (existing) {
+      setValue('followUpReason', existing.label);
+      setNewFollowUpReason('');
+      toast.info('El motivo ya existe, se selecciono en la lista');
+      return;
+    }
+
+    const saved = await saveFollowUpReason(trimmed, reasonUserId, true);
+    if (saved) {
+      setValue('followUpReason', trimmed);
+      setNewFollowUpReason('');
+    }
   };
 
   return (
@@ -514,42 +535,43 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
               <input
                 type="number"
                 className="input-field"
-                placeholder="Número de meses"
+                placeholder="Numero de meses"
                 min="0"
                 {...register('followUpMonths', { valueAsNumber: true })}
               />
+              <p className="text-xs text-gray-500 mt-1">Usa 0 para no crear recordatorio.</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Motivo del seguimiento</label>
-              <div className="flex items-center gap-2">
+              <select className="input-field" {...register('followUpReason')}>
+                <option value="">Selecciona un motivo</option>
+                {followUpReasons.map(reason => (
+                  <option key={reason.id} value={reason.label}>{reason.label}</option>
+                ))}
+              </select>
+              <div className="flex items-center gap-2 mt-2">
                 <input
                   type="text"
-                  list="follow-up-reasons"
                   className="input-field flex-1"
-                  placeholder="Ej: Control de ortodoncia, Limpieza, etc."
-                  {...register('followUpReason')}
+                  placeholder="Agregar nuevo motivo"
+                  value={newFollowUpReason}
+                  onChange={(event) => setNewFollowUpReason(event.target.value)}
                 />
                 <button
                   type="button"
-                  onClick={handleSaveFollowUpReason}
+                  onClick={handleAddFollowUpReason}
                   className="btn-secondary text-xs px-3 py-2 whitespace-nowrap"
                   disabled={savingFollowUpReason}
                 >
-                  {savingFollowUpReason ? 'Guardando...' : 'Guardar motivo'}
+                  {savingFollowUpReason ? "Guardando..." : "Agregar"}
                 </button>
               </div>
-              <datalist id="follow-up-reasons">
-                {followUpReasons.map(reason => (
-                  <option key={reason.id} value={reason.label} />
-                ))}
-              </datalist>
               {loadingFollowUpReasons && (
                 <p className="text-xs text-gray-500 mt-1">Cargando motivos guardados...</p>
               )}
             </div>
           </div>
         </div>
-
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-end gap-3 pt-2">
           <button type="button" onClick={onCancel} className="btn-secondary">Cancelar</button>
           <button disabled={loading} className="btn-primary disabled:opacity-50">
