@@ -56,6 +56,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
   const [followUpReasons, setFollowUpReasons] = useState<FollowUpReason[]>([]);
   const [loadingFollowUpReasons, setLoadingFollowUpReasons] = useState(false);
   const [savingFollowUpReason, setSavingFollowUpReason] = useState(false);
+  const [showFollowUpReasonModal, setShowFollowUpReasonModal] = useState(false);
   const [newFollowUpReason, setNewFollowUpReason] = useState('');
   const toast = useToast();
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<AppointmentFormValues>({
@@ -429,6 +430,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
     if (saved) {
       setValue('followUpReason', trimmed);
       setNewFollowUpReason('');
+      setShowFollowUpReasonModal(false);
     }
   };
 
@@ -542,30 +544,25 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
               <p className="text-xs text-gray-500 mt-1">Usa 0 para no crear recordatorio.</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Motivo del seguimiento</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-sm font-medium text-primary-dark dark:text-white">Motivo del seguimiento</label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNewFollowUpReason('');
+                    setShowFollowUpReasonModal(true);
+                  }}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary-dark dark:text-primary-light transition active:scale-95"
+                >
+                  Nuevo
+                </button>
+              </div>
               <select className="input-field" {...register('followUpReason')}>
                 <option value="">Selecciona un motivo</option>
                 {followUpReasons.map(reason => (
                   <option key={reason.id} value={reason.label}>{reason.label}</option>
                 ))}
               </select>
-              <div className="flex items-center gap-2 mt-2">
-                <input
-                  type="text"
-                  className="input-field flex-1"
-                  placeholder="Agregar nuevo motivo"
-                  value={newFollowUpReason}
-                  onChange={(event) => setNewFollowUpReason(event.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={handleAddFollowUpReason}
-                  className="btn-secondary text-xs px-3 py-2 whitespace-nowrap"
-                  disabled={savingFollowUpReason}
-                >
-                  {savingFollowUpReason ? "Guardando..." : "Agregar"}
-                </button>
-              </div>
               {loadingFollowUpReasons && (
                 <p className="text-xs text-gray-500 mt-1">Cargando motivos guardados...</p>
               )}
@@ -593,6 +590,41 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
             toast.success('Paciente creado correctamente. Selecciónalo de la lista.');
           }}
         />
+      </Modal>
+
+      <Modal
+        open={showFollowUpReasonModal}
+        onClose={() => setShowFollowUpReasonModal(false)}
+        title="Agregar motivo de seguimiento"
+        maxWidth="max-w-lg"
+      >
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            handleAddFollowUpReason();
+          }}
+          className="space-y-4"
+        >
+          <div>
+            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Motivo</label>
+            <input
+              type="text"
+              className="input-field"
+              placeholder="Ej: Control de ortodoncia, Limpieza, etc."
+              value={newFollowUpReason}
+              onChange={(event) => setNewFollowUpReason(event.target.value)}
+              autoFocus
+            />
+          </div>
+          <div className="flex items-center justify-end gap-3">
+            <button type="button" onClick={() => setShowFollowUpReasonModal(false)} className="btn-secondary">
+              Cancelar
+            </button>
+            <button type="submit" className="btn-primary" disabled={savingFollowUpReason}>
+              {savingFollowUpReason ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+        </form>
       </Modal>
     </>
   );
