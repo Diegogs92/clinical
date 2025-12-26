@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/useToast';
 import Modal from '@/components/ui/Modal';
 import PatientForm from '@/components/patients/PatientForm';
 import PatientSelect from '@/components/forms/PatientSelect';
-import DateTimePicker from '@/components/forms/DateTimePicker';
+import CallyDatePicker from '@/components/forms/CallyDatePicker';
 import CurrencyInput from '@/components/forms/CurrencyInput';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
@@ -331,8 +331,8 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
     }
   };
 
-  // Generar opciones de horario desde 09:00 hasta 19:30 en intervalos de 15 minutos
-  const generateTimeOptions = () => {
+  // Generar opciones de horario desde 09:00 hasta 19:30 en intervalos de 15 minutos (memoizado)
+  const timeOptions = useMemo(() => {
     const options = [];
     const startHour = 9;
     const endHour = 19;
@@ -348,7 +348,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
       }
     }
     return options;
-  };
+  }, []); // No dependencies, static list
 
   useEffect(() => {
     const load = async () => {
@@ -367,7 +367,9 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
   }, [toast]);
 
   // Si no hay profesional seleccionado, usar el usuario actual como predeterminado
-  const selectedProfessionalId = watch('professionalId');
+  const professionalIdValue = watch('professionalId');
+  const selectedProfessionalId = useMemo(() => professionalIdValue, [professionalIdValue]);
+
   useEffect(() => {
     if (!selectedProfessionalId && user?.uid) {
       setValue('professionalId', user.uid);
@@ -477,7 +479,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
               name="date"
               control={control}
               render={({ field }) => (
-                <DateTimePicker
+                <CallyDatePicker
                   selected={field.value ? new Date(field.value) : null}
                   onChange={(date) => {
                     if (date) {
@@ -494,7 +496,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Hora</label>
             <select className="input-field" {...register('startTime')}>
               <option value="">Hora</option>
-              {generateTimeOptions().map(time => (
+              {timeOptions.map(time => (
                 <option key={time} value={time}>{time}</option>
               ))}
             </select>
