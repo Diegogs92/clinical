@@ -990,7 +990,7 @@ calendar-range,
 calendar-multi {
   display: block;
   font-family: var(--font-sans, 'Inter'), system-ui, sans-serif;
-  --color-accent: var(--color-primary);
+  --color-accent: #0EA5E9;
   --color-text-primary: #0f172a;
   --color-text-secondary: #64748b;
   --color-bg-primary: #ffffff;
@@ -999,18 +999,32 @@ calendar-multi {
 }
 
 calendar-month {
-  background: var(--color-bg-primary);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  min-width: 280px;
 }
 
 calendar-month::part(heading) {
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.9375rem;
   color: var(--color-text-primary);
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0;
+}
+
+calendar-month::part(grid) {
+  gap: 0.125rem;
+  width: 100%;
+}
+
+calendar-month::part(day) {
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 0.5rem;
+  text-align: center;
 }
 
 calendar-month::part(button) {
@@ -1019,40 +1033,43 @@ calendar-month::part(button) {
   transition: all 0.2s ease;
   color: var(--color-text-primary);
   font-weight: 500;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
 }
 
-calendar-month::part(button):hover {
+calendar-month::part(button):hover:not([aria-disabled="true"]) {
   background: var(--color-bg-secondary);
   color: var(--color-accent);
+  border-color: var(--color-accent);
 }
 
 calendar-month::part(button)[aria-pressed="true"] {
   background: var(--color-accent);
   color: white;
   font-weight: 600;
+  border-color: var(--color-accent);
+}
+
+calendar-month::part(button)[data-today="true"]:not([aria-pressed="true"]) {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  font-weight: 600;
 }
 
 calendar-month::part(button)[aria-disabled="true"] {
-  opacity: 0.4;
+  opacity: 0.3;
   cursor: not-allowed;
-}
-
-calendar-month::part(grid) {
-  gap: 0.25rem;
-}
-
-calendar-month::part(day) {
   color: var(--color-text-secondary);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  padding: 0.5rem 0;
 }
 
 /* Dark mode for Cally */
 .dark calendar-date,
 .dark calendar-range,
 .dark calendar-multi {
+  --color-accent: #0EA5E9;
   --color-text-primary: #e2e8f0;
   --color-text-secondary: #94a3b8;
   --color-bg-primary: #1e293b;
@@ -1060,11 +1077,8 @@ calendar-month::part(day) {
   --color-border: #334155;
 }
 
-.dark calendar-month {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-.dark calendar-month::part(button):hover {
+.dark calendar-month::part(button):hover:not([aria-disabled="true"]) {
   background: var(--color-bg-secondary);
+  border-color: var(--color-accent);
 }
 
