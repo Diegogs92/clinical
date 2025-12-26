@@ -3,6 +3,7 @@
 import DatePicker from 'react-datepicker';
 import { forwardRef, memo } from 'react';
 import { Calendar } from 'lucide-react';
+import { es } from 'date-fns/locale';
 
 interface DateTimePickerProps {
   selected: Date | null;
@@ -47,6 +48,7 @@ const DateTimePicker = memo(function DateTimePicker({
         customInput={<CustomInput />}
         calendarClassName="!font-sans"
         wrapperClassName="w-full"
+        locale={es}
       />
       {error && <p className="text-red-600 text-xs mt-0.5">{error}</p>}
     </div>
