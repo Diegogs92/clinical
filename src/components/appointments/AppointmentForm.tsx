@@ -14,8 +14,10 @@ import { useToast } from '@/hooks/useToast';
 import Modal from '@/components/ui/Modal';
 import PatientForm from '@/components/patients/PatientForm';
 import PatientSelect from '@/components/forms/PatientSelect';
+import ProfessionalSelect from '@/components/forms/ProfessionalSelect';
 import DateTimePicker from '@/components/forms/DateTimePicker';
 import CurrencyInput from '@/components/forms/CurrencyInput';
+import SelectField, { SelectOption } from '@/components/forms/SelectField';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { listProfessionals } from '@/lib/users';
@@ -332,8 +334,8 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
   };
 
   // Generar opciones de horario desde 09:00 hasta 19:30 en intervalos de 15 minutos (memoizado)
-  const timeOptions = useMemo(() => {
-    const options = [];
+  const timeOptions = useMemo((): SelectOption[] => {
+    const options: SelectOption[] = [];
     const startHour = 9;
     const endHour = 19;
     const endMinute = 30;
@@ -344,11 +346,34 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         if (hour === endHour && minute > endMinute) break;
 
         const timeString = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-        options.push(timeString);
+        options.push({ value: timeString, label: timeString });
       }
     }
     return options;
   }, []); // No dependencies, static list
+
+  const durationOptions = useMemo((): SelectOption[] => [
+    { value: 45, label: '45 min' },
+    { value: 60, label: '60 min' },
+    { value: 90, label: '90 min' },
+    { value: 120, label: '120 min' },
+    { value: 160, label: '160 min' },
+  ], []);
+
+  const treatmentOptions = useMemo((): SelectOption[] => [
+    { value: 'odontologia-general', label: 'Odontología General' },
+    { value: 'ortodoncia', label: 'Ortodoncia' },
+    { value: 'endodoncia', label: 'Endodoncia' },
+    { value: 'armonizacion', label: 'Armonización' },
+  ], []);
+
+  const followUpReasonOptions = useMemo((): SelectOption[] =>
+    followUpReasons.map(reason => ({
+      value: reason.label,
+      label: reason.label
+    })),
+    [followUpReasons]
+  );
 
   useEffect(() => {
     const load = async () => {
@@ -459,14 +484,19 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
 
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Profesional</label>
-            <select className="input-field" {...register('professionalId')}>
-              <option value="">Selecciona un profesional</option>
-              {loadingProfessionals && <option value="">Cargando...</option>}
-              {professionals.map(prof => (
-                <option key={prof.uid} value={prof.uid}>{prof.displayName || prof.email}</option>
-              ))}
-            </select>
-            {errors.professionalId && <p className="text-red-600 text-xs mt-0.5">{errors.professionalId.message as string}</p>}
+            <Controller
+              name="professionalId"
+              control={control}
+              render={({ field }) => (
+                <ProfessionalSelect
+                  professionals={professionals}
+                  value={field.value}
+                  onChange={field.onChange}
+                  loading={loadingProfessionals}
+                  error={errors.professionalId?.message as string}
+                />
+              )}
+            />
           </div>
         </div>
 
@@ -493,23 +523,34 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Hora</label>
-            <select className="input-field" {...register('startTime')}>
-              <option value="">Hora</option>
-              {timeOptions.map(time => (
-                <option key={time} value={time}>{time}</option>
-              ))}
-            </select>
-            {errors.startTime && <p className="text-red-600 text-xs mt-0.5">{errors.startTime.message}</p>}
+            <Controller
+              name="startTime"
+              control={control}
+              render={({ field }) => (
+                <SelectField
+                  options={timeOptions}
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Selecciona la hora"
+                  error={errors.startTime?.message}
+                />
+              )}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Duración</label>
-            <select className="input-field" {...register('duration', { valueAsNumber: true })}>
-              <option value="45">45 min</option>
-              <option value="60">60 min</option>
-              <option value="90">90 min</option>
-              <option value="120">120 min</option>
-              <option value="160">160 min</option>
-            </select>
+            <Controller
+              name="duration"
+              control={control}
+              render={({ field }) => (
+                <SelectField
+                  options={durationOptions}
+                  value={field.value}
+                  onChange={(value) => field.onChange(Number(value))}
+                  placeholder="Duración"
+                />
+              )}
+            />
           </div>
         </div>
 
@@ -517,13 +558,19 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Tratamiento</label>
-            <select className="input-field" {...register('type')}>
-              <option value="odontologia-general">Odontología General</option>
-              <option value="ortodoncia">Ortodoncia</option>
-              <option value="endodoncia">Endodoncia</option>
-              <option value="armonizacion">Armonización</option>
-            </select>
-            {errors.type && <p className="text-red-600 text-xs mt-0.5">{errors.type.message}</p>}
+            <Controller
+              name="type"
+              control={control}
+              render={({ field }) => (
+                <SelectField
+                  options={treatmentOptions}
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Tipo de tratamiento"
+                  error={errors.type?.message}
+                />
+              )}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Honorarios</label>
@@ -601,15 +648,20 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
                   Nuevo
                 </button>
               </div>
-              <select className="input-field" {...register('followUpReason')}>
-                <option value="">Selecciona un motivo</option>
-                {followUpReasons.map(reason => (
-                  <option key={reason.id} value={reason.label}>{reason.label}</option>
-                ))}
-              </select>
-              {loadingFollowUpReasons && (
-                <p className="text-xs text-gray-500 mt-0.5">Cargando...</p>
-              )}
+              <Controller
+                name="followUpReason"
+                control={control}
+                render={({ field }) => (
+                  <SelectField
+                    options={followUpReasonOptions}
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                    placeholder="Selecciona un motivo"
+                    isLoading={loadingFollowUpReasons}
+                    noOptionsMessage="No hay motivos guardados"
+                  />
+                )}
+              />
             </div>
           </div>
         </div>
