@@ -26,7 +26,11 @@
       "Bash(timeout /t 5)",
       "Bash(vercel env:*)",
       "Bash(temp_client_id.txt)",
-      "Bash(node scripts/check-oauth-config.js:*)"
+      "Bash(node scripts/check-oauth-config.js:*)",
+      "Bash(git rm:*)",
+      "Bash(npm install:*)",
+      "Bash(while read file)",
+      "Bash(do sed -i \"s|from ''''@/contexts/ToastContext''''|from ''''@/hooks/useToast''''|g\" \"$file\" echo \"Actualizado: $file\" done)"
     ],
     "deny": [],
     "ask": []

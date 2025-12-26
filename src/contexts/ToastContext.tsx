@@ -1,19 +1,13 @@
+// Deprecated: This file is kept for backward compatibility only
+// New code should use @/hooks/useToast instead
 'use client';
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import ReactDOM from 'react-dom';
-import { X, CheckCircle2, AlertCircle, Info, AlertTriangle } from 'lucide-react';
+import { toast as sonnerToast } from 'sonner';
 
 type ToastType = 'success' | 'error' | 'info' | 'warning';
 
 interface ToastOptions {
   duration?: number;
-}
-
-interface Toast {
-  id: string;
-  message: string;
-  type: ToastType;
 }
 
 interface ToastContextType {
@@ -24,96 +18,38 @@ interface ToastContextType {
   warning: (message: string, options?: ToastOptions) => void;
 }
 
-const ToastContext = createContext<ToastContextType | undefined>(undefined);
-
-export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [toasts, setToasts] = useState<Toast[]>([]);
-
-  const showToast = useCallback((message: string, type: ToastType = 'info', options?: ToastOptions) => {
-    const id = Date.now().toString();
-    setToasts((prev) => [...prev, { id, message, type }]);
-
-    const duration = options?.duration || 2500; // Reducido de 4000 a 2500ms (2.5 segundos)
-
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((toast) => toast.id !== id));
-    }, duration);
-  }, []);
-
-  const success = useCallback((message: string, options?: ToastOptions) => showToast(message, 'success', options), [showToast]);
-  const error = useCallback((message: string, options?: ToastOptions) => showToast(message, 'error', options), [showToast]);
-  const info = useCallback((message: string, options?: ToastOptions) => showToast(message, 'info', options), [showToast]);
-  const warning = useCallback((message: string, options?: ToastOptions) => showToast(message, 'warning', options), [showToast]);
-
-  const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+// Wrapper for backward compatibility
+export function useToast(): ToastContextType {
+  return {
+    showToast: (message: string, type: ToastType = 'info', options?: ToastOptions) => {
+      const duration = options?.duration || 2500;
+      switch (type) {
+        case 'success':
+          sonnerToast.success(message, { duration });
+          break;
+        case 'error':
+          sonnerToast.error(message, { duration });
+          break;
+        case 'warning':
+          sonnerToast.warning(message, { duration });
+          break;
+        case 'info':
+        default:
+          sonnerToast.info(message, { duration });
+          break;
+      }
+    },
+    success: (message: string, options?: ToastOptions) => {
+      sonnerToast.success(message, { duration: options?.duration || 2500 });
+    },
+    error: (message: string, options?: ToastOptions) => {
+      sonnerToast.error(message, { duration: options?.duration || 2500 });
+    },
+    info: (message: string, options?: ToastOptions) => {
+      sonnerToast.info(message, { duration: options?.duration || 2500 });
+    },
+    warning: (message: string, options?: ToastOptions) => {
+      sonnerToast.warning(message, { duration: options?.duration || 2500 });
+    },
   };
-
-  const getIcon = (type: ToastType) => {
-    switch (type) {
-      case 'success':
-        return <CheckCircle2 className="w-5 h-5" />;
-      case 'error':
-        return <AlertCircle className="w-5 h-5" />;
-      case 'warning':
-        return <AlertTriangle className="w-5 h-5" />;
-      case 'info':
-        return <Info className="w-5 h-5" />;
-    }
-  };
-
-  const getStyles = (type: ToastType) => {
-    switch (type) {
-      case 'success':
-        return 'bg-green-50 text-green-800 border-green-200';
-      case 'error':
-        return 'bg-red-50 text-red-800 border-red-200';
-      case 'warning':
-        return 'bg-yellow-50 text-yellow-800 border-yellow-200';
-      case 'info':
-        return 'bg-blue-50 text-blue-800 border-blue-200';
-    }
-  };
-
-  const toastPortal = typeof document !== 'undefined' ? ReactDOM.createPortal(
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 pointer-events-none">
-      <div className="space-y-2 w-full max-w-lg pointer-events-none">
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            className={`flex items-start gap-3 p-5 rounded-lg border shadow-xl animate-in zoom-in-95 fade-in pointer-events-auto ${getStyles(
-              toast.type
-            )}`}
-          >
-            <div className="flex-shrink-0 mt-0.5">
-              {getIcon(toast.type)}
-            </div>
-            <p className="flex-1 text-base font-medium whitespace-pre-line">{toast.message}</p>
-            <button
-              onClick={() => removeToast(toast.id)}
-              className="flex-shrink-0 text-current opacity-70 hover:opacity-100 transition-opacity"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>,
-    document.body
-  ) : null;
-
-  return (
-    <ToastContext.Provider value={{ showToast, success, error, info, warning }}>
-      {children}
-      {toastPortal}
-    </ToastContext.Provider>
-  );
-}
-
-export function useToast() {
-  const context = useContext(ToastContext);
-  if (context === undefined) {
-    throw new Error('useToast must be used within a ToastProvider');
-  }
-  return context;
 }

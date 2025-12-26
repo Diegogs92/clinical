@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
+import 'react-datepicker/dist/react-datepicker.css';
 import { ThemeProvider } from '@/contexts/ThemeContext';
-import { ToastProvider } from '@/contexts/ToastContext';
+import { Toaster } from 'sonner';
 import { ConfirmProvider } from '@/contexts/ConfirmContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { PatientsProvider } from '@/contexts/PatientsContext';
@@ -45,22 +46,21 @@ export default function RootLayout({
         <ErrorBoundary>
           <ThemeProvider>
             <AuthProvider>
-              <ToastProvider>
-                <ConfirmProvider>
-                  <PatientsProvider>
-                    <OfficesProvider>
-                      <AppointmentsProvider>
-                        <PaymentsProvider>
-                          <CalendarSyncProvider>
-                            <GlobalLoader />
-                            {children}
-                          </CalendarSyncProvider>
-                        </PaymentsProvider>
-                      </AppointmentsProvider>
-                    </OfficesProvider>
-                  </PatientsProvider>
-                </ConfirmProvider>
-              </ToastProvider>
+              <ConfirmProvider>
+                <PatientsProvider>
+                  <OfficesProvider>
+                    <AppointmentsProvider>
+                      <PaymentsProvider>
+                        <CalendarSyncProvider>
+                          <GlobalLoader />
+                          {children}
+                          <Toaster position="top-center" richColors closeButton />
+                        </CalendarSyncProvider>
+                      </PaymentsProvider>
+                    </AppointmentsProvider>
+                  </OfficesProvider>
+                </PatientsProvider>
+              </ConfirmProvider>
             </AuthProvider>
           </ThemeProvider>
         </ErrorBoundary>

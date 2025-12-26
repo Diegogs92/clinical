@@ -8,12 +8,14 @@ import { useCalendarSync } from '@/contexts/CalendarSyncContext';
 import { createAppointment, updateAppointment, getOverlappingAppointments } from '@/lib/appointments';
 import { getBlockedSlotsInRange } from '@/lib/blockedSlots';
 import { createPayment } from '@/lib/payments';
-import { useState, useEffect, ChangeEvent } from 'react';
+import { useState, useEffect } from 'react';
 import { Appointment, UserProfile, FollowUpReason } from '@/types';
-import { useToast } from '@/contexts/ToastContext';
+import { useToast } from '@/hooks/useToast';
 import Modal from '@/components/ui/Modal';
 import PatientForm from '@/components/patients/PatientForm';
-import { UserPlus } from 'lucide-react';
+import PatientSelect from '@/components/forms/PatientSelect';
+import DateTimePicker from '@/components/forms/DateTimePicker';
+import CurrencyInput from '@/components/forms/CurrencyInput';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { listProfessionals } from '@/lib/users';
@@ -329,16 +331,6 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
     }
   };
 
-  const handlePatientSelect = (e: ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    if (value === '__new') {
-      setShowQuickPatient(true);
-      setValue('patientId', '');
-    } else {
-      setValue('patientId', value);
-    }
-  };
-
   // Generar opciones de horario desde 09:00 hasta 19:30 en intervalos de 15 minutos
   const generateTimeOptions = () => {
     const options = [];
@@ -448,29 +440,14 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         {/* Paciente y Profesional */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-medium text-primary-dark dark:text-white">Paciente</label>
-              <button
-                type="button"
-                onClick={() => setShowQuickPatient(true)}
-                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark dark:text-primary-light transition"
-              >
-                <UserPlus className="w-3.5 h-3.5" />
-                Nuevo
-              </button>
-            </div>
-            <select
-              className="input-field"
+            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Paciente</label>
+            <PatientSelect
+              patients={patients}
               value={watch('patientId')}
-              onChange={handlePatientSelect}
-            >
-              <option value="">Selecciona un paciente</option>
-              {patients.map(p => (
-                <option key={p.id} value={p.id}>{p.lastName} {p.firstName} · DNI {p.dni}</option>
-              ))}
-              <option value="__new">+ Crear nuevo paciente</option>
-            </select>
-            {errors.patientId && <p className="text-red-600 text-xs mt-0.5">{errors.patientId.message as string}</p>}
+              onChange={(value) => setValue('patientId', value)}
+              onCreateNew={() => setShowQuickPatient(true)}
+              error={errors.patientId?.message as string}
+            />
           </div>
 
           <div>
@@ -490,8 +467,16 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         <div className="grid grid-cols-3 gap-3">
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Fecha</label>
-            <input type="date" className="input-field" {...register('date')} />
-            {errors.date && <p className="text-red-600 text-xs mt-0.5">{errors.date.message}</p>}
+            <DateTimePicker
+              selected={watch('date') ? new Date(watch('date')) : null}
+              onChange={(date) => {
+                if (date) {
+                  const formatted = date.toISOString().split('T')[0];
+                  setValue('date', formatted);
+                }
+              }}
+              error={errors.date?.message}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Hora</label>
@@ -529,16 +514,17 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Honorarios</label>
-            <input type="number" className="input-field" placeholder="0" {...register('fee', { valueAsNumber: true })} />
+            <CurrencyInput
+              value={watch('fee')}
+              onChange={(value) => setValue('fee', value)}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Seña</label>
-            <input
-              type="number"
-              className="input-field"
-              placeholder="0"
+            <CurrencyInput
+              value={watch('deposit')}
+              onChange={(value) => setValue('deposit', value)}
               disabled={noDeposit}
-              {...register('deposit', { valueAsNumber: true })}
             />
             <label className="mt-1 inline-flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
               <input
