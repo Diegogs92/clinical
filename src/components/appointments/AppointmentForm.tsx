@@ -240,11 +240,11 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         duration: values.duration,
         status: initialData?.status || 'scheduled',
         type: values.type,
-        fee: values.fee,
-        deposit: values.deposit,
-        notes: values.notes,
-        followUpMonths: values.followUpMonths,
-        followUpReason: values.followUpReason,
+        fee: values.fee ?? 0,
+        deposit: values.deposit ?? 0,
+        notes: values.notes || '',
+        followUpMonths: values.followUpMonths ?? 0,
+        followUpReason: values.followUpReason || '',
         followUpDate: followUpDate,
         userId: values.professionalId,
         professionalName: selectedProfessional?.displayName || '',
@@ -253,9 +253,12 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         updatedAt: '',
       } as any;
 
-      // Remover officeId para evitar enviar undefined a Firestore
+      // Remover campos undefined para evitar errores en Firestore
       if (payload.officeId === undefined) {
         delete payload.officeId;
+      }
+      if (payload.followUpDate === undefined) {
+        delete payload.followUpDate;
       }
 
       console.log('[AppointmentForm] Payload a enviar:', payload);
@@ -606,7 +609,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
                 onChange={(event) => {
                   const checked = event.target.checked;
                   setNoDeposit(checked);
-                  setValue('deposit', checked ? 0 : undefined);
+                  setValue('deposit', checked ? 0 : 0);
                 }}
               />
               Sin seña
