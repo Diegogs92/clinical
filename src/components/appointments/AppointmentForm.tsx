@@ -58,6 +58,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
   const [savingFollowUpReason, setSavingFollowUpReason] = useState(false);
   const [showFollowUpReasonModal, setShowFollowUpReasonModal] = useState(false);
   const [newFollowUpReason, setNewFollowUpReason] = useState('');
+  const [noDeposit, setNoDeposit] = useState(false);
   const toast = useToast();
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<AppointmentFormValues>({
     resolver: zodResolver(schema),
@@ -382,6 +383,13 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
   }, [selectedProfessionalId, user, setValue]);
 
   useEffect(() => {
+    if (!initialData) return;
+    if (!initialData.deposit || initialData.deposit === 0) {
+      setNoDeposit(true);
+    }
+  }, [initialData]);
+
+  useEffect(() => {
     const reasonUserId = selectedProfessionalId || user?.uid;
     if (!reasonUserId) return;
     let active = true;
@@ -436,7 +444,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <label className="block text-sm font-semibold text-primary-dark dark:text-white">Paciente</label>
@@ -475,7 +483,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
           {errors.professionalId && <p className="text-red-600 text-xs mt-1">{errors.professionalId.message as string}</p>}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Fecha</label>
             <input type="date" className="input-field" {...register('date')} />
@@ -514,14 +522,33 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
           {errors.type && <p className="text-red-600 text-xs mt-1">{errors.type.message}</p>}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Honorarios</label>
             <input type="number" className="input-field" placeholder="0" {...register('fee', { valueAsNumber: true })} />
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Seña</label>
-            <input type="number" className="input-field" placeholder="0" {...register('deposit', { valueAsNumber: true })} />
+            <input
+              type="number"
+              className="input-field"
+              placeholder="0"
+              disabled={noDeposit}
+              {...register('deposit', { valueAsNumber: true })}
+            />
+            <label className="mt-1 inline-flex items-center gap-2 text-xs text-gray-500">
+              <input
+                type="checkbox"
+                className="accent-primary"
+                checked={noDeposit}
+                onChange={(event) => {
+                  const checked = event.target.checked;
+                  setNoDeposit(checked);
+                  setValue('deposit', checked ? 0 : undefined);
+                }}
+              />
+              Sin seña
+            </label>
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Notas</label>
@@ -531,7 +558,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
 
         <div className="border-t border-elegant-200 dark:border-gray-700 pt-4 mt-4">
           <h4 className="text-sm font-semibold text-primary-dark dark:text-white mb-3">Recordatorio de Seguimiento</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <div>
               <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Recordar en (meses)</label>
               <input
@@ -569,7 +596,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
             </div>
           </div>
         </div>
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-end gap-3 pt-2">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-end gap-2 pt-2">
           <button type="button" onClick={onCancel} className="btn-secondary">Cancelar</button>
           <button disabled={loading} className="btn-primary disabled:opacity-50">
             {loading ? 'Guardando...' : (initialData ? 'Actualizar' : 'Crear')}
@@ -603,7 +630,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
             event.preventDefault();
             handleAddFollowUpReason();
           }}
-          className="space-y-4"
+          className="space-y-3"
         >
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Motivo</label>
@@ -616,7 +643,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
               autoFocus
             />
           </div>
-          <div className="flex items-center justify-end gap-3">
+          <div className="flex items-center justify-end gap-2">
             <button type="button" onClick={() => setShowFollowUpReasonModal(false)} className="btn-secondary">
               Cancelar
             </button>
