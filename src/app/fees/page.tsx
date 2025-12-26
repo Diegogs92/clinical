@@ -23,9 +23,17 @@ export default function FeesPage() {
   const toast = useToast();
   const confirm = useConfirm();
 
-  const totalRevenue = payments
+  // Calcular ingresos totales: pagos + señas
+  const paymentsRevenue = payments
     .filter(p => p.status === 'completed' || p.status === 'pending')
     .reduce((sum, p) => sum + p.amount, 0);
+
+  const depositsRevenue = appointments
+    .filter(a => a.deposit && a.deposit > 0)
+    .reduce((sum, a) => sum + (a.deposit || 0), 0);
+
+  const totalRevenue = paymentsRevenue + depositsRevenue;
+
   const allPayments = [...payments, ...pending].reduce((acc, payment) => {
     acc.set(payment.id, payment);
     return acc;

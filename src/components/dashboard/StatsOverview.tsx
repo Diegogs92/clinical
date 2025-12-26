@@ -23,7 +23,8 @@ export default function StatsOverview() {
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
 
-  const monthlyIncome = payments
+  // Calcular ingresos del mes: pagos + señas de turnos del mes
+  const paymentsIncome = payments
     .filter(p => {
       const d = new Date(p.date);
       return (p.status === 'completed' || p.status === 'pending') &&
@@ -31,6 +32,17 @@ export default function StatsOverview() {
         d.getFullYear() === currentYear;
     })
     .reduce((sum, p) => sum + p.amount, 0);
+
+  const depositsIncome = appointments
+    .filter(a => {
+      const d = new Date(a.date);
+      return a.deposit && a.deposit > 0 &&
+        d.getMonth() === currentMonth &&
+        d.getFullYear() === currentYear;
+    })
+    .reduce((sum, a) => sum + (a.deposit || 0), 0);
+
+  const monthlyIncome = paymentsIncome + depositsIncome;
 
   const allPayments = [...payments, ...pendingPayments].reduce((acc, payment) => {
     acc.set(payment.id, payment);
