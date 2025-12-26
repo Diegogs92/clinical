@@ -1,7 +1,7 @@
 "use client";
 
 import DatePicker from 'react-datepicker';
-import { forwardRef } from 'react';
+import { forwardRef, memo } from 'react';
 import { Calendar } from 'lucide-react';
 
 interface DateTimePickerProps {
@@ -29,7 +29,7 @@ const CustomInput = forwardRef<HTMLButtonElement, any>(({ value, onClick, placeh
 
 CustomInput.displayName = 'CustomInput';
 
-export default function DateTimePicker({
+const DateTimePicker = memo(function DateTimePicker({
   selected,
   onChange,
   minDate,
@@ -51,4 +51,6 @@ export default function DateTimePicker({
       {error && <p className="text-red-600 text-xs mt-0.5">{error}</p>}
     </div>
   );
-}
+});
+
+export default DateTimePicker;

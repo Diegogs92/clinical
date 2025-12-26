@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, memo } from 'react';
 import Select, { components, SingleValueProps, OptionProps } from 'react-select';
 import { Patient } from '@/types';
 import { UserPlus } from 'lucide-react';
@@ -53,14 +54,14 @@ const CustomSingleValue = (props: SingleValueProps<PatientOption>) => {
   );
 };
 
-export default function PatientSelect({
+const PatientSelect = memo(function PatientSelect({
   patients,
   value,
   onChange,
   onCreateNew,
   error
 }: PatientSelectProps) {
-  const options: PatientOption[] = [
+  const options: PatientOption[] = useMemo(() => [
     ...patients.map(p => ({
       value: p.id,
       label: `${p.lastName} ${p.firstName}`,
@@ -71,9 +72,12 @@ export default function PatientSelect({
       label: '+ Crear nuevo paciente',
       isCreateNew: true,
     },
-  ];
+  ], [patients]);
 
-  const selectedOption = options.find(opt => opt.value === value) || null;
+  const selectedOption = useMemo(() =>
+    options.find(opt => opt.value === value) || null,
+    [options, value]
+  );
 
   return (
     <div>
@@ -122,4 +126,6 @@ export default function PatientSelect({
       {error && <p className="text-red-600 text-xs mt-0.5">{error}</p>}
     </div>
   );
-}
+});
+
+export default PatientSelect;

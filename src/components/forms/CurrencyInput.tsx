@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from 'react';
 import CurrencyInputField from 'react-currency-input-field';
 
 interface CurrencyInputProps {
@@ -10,7 +11,7 @@ interface CurrencyInputProps {
   error?: string;
 }
 
-export default function CurrencyInput({
+const CurrencyInput = memo(function CurrencyInput({
   value,
   onChange,
   placeholder = '0',
@@ -35,4 +36,6 @@ export default function CurrencyInput({
       {error && <p className="text-red-600 text-xs mt-0.5">{error}</p>}
     </div>
   );
-}
+});
+
+export default CurrencyInput;
