@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,7 +8,7 @@ import { useCalendarSync } from '@/contexts/CalendarSyncContext';
 import { createAppointment, updateAppointment, getOverlappingAppointments } from '@/lib/appointments';
 import { getBlockedSlotsInRange } from '@/lib/blockedSlots';
 import { createPayment } from '@/lib/payments';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Appointment, UserProfile, FollowUpReason } from '@/types';
 import { useToast } from '@/hooks/useToast';
 import Modal from '@/components/ui/Modal';
@@ -62,7 +62,7 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
   const [newFollowUpReason, setNewFollowUpReason] = useState('');
   const [noDeposit, setNoDeposit] = useState(false);
   const toast = useToast();
-  const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<AppointmentFormValues>({
+  const { register, handleSubmit, formState: { errors }, reset, setValue, watch, control } = useForm<AppointmentFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       duration: initialData?.duration || 45,
@@ -441,12 +441,18 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Paciente</label>
-            <PatientSelect
-              patients={patients}
-              value={watch('patientId')}
-              onChange={(value) => setValue('patientId', value)}
-              onCreateNew={() => setShowQuickPatient(true)}
-              error={errors.patientId?.message as string}
+            <Controller
+              name="patientId"
+              control={control}
+              render={({ field }) => (
+                <PatientSelect
+                  patients={patients}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onCreateNew={() => setShowQuickPatient(true)}
+                  error={errors.patientId?.message as string}
+                />
+              )}
             />
           </div>
 
@@ -467,15 +473,21 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
         <div className="grid grid-cols-3 gap-3">
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Fecha</label>
-            <DateTimePicker
-              selected={watch('date') ? new Date(watch('date')) : null}
-              onChange={(date) => {
-                if (date) {
-                  const formatted = date.toISOString().split('T')[0];
-                  setValue('date', formatted);
-                }
-              }}
-              error={errors.date?.message}
+            <Controller
+              name="date"
+              control={control}
+              render={({ field }) => (
+                <DateTimePicker
+                  selected={field.value ? new Date(field.value) : null}
+                  onChange={(date) => {
+                    if (date) {
+                      const formatted = date.toISOString().split('T')[0];
+                      field.onChange(formatted);
+                    }
+                  }}
+                  error={errors.date?.message}
+                />
+              )}
             />
           </div>
           <div>
@@ -514,17 +526,29 @@ export default function AppointmentForm({ initialData, onCreated, onCancel }: Pr
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Honorarios</label>
-            <CurrencyInput
-              value={watch('fee')}
-              onChange={(value) => setValue('fee', value)}
+            <Controller
+              name="fee"
+              control={control}
+              render={({ field }) => (
+                <CurrencyInput
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Seña</label>
-            <CurrencyInput
-              value={watch('deposit')}
-              onChange={(value) => setValue('deposit', value)}
-              disabled={noDeposit}
+            <Controller
+              name="deposit"
+              control={control}
+              render={({ field }) => (
+                <CurrencyInput
+                  value={field.value}
+                  onChange={field.onChange}
+                  disabled={noDeposit}
+                />
+              )}
             />
             <label className="mt-1 inline-flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
               <input
