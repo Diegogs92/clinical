@@ -113,9 +113,12 @@ input[type="tel"],
     transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  /* Fuente mono para números */
+  /* Fuente mono para números - Manrope con números tabulares */
   .font-mono {
-    font-family: var(--font-mono, 'JetBrains Mono'), ui-monospace, monospace;
+    font-family: var(--font-mono, 'Manrope'), system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    font-weight: 700;
   }
 }
 
