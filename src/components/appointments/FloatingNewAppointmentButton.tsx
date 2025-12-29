@@ -12,7 +12,8 @@ export default function FloatingNewAppointmentButton() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 right-6 bg-gradient-to-br from-primary to-primary-light hover:from-primary-dark hover:to-primary text-white rounded-full p-4 shadow-2xl hover:shadow-primary/50 transition-all duration-200 transition-spring hover:scale-110 z-50 flex items-center gap-3 group"
+        className="fixed bottom-24 right-6 bg-gradient-to-br from-primary to-primary-light hover:from-primary-dark hover:to-primary text-white rounded-full p-4 shadow-lg hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 hover:scale-105 active:scale-100 z-50 flex items-center gap-3 group"
+        style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
         aria-label="Nuevo turno"
       >
         <CalendarPlus className="w-6 h-6" />
