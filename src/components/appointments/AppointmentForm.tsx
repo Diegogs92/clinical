@@ -37,6 +37,8 @@ const schema = z.object({
   deposit: z.coerce.number().optional(),
   notes: z.string().optional(),
   followUpMonths: z.coerce.number().optional(),
+  followUpValue: z.coerce.number().optional(),
+  followUpUnit: z.enum(['days', 'weeks', 'months']).optional(),
   followUpReason: z.string().optional(),
 });
 
@@ -79,6 +81,8 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
       startTime: initialData?.startTime || '',
       notes: initialData?.notes || '',
       followUpMonths: initialData?.followUpMonths || undefined,
+      followUpValue: undefined,
+      followUpUnit: 'months',
       followUpReason: initialData?.followUpReason || '',
     },
   });
@@ -225,9 +229,22 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
 
       // Calcular fecha de seguimiento si se especificó
       let followUpDate: string | undefined = undefined;
+      // Mantener compatibilidad con el campo antiguo followUpMonths
       if (values.followUpMonths && values.followUpMonths > 0) {
         const appointmentDate = new Date(startDate);
         appointmentDate.setMonth(appointmentDate.getMonth() + values.followUpMonths);
+        followUpDate = appointmentDate.toISOString();
+      }
+      // Nuevo sistema con unidades
+      if (values.followUpValue && values.followUpValue > 0 && values.followUpUnit) {
+        const appointmentDate = new Date(startDate);
+        if (values.followUpUnit === 'days') {
+          appointmentDate.setDate(appointmentDate.getDate() + values.followUpValue);
+        } else if (values.followUpUnit === 'weeks') {
+          appointmentDate.setDate(appointmentDate.getDate() + (values.followUpValue * 7));
+        } else if (values.followUpUnit === 'months') {
+          appointmentDate.setMonth(appointmentDate.getMonth() + values.followUpValue);
+        }
         followUpDate = appointmentDate.toISOString();
       }
 
@@ -608,15 +625,34 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         {/* Seguimiento */}
         <div className="border-t border-elegant-200 dark:border-gray-700 pt-3">
           <h4 className="text-sm font-medium text-primary-dark dark:text-white mb-2">Recordatorio de Seguimiento</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Recordar en (meses)</label>
+              <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Recordar en</label>
               <input
                 type="number"
                 className="input-field"
                 placeholder="0"
                 min="0"
-                {...register('followUpMonths', { valueAsNumber: true })}
+                {...register('followUpValue', { valueAsNumber: true })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Unidad</label>
+              <Controller
+                name="followUpUnit"
+                control={control}
+                render={({ field }) => (
+                  <SelectField
+                    options={[
+                      { value: 'days', label: 'Días' },
+                      { value: 'weeks', label: 'Semanas' },
+                      { value: 'months', label: 'Meses' },
+                    ]}
+                    value={field.value || 'months'}
+                    onChange={field.onChange}
+                    placeholder="Selecciona unidad"
+                  />
+                )}
               />
             </div>
             <div>

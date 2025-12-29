@@ -6,9 +6,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import GlassNavbar from './GlassNavbar';
 import ThemeToggle from './ThemeToggle';
 import { Footer } from './Footer';
-import InstallPrompt from './InstallPrompt';
 import GoogleCalendarToggle from './GoogleCalendarToggle';
 import TokenExpirationBanner from './TokenExpirationBanner';
+import BirthdayFloatingButton from './dashboard/BirthdayFloatingButton';
+import FloatingNewAppointmentButton from './appointments/FloatingNewAppointmentButton';
+import { usePatients } from '@/contexts/PatientsContext';
 import {
   LayoutDashboard,
   Users,
@@ -34,6 +36,7 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children, mobileAction }: DashboardLayoutProps) {
   const { user, userProfile, signOut } = useAuth();
+  const { patients } = usePatients();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -153,7 +156,10 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
 
       <TokenExpirationBanner />
       <MobileNavBar items={navItems} action={mobileAction} />
-      <InstallPrompt />
+
+      {/* Floating Action Buttons */}
+      <FloatingNewAppointmentButton />
+      <BirthdayFloatingButton patients={patients} />
     </div>
   );
 }

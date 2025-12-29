@@ -142,35 +142,37 @@ input[type="tel"],
   /* Botones - Smooth y con focus states mejorados */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 font-medium rounded-lg py-2.5 px-4
-           text-white shadow-md
-           transition-all duration-200 transition-spring
-           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
-           active:scale-[0.96] active:shadow-sm
+           text-white shadow-sm
+           transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary/50
+           active:scale-[0.98]
            disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:scale-100;
     background-color: #0EA5E9;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .btn-primary:hover:not(:disabled) {
     background-color: #0C7FB8;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 4px 12px -2px rgba(14, 165, 233, 0.3);
+    transform: translateY(-1px);
   }
 
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 font-medium rounded-lg py-2.5 px-4
            shadow-sm
-           transition-all duration-200 transition-spring
-           focus:outline-none focus:ring-2 focus:ring-offset-2
-           active:scale-[0.96] active:shadow-sm
+           transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-elegant-300
+           active:scale-[0.98]
            disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:scale-100;
     background-color: #F1F5F9;
     color: #334155;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .btn-secondary:hover:not(:disabled) {
     background-color: #E2E8F0;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
   }
 
   .dark .btn-secondary {
@@ -184,52 +186,56 @@ input[type="tel"],
 
   .btn-danger {
     @apply inline-flex items-center justify-center gap-2 font-medium rounded-lg py-2.5 px-4
-           text-white shadow-md
-           transition-all duration-300 
-           focus:outline-none focus:ring-2 focus:ring-offset-2
-           active:scale-[0.98] active:shadow-sm 
+           text-white shadow-sm
+           transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-danger/50
+           active:scale-[0.98]
            disabled:opacity-50 disabled:cursor-not-allowed;
     background-color: #EF4444;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .btn-danger:hover:not(:disabled) {
     background-color: #DC2626;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    transform: translateY(-2px);
+    box-shadow: 0 4px 12px -2px rgba(239, 68, 68, 0.3);
+    transform: translateY(-1px);
   }
 
   .btn-success {
     @apply inline-flex items-center justify-center gap-2 font-medium rounded-lg py-2.5 px-4
-           text-white shadow-md
-           transition-all duration-300 
-           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500
-           active:scale-[0.98] active:shadow-sm 
+           text-white shadow-sm
+           transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500/50
+           active:scale-[0.98]
            disabled:opacity-50 disabled:cursor-not-allowed;
     background-color: #22C55E;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .btn-success:hover:not(:disabled) {
     background-color: #16A34A;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    transform: translateY(-2px);
+    box-shadow: 0 4px 12px -2px rgba(34, 197, 94, 0.3);
+    transform: translateY(-1px);
   }
 
   /* Cards - Smooth hover con lift effect */
   .card {
     @apply bg-white dark:bg-elegant-900 rounded-xl shadow-sm p-6
-           border border-elegant-200 dark:border-elegant-800
-           transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-elegant-300 dark:hover:border-elegant-700;
+           border border-elegant-200/60 dark:border-elegant-800/60
+           transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-elegant-300/80 dark:hover:border-elegant-700/80;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* Inputs - Con focus mejorado y efecto glow */
   .input-field {
-    @apply w-full px-4 py-2.5 border border-elegant-300 dark:border-elegant-700
+    @apply w-full px-4 py-2.5 border border-elegant-300/60 dark:border-elegant-700/60
            rounded-lg bg-white dark:bg-elegant-900
            text-elegant-900 dark:text-white placeholder-elegant-400 dark:placeholder-elegant-500
-           focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary
-           transition-all duration-300 hover:border-primary/50 dark:hover:border-primary/50
+           focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/60
+           transition-all duration-200 hover:border-primary/40 dark:hover:border-primary/40
            disabled:bg-elegant-50 dark:disabled:bg-elegant-950 disabled:cursor-not-allowed
-           focus:shadow-lg focus:shadow-primary/20;
+           focus:shadow-md focus:shadow-primary/10;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* Links - Con underline smooth y color transition */
@@ -243,31 +249,35 @@ input[type="tel"],
   /* Icon buttons - Para acciones con iconos + efecto ripple */
   .icon-btn {
     @apply inline-flex items-center justify-center p-2 rounded-lg text-elegant-600 dark:text-elegant-400
-           hover:bg-elegant-100 dark:hover:bg-elegant-800 hover:text-elegant-900 dark:hover:text-white
-           transition-all duration-300 active:scale-90 hover:scale-105
-           focus:outline-none focus:ring-2 focus:ring-elegant-300 dark:focus:ring-elegant-700;
+           hover:bg-elegant-100/80 dark:hover:bg-elegant-800/80 hover:text-elegant-900 dark:hover:text-white
+           transition-all duration-200 active:scale-95 hover:scale-105
+           focus:outline-none focus:ring-2 focus:ring-elegant-300/50 dark:focus:ring-elegant-700/50;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .icon-btn-danger {
     @apply inline-flex items-center justify-center p-2 rounded-lg text-danger dark:text-danger-light
            hover:bg-danger/10 dark:hover:bg-danger/20 hover:text-danger-dark dark:hover:text-danger
-           transition-all duration-300 active:scale-90 hover:scale-105
-           focus:outline-none focus:ring-2 focus:ring-danger/30 dark:focus:ring-danger/50;
+           transition-all duration-200 active:scale-95 hover:scale-105
+           focus:outline-none focus:ring-2 focus:ring-danger/20 dark:focus:ring-danger/30;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .icon-btn-primary {
     @apply inline-flex items-center justify-center p-2 rounded-lg text-primary dark:text-primary-light
            hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary-dark dark:hover:text-white
-           transition-all duration-300 active:scale-90 hover:scale-105
-           focus:outline-none focus:ring-2 focus:ring-primary/30 dark:focus:ring-primary/50;
+           transition-all duration-200 active:scale-95 hover:scale-105
+           focus:outline-none focus:ring-2 focus:ring-primary/20 dark:focus:ring-primary/30;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* Action bubbles - Icon-only pills used in compact action bars */
   .action-bubble {
-    @apply inline-flex items-center justify-center w-11 h-11 rounded-full border border-elegant-200
+    @apply inline-flex items-center justify-center w-11 h-11 rounded-full border border-elegant-200/60
            bg-white dark:bg-elegant-900 text-elegant-700 dark:text-elegant-200 shadow-sm
-           transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg active:scale-95
+           transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:scale-95
            focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .action-bubble-primary {
@@ -299,7 +309,8 @@ input[type="tel"],
   /* Badge / Pills con hover mejorado */
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-           transition-all duration-300 hover:scale-105;
+           transition-all duration-200 hover:scale-105;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .badge-primary {
@@ -329,28 +340,28 @@ input[type="tel"],
 
   /* Tablas consistentes en todo el dashboard */
   .table-skin {
-    @apply w-full text-sm bg-white dark:bg-elegant-900 border border-elegant-200 dark:border-elegant-800 rounded-xl shadow-sm overflow-hidden;
+    @apply w-full text-sm bg-white dark:bg-elegant-900 border border-elegant-200/60 dark:border-elegant-800/60 rounded-xl shadow-sm overflow-hidden;
   }
 
   .table-skin thead tr {
-    @apply bg-gradient-to-r from-primary/10 to-primary-light/10 dark:from-primary/20 dark:to-primary-light/20 text-elegant-700 dark:text-elegant-200;
+    @apply bg-elegant-50/80 dark:bg-elegant-800/40 text-elegant-700 dark:text-elegant-200;
   }
 
   .table-skin th {
-    @apply p-3 text-left text-xs font-semibold uppercase tracking-wide;
+    @apply p-3.5 text-left text-xs font-semibold uppercase tracking-wide;
   }
 
   .table-skin td {
-    @apply p-3 align-middle text-elegant-800 dark:text-elegant-100;
+    @apply p-3.5 align-middle text-elegant-800 dark:text-elegant-100;
   }
 
   .table-skin tbody tr {
-    @apply border-t border-elegant-100 dark:border-elegant-800 hover:bg-secondary-lighter/30 dark:hover:bg-elegant-800/40 transition-colors;
+    @apply border-t border-elegant-100/60 dark:border-elegant-800/40 hover:bg-elegant-50/50 dark:hover:bg-elegant-800/20 transition-colors duration-150;
   }
 
   /* Superficie translucida para secciones */
 .glass-panel {
-  @apply bg-white/80 dark:bg-elegant-900/80 backdrop-blur-xl border border-elegant-200/60 dark:border-elegant-800/60 shadow-lg shadow-primary/5 rounded-2xl;
+  @apply bg-white/85 dark:bg-elegant-900/85 backdrop-blur-xl border border-elegant-200/50 dark:border-elegant-800/50 shadow-md shadow-primary/5 rounded-2xl;
 }
 }
 
@@ -737,9 +748,9 @@ textarea:focus-visible {
 
 .agenda-calendar .rbc-event {
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 4px 8px;
-  box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.15);
   color: inherit;
 }
 
@@ -770,10 +781,10 @@ textarea:focus-visible {
   background: #ffffff;
   border: 1px solid #cbd5e1;
   color: #0b162e;
-  border-radius: 10px;
-  padding: 6px 12px;
-  font-weight: 700;
-  box-shadow: 0 4px 10px -6px rgba(15, 23, 42, 0.35);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
 }
 
 .agenda-calendar .rbc-toolbar button:hover,
@@ -872,7 +883,7 @@ textarea:focus-visible {
 /* Event styles are handled by eventPropGetter */
 .dark .agenda-calendar .rbc-event {
   border: none;
-  box-shadow: 0 8px 20px -10px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 2px 10px -2px rgba(0, 0, 0, 0.4);
   color: inherit;
 }
 
@@ -958,12 +969,12 @@ textarea:focus-visible {
 }
 
 .agenda-calendar .rbc-event:hover {
-  transform: scale(1.02);
-  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.35);
+  transform: scale(1.015);
+  box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.25);
 }
 
 .dark .agenda-calendar .rbc-event:hover {
-  box-shadow: 0 10px 28px -10px rgba(0, 0, 0, 0.65);
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.5);
 }
 
 .agenda-calendar .rbc-addons-dnd-resizable {

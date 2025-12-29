@@ -49,7 +49,7 @@ export default function BirthdayFloatingButton({ patients }: BirthdayFloatingBut
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 bg-gradient-to-br from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-full p-4 shadow-2xl hover:shadow-pink-500/50 transition-all duration-200 transition-spring hover:scale-110 z-50 flex items-center gap-3 group"
+        className="fixed bottom-24 left-6 bg-gradient-to-br from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-full p-4 shadow-2xl hover:shadow-pink-500/50 transition-all duration-200 transition-spring hover:scale-110 z-50 flex items-center gap-3 group"
         aria-label="Ver cumpleaños próximos"
       >
         <IconWithBadge

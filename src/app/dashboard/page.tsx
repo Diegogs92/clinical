@@ -4,12 +4,12 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 export const dynamic = 'force-dynamic';
 import DashboardLayout from '@/components/DashboardLayout';
 import StatsOverview from '@/components/dashboard/StatsOverview';
-import BirthdayFloatingButton from '@/components/dashboard/BirthdayFloatingButton';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { updateAppointment, deleteAppointment } from '@/lib/appointments';
 import { Appointment, UserProfile } from '@/types';
+import { canModifyAppointment, getPermissionDeniedMessage } from '@/lib/appointmentPermissions';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import AppointmentForm from '@/components/appointments/AppointmentForm';
@@ -38,7 +38,7 @@ const statusOptions = [
 ];
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const { patients } = usePatients();
   const { appointments, loading: appointmentsLoading, refreshAppointments } = useAppointments();
   const { payments, pendingPayments, refreshPayments, refreshPendingPayments } = usePayments();
@@ -201,6 +201,12 @@ export default function DashboardPage() {
   };
 
   const handleCancel = async (appt: Appointment) => {
+    // Verificar permisos para modificar el turno
+    if (!canModifyAppointment(appt, user, userProfile)) {
+      toast.error(getPermissionDeniedMessage());
+      return;
+    }
+
     const displayName = appt.patientName || appt.title || 'este turno';
     const confirmed = await confirm({
       title: 'Cancelar turno',
@@ -255,9 +261,9 @@ export default function DashboardPage() {
   const handleDelete = async (appt: Appointment) => {
     if (!user) return;
 
-    // Verificar permisos: solo admin puede eliminar turnos de otros
-    if (appt.userId !== user?.uid && !permissions.canDeleteAppointmentsForOthers) {
-      toast.error('No tienes permisos para eliminar turnos de otros profesionales');
+    // Verificar permisos para eliminar el turno
+    if (!canModifyAppointment(appt, user, userProfile)) {
+      toast.error(getPermissionDeniedMessage());
       return;
     }
 
@@ -376,7 +382,7 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <DashboardLayout mobileAction={{ label: 'Nuevo turno', icon: PlusCircle, onPress: openNewAppointment }}>
+      <DashboardLayout>
         <div className="space-y-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
             <div className="w-full md:w-auto p-3 md:p-0 rounded-2xl border border-elegant-100/80 dark:border-elegant-800/70 bg-white/90 dark:bg-elegant-900/90 backdrop-blur-lg shadow-sm md:shadow-none md:border-0 md:bg-transparent flex items-center gap-2.5 md:gap-3">
@@ -390,14 +396,6 @@ export default function DashboardPage() {
                 </h1>
                 <p className="text-[10px] md:text-xs text-elegant-500 dark:text-elegant-400 truncate">Agenda sincronizada</p>
               </div>
-            </div>
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={openNewAppointment}
-                className="btn-primary flex items-center gap-2 hover:shadow-lg hover:scale-105 transition-all md:min-w-[180px]"
-              >
-                <PlusCircle className="w-4 h-4" /> Nuevo turno
-              </button>
             </div>
           </div>
 
@@ -509,11 +507,11 @@ export default function DashboardPage() {
                               )}
                             </td>
                             <td>
-                              <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                                a.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                                a.status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                                a.status === 'no-show' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' :
-                                'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                              <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${
+                                a.status === 'completed' ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200' :
+                                a.status === 'cancelled' ? 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200' :
+                                a.status === 'no-show' ? 'bg-gray-100/80 text-gray-800 dark:bg-gray-700/60 dark:text-gray-200' :
+                                'bg-blue-100/80 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200'
                               }`}>
                                 {translateAppointmentStatus(a.status)}
                               </span>
@@ -596,7 +594,7 @@ export default function DashboardPage() {
                     return (
                       <div
                         key={a.id}
-                        className="relative overflow-hidden bg-white/98 dark:bg-elegant-900/98 border border-elegant-200/80 dark:border-elegant-700/80 rounded-[20px] p-4 shadow-md hover:shadow-lg transition-all touch-manipulation backdrop-blur-sm active:scale-[0.99]"
+                        className="relative overflow-hidden bg-white/98 dark:bg-elegant-900/98 border border-elegant-200/60 dark:border-elegant-700/60 rounded-[20px] p-4 shadow-sm hover:shadow-md transition-all touch-manipulation backdrop-blur-sm active:scale-[0.99] duration-200"
                       >
                         <div className="absolute inset-x-0 -top-10 h-16 bg-gradient-to-r from-primary/8 via-secondary/8 to-primary/8 blur-2xl pointer-events-none" />
 
@@ -772,7 +770,6 @@ export default function DashboardPage() {
         )}
       </Modal>
 
-      <BirthdayFloatingButton patients={patients} />
       </DashboardLayout>
     </ProtectedRoute>
   );

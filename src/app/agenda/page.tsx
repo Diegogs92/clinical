@@ -6,6 +6,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { canModifyAppointment, getPermissionDeniedMessage } from '@/lib/appointmentPermissions';
 import { useToast } from '@/contexts/ToastContext';
 import { format, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, isWithinInterval, differenceInMinutes, parse } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -48,7 +49,7 @@ const localizer = dateFnsLocalizer({
 const DnDCalendar = withDragAndDrop(BigCalendar);
 
 export default function AgendaPage() {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const toast = useToast();
   const { appointments, loading, refreshAppointments } = useAppointments();
   const { patients } = usePatients();
@@ -421,6 +422,12 @@ export default function AgendaPage() {
       return;
     }
 
+    // Verificar permisos para modificar el turno
+    if (!canModifyAppointment(event, user, userProfile)) {
+      toast.error(getPermissionDeniedMessage());
+      return;
+    }
+
     // Verificar si el nuevo horario colisiona con alguna franja bloqueada
     const hasConflict = blockedSlots.some(slot => {
       const slotStart = combineDateAndTime(slot.date, slot.startTime);
@@ -479,6 +486,12 @@ export default function AgendaPage() {
 
     if (event.isBlocked) {
       toast.error('Las franjas bloqueadas no pueden redimensionarse. Elimínala y crea una nueva si es necesario.');
+      return;
+    }
+
+    // Verificar permisos para modificar el turno
+    if (!canModifyAppointment(event, user, userProfile)) {
+      toast.error(getPermissionDeniedMessage());
       return;
     }
 
@@ -542,6 +555,12 @@ export default function AgendaPage() {
     : '';
 
   const handleAttendance = async (evt: any) => {
+    // Verificar permisos para modificar el turno
+    if (!canModifyAppointment(evt, user, userProfile)) {
+      toast.error(getPermissionDeniedMessage());
+      return;
+    }
+
     try {
       await updateAppointment(evt.id, { status: 'completed' });
       await refreshAppointments();
@@ -553,6 +572,12 @@ export default function AgendaPage() {
   };
 
   const handleCancelAppointment = async (evt: any) => {
+    // Verificar permisos para modificar el turno
+    if (!canModifyAppointment(evt, user, userProfile)) {
+      toast.error(getPermissionDeniedMessage());
+      return;
+    }
+
     const displayName = evt.patientName || evt.title || 'este turno';
     const confirmed = await confirm({
       title: 'Cancelar turno',
@@ -604,6 +629,12 @@ export default function AgendaPage() {
   };
 
   const handleDelete = async (evt: any) => {
+    // Verificar permisos para eliminar el turno
+    if (!canModifyAppointment(evt, user, userProfile)) {
+      toast.error(getPermissionDeniedMessage());
+      return;
+    }
+
     const displayName = evt.patientName || evt.title || 'este turno';
     const confirmed = await confirm({
       title: 'Eliminar turno',
@@ -769,8 +800,8 @@ export default function AgendaPage() {
             className="agenda-calendar"
             localizer={localizer}
             events={calendarEvents}
-            defaultView={Views.WEEK}
-            views={[Views.WEEK, Views.DAY]}
+            defaultView={Views.DAY}
+            views={[Views.DAY, Views.WEEK, Views.MONTH]}
             step={stepMinutes}
             timeslots={Math.max(1, Math.floor(60 / stepMinutes))}
             defaultDate={currentDate}

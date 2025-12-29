@@ -44,7 +44,7 @@ export default function MobileNavBar({ items, action }: MobileNavBarProps) {
                 >
                   {/* Indicador activo superior */}
                   {active && (
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-primary dark:bg-primary-light rounded-b-full" />
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-gradient-to-r from-primary/60 via-primary to-primary/60 dark:from-primary-light/60 dark:via-primary-light dark:to-primary-light/60 rounded-b-full shadow-sm shadow-primary/30" />
                   )}
 
                   {/* Icono */}
@@ -58,7 +58,7 @@ export default function MobileNavBar({ items, action }: MobileNavBarProps) {
 
                   {/* Label */}
                   <span
-                    className={`text-[10px] font-medium transition-colors duration-150 ${
+                    className={`text-[11px] font-medium transition-colors duration-150 ${
                       active
                         ? 'text-primary dark:text-primary-light font-semibold'
                         : 'text-elegant-500 dark:text-elegant-400'
