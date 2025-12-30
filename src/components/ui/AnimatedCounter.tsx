@@ -18,7 +18,7 @@ export default function AnimatedCounter({
   prefix = '',
   suffix = '',
   decimals = 0,
-  separator = ',',
+  separator = '.',
   className = '',
 }: AnimatedCounterProps) {
   const [count, setCount] = useState(0);
