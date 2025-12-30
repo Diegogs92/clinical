@@ -97,7 +97,7 @@ const PatientSelect = memo(function PatientSelect({
         components={{ Option: CustomOption, SingleValue: CustomSingleValue }}
         classNames={{
           control: () =>
-            `!min-h-[42px] !border-elegant-200 dark:!border-gray-700 !rounded-lg hover:!border-primary-light dark:hover:!border-primary-dark !shadow-sm ${
+            `!min-h-[42px] !bg-white dark:!bg-elegant-900 !border-elegant-200 dark:!border-gray-700 !rounded-lg hover:!border-primary-light dark:hover:!border-primary-dark !shadow-sm ${
               error ? '!border-red-500' : ''
             }`,
           menu: () =>
@@ -105,11 +105,11 @@ const PatientSelect = memo(function PatientSelect({
           option: (state) =>
             `!cursor-pointer ${
               state.isFocused
-                ? '!bg-primary-50 dark:!bg-primary-900/20'
-                : '!bg-transparent'
+                ? '!bg-primary-50 dark:!bg-primary-900/20 !text-elegant-900 dark:!text-white'
+                : '!bg-transparent !text-elegant-900 dark:!text-white'
             } ${
               state.isSelected
-                ? '!bg-primary-100 dark:!bg-primary-900/40'
+                ? '!bg-primary-100 dark:!bg-primary-900/40 !text-elegant-900 dark:!text-white'
                 : ''
             }`,
           placeholder: () => '!text-gray-400 dark:!text-gray-500',
@@ -117,9 +117,13 @@ const PatientSelect = memo(function PatientSelect({
           input: () => '!text-elegant-900 dark:!text-elegant-50',
         }}
         styles={{
-          control: (base) => ({
+          control: (base, state) => ({
             ...base,
-            backgroundColor: 'var(--tw-bg-opacity, 1)',
+            backgroundColor: 'transparent',
+          }),
+          menu: (base) => ({
+            ...base,
+            backgroundColor: 'transparent',
           }),
         }}
       />

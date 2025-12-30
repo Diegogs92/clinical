@@ -263,15 +263,17 @@ export function CalendarSyncProvider({ children }: Props) {
     }
   }, [user, isConnected, refreshAppointments, getAuthHeader]);
 
-  useEffect(() => {
-    if (!isConnected) return;
-    syncFromGoogleCalendar();
-    const intervalId = setInterval(() => {
-      syncFromGoogleCalendar();
-    }, 5 * 60 * 1000);
+  // DESHABILITADO: Sincronización de Google Calendar hacia Dentify
+  // Solo sincronizamos de Dentify hacia Google Calendar para evitar duplicados y conflictos
+  // useEffect(() => {
+  //   if (!isConnected) return;
+  //   syncFromGoogleCalendar();
+  //   const intervalId = setInterval(() => {
+  //     syncFromGoogleCalendar();
+  //   }, 5 * 60 * 1000);
 
-    return () => clearInterval(intervalId);
-  }, [isConnected, syncFromGoogleCalendar]);
+  //   return () => clearInterval(intervalId);
+  // }, [isConnected, syncFromGoogleCalendar]);
 
   const reconnectCalendar = async (): Promise<boolean> => {
     if (!user) return false;
