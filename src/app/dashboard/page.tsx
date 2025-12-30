@@ -492,9 +492,13 @@ export default function DashboardPage() {
                           if (!a.fee) return 'Sin honorarios';
                           const deposit = a.deposit || 0;
                           if (paymentState.status === 'paid') return 'Pagado';
-                          if (deposit > 0 && paymentState.remainingAmount > 0) return 'Señado';
-                          if (paymentState.status === 'partial') return 'Parcial';
-                          return 'Pendiente';
+                          if (deposit > 0 && paymentState.remainingAmount > 0) {
+                            return `Señado (Falta: $${formatCurrency(paymentState.remainingAmount)})`;
+                          }
+                          if (paymentState.status === 'partial') {
+                            return `Parcial (Falta: $${formatCurrency(paymentState.remainingAmount)})`;
+                          }
+                          return `Pendiente ($${formatCurrency(a.fee)})`;
                         };
 
                         return (
