@@ -35,6 +35,7 @@ const schema = z.object({
   type: z.enum(['odontologia-general', 'ortodoncia', 'endodoncia', 'armonizacion']).default('odontologia-general'),
   fee: z.coerce.number().optional(),
   deposit: z.coerce.number().optional(),
+  installments: z.coerce.number().optional(),
   notes: z.string().optional(),
   followUpMonths: z.coerce.number().optional(),
   followUpValue: z.coerce.number().optional(),
@@ -75,6 +76,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         : 'odontologia-general') as 'odontologia-general' | 'ortodoncia' | 'endodoncia' | 'armonizacion',
       fee: initialData?.fee || undefined,
       deposit: initialData?.deposit || undefined,
+      installments: initialData?.installments || undefined,
       patientId: initialData?.patientId || '',
       professionalId: initialData?.userId || user?.uid || '',
       date: initialData?.date ? initialData.date.split('T')[0] : '',
@@ -259,6 +261,8 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         type: values.type,
         fee: values.fee ?? 0,
         deposit: values.deposit ?? 0,
+        installments: values.installments ?? undefined,
+        installmentAmount: values.installments && values.fee ? Math.ceil(values.fee / values.installments) : undefined,
         notes: values.notes || '',
         followUpMonths: values.followUpMonths ?? 0,
         followUpReason: values.followUpReason || '',
@@ -613,6 +617,23 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
               />
               Sin seña
             </label>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Cuotas</label>
+            <select className="input-field" {...register('installments')}>
+              <option value="">Pago único</option>
+              <option value="2">2 cuotas</option>
+              <option value="3">3 cuotas</option>
+              <option value="4">4 cuotas</option>
+              <option value="5">5 cuotas</option>
+              <option value="6">6 cuotas</option>
+              <option value="12">12 cuotas</option>
+            </select>
+            {watch('installments') && watch('fee') && (
+              <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                {watch('installments')} cuotas de ${Math.ceil((watch('fee') || 0) / Number(watch('installments'))).toLocaleString('es-AR')}
+              </p>
+            )}
           </div>
         </div>
 

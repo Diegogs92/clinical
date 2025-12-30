@@ -71,6 +71,8 @@ export interface Appointment {
   sessionType?: 'normal' | 'estetica'; // Tipo de sesión: normal o estética
   fee?: number; // Honorarios del turno
   deposit?: number; // Seña del turno
+  installments?: number; // Número de cuotas (si aplica)
+  installmentAmount?: number; // Monto de cada cuota
   notes?: string;
   insuranceId?: string;
   authorizationCode?: string;
