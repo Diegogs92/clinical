@@ -339,6 +339,16 @@ export default function DashboardPage() {
       return;
     }
 
+    // Calcular monto restante disponible
+    const paymentState = paymentStateFor(appt);
+    const remainingAmount = paymentState.remainingAmount;
+
+    // Validar que el pago no supere el monto restante
+    if (amountNum > remainingAmount) {
+      toast.error(`El monto ingresado ($${formatCurrency(amountNum)}) supera el monto restante ($${formatCurrency(remainingAmount)})`);
+      return;
+    }
+
     const isTotal = appt.fee ? amountNum >= appt.fee : true;
     const status: 'completed' | 'pending' = isTotal ? 'completed' : 'pending';
     console.log('[submitPayment] Es pago total', isTotal, 'Status:', status);
@@ -747,67 +757,84 @@ export default function DashboardPage() {
         title="Registrar pago"
         maxWidth="max-w-md"
       >
-        {paymentDialog.appointment && (
-          <div className="space-y-4">
-            <div className="space-y-1">
-              <p className="text-sm text-elegant-600 dark:text-elegant-300">
-                {paymentDialog.appointment.patientName || paymentDialog.appointment.title || 'Evento'}
-              </p>
-              <p className="text-lg font-semibold text-primary-dark dark:text-white">
-                Honorarios: ${paymentDialog.appointment.fee ? formatCurrency(paymentDialog.appointment.fee) : '0'}
-              </p>
-            </div>
+        {paymentDialog.appointment && (() => {
+          const paymentState = paymentStateFor(paymentDialog.appointment);
+          const remainingAmount = paymentState.remainingAmount;
+          const deposit = paymentDialog.appointment.deposit || 0;
 
-            <div className="flex items-center gap-2 bg-elegant-100 dark:bg-elegant-800/60 p-2 rounded-full">
-              <button
-                type="button"
-                className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'total' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
-                onClick={() => setPaymentDialog(p => ({ ...p, mode: 'total', amount: p.appointment?.fee?.toString() || '' }))}
-              >
-                Pago total
-              </button>
-              <button
-                type="button"
-                className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'partial' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
-                onClick={() => setPaymentDialog(p => ({ ...p, mode: 'partial', amount: '' }))}
-              >
-                Pago parcial
-              </button>
-            </div>
-
-            {paymentDialog.mode === 'partial' && (
+          return (
+            <div className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-elegant-600 dark:text-elegant-300">Monto a pagar</label>
-                <input
-                  type="number"
-                  min={0}
-                  value={paymentDialog.amount}
-                  onChange={(e) => setPaymentDialog(p => ({ ...p, amount: e.target.value }))}
-                  className="input-field text-sm py-2"
-                  placeholder="Ingresar monto"
-                />
+                <p className="text-sm text-elegant-600 dark:text-elegant-300">
+                  {paymentDialog.appointment.patientName || paymentDialog.appointment.title || 'Evento'}
+                </p>
+                <p className="text-lg font-semibold text-primary-dark dark:text-white">
+                  Honorarios: ${paymentDialog.appointment.fee ? formatCurrency(paymentDialog.appointment.fee) : '0'}
+                </p>
+                {deposit > 0 && (
+                  <p className="text-sm text-amber-600 dark:text-amber-400">
+                    Seña pagada: ${formatCurrency(deposit)}
+                  </p>
+                )}
+                <p className="text-sm font-semibold text-green-600 dark:text-green-400">
+                  Monto restante: ${formatCurrency(remainingAmount)}
+                </p>
               </div>
-            )}
 
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                className="btn-secondary text-sm px-4 py-2"
-                onClick={() => setPaymentDialog({ open: false, appointment: undefined, mode: 'total', amount: '' })}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                className="btn-primary text-sm px-4 py-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                onClick={submitPayment}
-                disabled={submittingPayment}
-              >
-                {submittingPayment ? 'Registrando...' : 'Registrar'}
-              </button>
+              <div className="flex items-center gap-2 bg-elegant-100 dark:bg-elegant-800/60 p-2 rounded-full">
+                <button
+                  type="button"
+                  className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'total' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
+                  onClick={() => setPaymentDialog(p => ({ ...p, mode: 'total', amount: remainingAmount.toString() }))}
+                >
+                  Pago total
+                </button>
+                <button
+                  type="button"
+                  className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'partial' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
+                  onClick={() => setPaymentDialog(p => ({ ...p, mode: 'partial', amount: '' }))}
+                >
+                  Pago parcial
+                </button>
+              </div>
+
+              {paymentDialog.mode === 'partial' && (
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-elegant-600 dark:text-elegant-300">
+                    Monto a pagar (máximo: ${formatCurrency(remainingAmount)})
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={remainingAmount}
+                    value={paymentDialog.amount}
+                    onChange={(e) => setPaymentDialog(p => ({ ...p, amount: e.target.value }))}
+                    className="input-field text-sm py-2"
+                    placeholder="Ingresar monto"
+                  />
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  className="btn-secondary text-sm px-4 py-2"
+                  onClick={() => setPaymentDialog({ open: false, appointment: undefined, mode: 'total', amount: '' })}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="btn-primary text-sm px-4 py-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                  onClick={submitPayment}
+                  disabled={submittingPayment}
+                >
+                  {submittingPayment ? 'Registrando...' : 'Registrar'}
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
       </Modal>
 
       </DashboardLayout>
