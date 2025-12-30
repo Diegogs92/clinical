@@ -173,12 +173,16 @@ export function CalendarSyncProvider({ children }: Props) {
         if (!event?.id) continue;
 
         const privateMeta = event.extendedProperties?.private || {};
-        const target =
-          (privateMeta.appointmentId && byId.get(privateMeta.appointmentId)) ||
-          byEventId.get(event.id);
+
+        // Buscar turno existente: primero por appointmentId en metadata, luego por googleCalendarEventId
+        let target = privateMeta.appointmentId ? byId.get(privateMeta.appointmentId) : undefined;
+        if (!target) {
+          target = byEventId.get(event.id);
+        }
 
         if (event.status === 'cancelled') {
           if (target) {
+            console.log(`[CalendarSync] Eliminando turno cancelado: ${target.id}`);
             await deleteAppointment(target.id);
           }
           continue;
@@ -217,6 +221,7 @@ export function CalendarSyncProvider({ children }: Props) {
         };
 
         if (target) {
+          console.log(`[CalendarSync] Actualizando turno existente: ${target.id} para evento ${event.id}`);
           const updatePayload: Partial<Appointment> = {};
 
           if (target.date !== basePayload.date) updatePayload.date = basePayload.date;
@@ -229,18 +234,25 @@ export function CalendarSyncProvider({ children }: Props) {
             if (target.notes !== basePayload.notes) updatePayload.notes = basePayload.notes;
           }
 
-          if (!target.googleCalendarEventId) {
-            updatePayload.googleCalendarEventId = basePayload.googleCalendarEventId;
+          if (!target.googleCalendarEventId || target.googleCalendarEventId !== event.id) {
+            updatePayload.googleCalendarEventId = event.id;
           }
 
           if (Object.keys(updatePayload).length > 0) {
+            console.log(`[CalendarSync] Cambios detectados:`, updatePayload);
             await updateAppointment(target.id, updatePayload);
           }
         } else {
-          await createAppointment({
-            ...basePayload,
-            status: 'scheduled',
-          } as Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>);
+          // Solo crear si NO existe metadata de appointmentId (es un evento nuevo creado en Google Calendar)
+          if (!privateMeta.appointmentId) {
+            console.log(`[CalendarSync] Creando nuevo turno desde evento Google: ${event.id}`);
+            await createAppointment({
+              ...basePayload,
+              status: 'scheduled',
+            } as Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>);
+          } else {
+            console.warn(`[CalendarSync] Evento con appointmentId ${privateMeta.appointmentId} no encontrado localmente, se omite para evitar duplicados`);
+          }
         }
       }
     } catch (error) {
