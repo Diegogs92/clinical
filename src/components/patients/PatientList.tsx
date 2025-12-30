@@ -344,6 +344,7 @@ export default function PatientList() {
             title: string;
             description: string;
             amount?: number;
+            notes?: string;
           }> = [];
 
           // Agregar turnos
@@ -357,6 +358,7 @@ export default function PatientList() {
               title: `Turno ${translateAppointmentStatus(appt.status)}`,
               description: `${appt.type || 'Consulta'} - ${appt.startTime} a ${appt.endTime}`,
               amount: appt.fee,
+              notes: appt.notes,
             });
 
             // Si tiene seña, agregarla
@@ -431,6 +433,12 @@ export default function PatientList() {
                               <div className="flex-1">
                                 <h4 className="font-semibold text-elegant-900 dark:text-white">{event.title}</h4>
                                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{event.description}</p>
+                                {event.notes && (
+                                  <div className="mt-2 p-2 bg-gray-50 dark:bg-elegant-900/50 rounded border border-gray-200 dark:border-gray-700">
+                                    <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Notas:</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">{event.notes}</p>
+                                  </div>
+                                )}
                                 <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
                                   {new Date(event.date).toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                                   {event.time && ` • ${event.time}`}
