@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { deletePatient } from '@/lib/patients';
 import { listPayments } from '@/lib/payments';
 import { Payment } from '@/types';
-import { Trash2, Edit, Search } from 'lucide-react';
+import { Trash2, Edit, Search, Calendar, DollarSign, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import ECGLoader from '@/components/ui/ECGLoader';
@@ -17,6 +17,7 @@ import { useAppointments } from '@/contexts/AppointmentsContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { combineDateAndTime } from '@/lib/dateUtils';
 import { formatCurrency } from '@/lib/formatCurrency';
+import { translateAppointmentStatus } from '@/lib/translations';
 
 export default function PatientList() {
   const { user } = useAuth();
@@ -24,6 +25,7 @@ export default function PatientList() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [isNewPatientModalOpen, setIsNewPatientModalOpen] = useState(false);
+  const [historyModal, setHistoryModal] = useState<{ open: boolean; patientId?: string; patientName?: string }>({ open: false });
   const { patients, loading: patientsLoading, refreshPatients } = usePatients();
   const { appointments } = useAppointments();
   const { canViewAllPayments } = usePermissions();
@@ -194,16 +196,16 @@ export default function PatientList() {
                       </button>
                     </div>
                   </td>
-                  <td className="font-medium" onClick={() => window.location.href = `/patients/${p.id}/history`}>{p.lastName}</td>
-                  <td onClick={() => window.location.href = `/patients/${p.id}/history`}>{p.firstName}</td>
-                  <td onClick={() => window.location.href = `/patients/${p.id}/history`}>{p.dni}</td>
-                  <td onClick={() => window.location.href = `/patients/${p.id}/history`}>{p.phone}</td>
-                  <td onClick={() => window.location.href = `/patients/${p.id}/history`}>
+                  <td className="font-medium" onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>{p.lastName}</td>
+                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>{p.firstName}</td>
+                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>{p.dni}</td>
+                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>{p.phone}</td>
+                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>
                     <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs font-semibold">
                       {patientAppts.length}
                     </span>
                   </td>
-                  <td onClick={() => window.location.href = `/patients/${p.id}/history`}>
+                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>
                     {totalPaid > 0 ? (
                       <span className="text-green-600 dark:text-green-400 font-semibold">
                         ${formatCurrency(totalPaid)}
@@ -212,7 +214,7 @@ export default function PatientList() {
                       <span className="text-secondary dark:text-gray-500">-</span>
                     )}
                   </td>
-                  <td onClick={() => window.location.href = `/patients/${p.id}/history`}>
+                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>
                     {debt > 0 ? (
                       <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded-full text-xs font-semibold">
                         ${formatCurrency(debt)}
@@ -311,6 +313,148 @@ export default function PatientList() {
           </div>
         )}
       </div>
+
+      {/* Modal de Historial del Paciente */}
+      <Modal
+        open={historyModal.open}
+        onClose={() => setHistoryModal({ open: false })}
+        title={`Historial de ${historyModal.patientName || 'Paciente'}`}
+        maxWidth="max-w-4xl"
+      >
+        {historyModal.patientId && (() => {
+          const patientAppts = appointments
+            .filter(a => a.patientId === historyModal.patientId)
+            .sort((a, b) => {
+              const dateCompare = b.date.localeCompare(a.date);
+              if (dateCompare !== 0) return dateCompare;
+              return b.startTime.localeCompare(a.startTime);
+            });
+
+          const patientPayments = payments
+            .filter(p => p.patientId === historyModal.patientId)
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+          // Crear timeline de eventos
+          const events: Array<{
+            date: string;
+            time?: string;
+            type: 'appointment' | 'payment' | 'status_change';
+            icon: any;
+            color: string;
+            title: string;
+            description: string;
+            amount?: number;
+          }> = [];
+
+          // Agregar turnos
+          patientAppts.forEach(appt => {
+            events.push({
+              date: appt.date,
+              time: appt.startTime,
+              type: 'appointment',
+              icon: Calendar,
+              color: 'blue',
+              title: `Turno ${translateAppointmentStatus(appt.status)}`,
+              description: `${appt.type || 'Consulta'} - ${appt.startTime} a ${appt.endTime}`,
+              amount: appt.fee,
+            });
+
+            // Si tiene seña, agregarla
+            if (appt.deposit && appt.deposit > 0) {
+              events.push({
+                date: appt.date,
+                time: appt.startTime,
+                type: 'payment',
+                icon: DollarSign,
+                color: 'amber',
+                title: 'Seña pagada',
+                description: `Seña del turno del ${new Date(appt.date).toLocaleDateString('es-AR')}`,
+                amount: appt.deposit,
+              });
+            }
+          });
+
+          // Agregar pagos
+          patientPayments.forEach(payment => {
+            events.push({
+              date: payment.date.split('T')[0],
+              time: new Date(payment.date).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
+              type: 'payment',
+              icon: payment.status === 'completed' ? CheckCircle : Clock,
+              color: payment.status === 'completed' ? 'green' : 'yellow',
+              title: payment.status === 'completed' ? 'Pago completado' : 'Pago parcial',
+              description: payment.consultationType || 'Pago',
+              amount: payment.amount,
+            });
+          });
+
+          // Ordenar eventos por fecha y hora
+          events.sort((a, b) => {
+            const dateCompare = b.date.localeCompare(a.date);
+            if (dateCompare !== 0) return dateCompare;
+            return (b.time || '').localeCompare(a.time || '');
+          });
+
+          return (
+            <div className="space-y-4">
+              {events.length === 0 ? (
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                  No hay movimientos registrados para este paciente
+                </div>
+              ) : (
+                <div className="relative">
+                  {/* Timeline line */}
+                  <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700"></div>
+
+                  {/* Events */}
+                  <div className="space-y-6">
+                    {events.map((event, index) => {
+                      const Icon = event.icon;
+                      const colorClasses = {
+                        blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+                        green: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+                        amber: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
+                        yellow: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400',
+                        red: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
+                      };
+
+                      return (
+                        <div key={index} className="relative flex gap-4 items-start">
+                          {/* Icon */}
+                          <div className={`relative z-10 flex items-center justify-center w-12 h-12 rounded-full ${colorClasses[event.color as keyof typeof colorClasses]}`}>
+                            <Icon className="w-5 h-5" />
+                          </div>
+
+                          {/* Content */}
+                          <div className="flex-1 bg-white dark:bg-elegant-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-elegant-900 dark:text-white">{event.title}</h4>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{event.description}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                                  {new Date(event.date).toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                  {event.time && ` • ${event.time}`}
+                                </p>
+                              </div>
+                              {event.amount !== undefined && (
+                                <div className="text-right">
+                                  <p className="text-lg font-bold text-primary dark:text-primary-light">
+                                    ${formatCurrency(event.amount)}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+      </Modal>
     </div>
   );
 }
