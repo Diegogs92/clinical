@@ -13,7 +13,7 @@ import { canModifyAppointment, getPermissionDeniedMessage } from '@/lib/appointm
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import AppointmentForm from '@/components/appointments/AppointmentForm';
-import { CalendarDays, PlusCircle, Edit2, DollarSign, Search, Clock, Ban, Trash2 } from 'lucide-react';
+import { CalendarDays, PlusCircle, Edit, DollarSign, Search, Clock, Ban, Trash2 } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { useToast } from '@/contexts/ToastContext';
 import { translateAppointmentStatus } from '@/lib/translations';
@@ -511,7 +511,7 @@ export default function DashboardPage() {
                                     className="icon-btn-primary"
                                     aria-label="Editar turno"
                                   >
-                                    <Edit2 className="w-4 h-4" />
+                                    <Edit className="w-4 h-4" />
                                   </button>
                                 )}
                                 {(a.userId === user?.uid || permissions.canDeleteAppointmentsForOthers) && (
@@ -706,7 +706,7 @@ export default function DashboardPage() {
                                 className="flex items-center justify-center px-2 py-2.5 rounded-xl bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light transition-all touch-manipulation active:scale-95"
                                 aria-label="Editar"
                               >
-                                <Edit2 className="w-4 h-4" />
+                                <Edit className="w-4 h-4" />
                               </button>
                             )}
                             {(a.userId === user?.uid || permissions.canEditAppointmentsForOthers) && (

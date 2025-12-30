@@ -183,8 +183,8 @@ export default function PatientList() {
               const debt = getPatientDebt(p.id);
 
               return (
-                <tr key={p.id}>
-                  <td>
+                <tr key={p.id} className="cursor-pointer hover:bg-elegant-50 dark:hover:bg-elegant-800/30 transition-colors">
+                  <td onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-1">
                       <Link href={`/patients/${p.id}`} className="icon-btn-primary" aria-label="Editar paciente">
                         <Edit className="w-4 h-4" />
@@ -194,16 +194,16 @@ export default function PatientList() {
                       </button>
                     </div>
                   </td>
-                  <td className="font-medium">{p.lastName}</td>
-                  <td>{p.firstName}</td>
-                  <td>{p.dni}</td>
-                  <td>{p.phone}</td>
-                  <td>
+                  <td className="font-medium" onClick={() => window.location.href = `/patients/${p.id}/history`}>{p.lastName}</td>
+                  <td onClick={() => window.location.href = `/patients/${p.id}/history`}>{p.firstName}</td>
+                  <td onClick={() => window.location.href = `/patients/${p.id}/history`}>{p.dni}</td>
+                  <td onClick={() => window.location.href = `/patients/${p.id}/history`}>{p.phone}</td>
+                  <td onClick={() => window.location.href = `/patients/${p.id}/history`}>
                     <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs font-semibold">
                       {patientAppts.length}
                     </span>
                   </td>
-                  <td>
+                  <td onClick={() => window.location.href = `/patients/${p.id}/history`}>
                     {totalPaid > 0 ? (
                       <span className="text-green-600 dark:text-green-400 font-semibold">
                         ${formatCurrency(totalPaid)}
@@ -212,7 +212,7 @@ export default function PatientList() {
                       <span className="text-secondary dark:text-gray-500">-</span>
                     )}
                   </td>
-                  <td>
+                  <td onClick={() => window.location.href = `/patients/${p.id}/history`}>
                     {debt > 0 ? (
                       <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded-full text-xs font-semibold">
                         ${formatCurrency(debt)}

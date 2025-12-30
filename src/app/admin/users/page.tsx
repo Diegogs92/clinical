@@ -329,6 +329,7 @@ export default function UsersPage() {
               <table className="w-full">
                 <thead className="bg-elegant-50 dark:bg-elegant-800/50 border-b border-elegant-200 dark:border-elegant-700">
                   <tr>
+                    <th className="w-20"></th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-elegant-700 dark:text-elegant-300 uppercase tracking-wider">
                       Usuario
                     </th>
@@ -341,9 +342,6 @@ export default function UsersPage() {
                     <th className="px-6 py-3 text-left text-xs font-semibold text-elegant-700 dark:text-elegant-300 uppercase tracking-wider">
                       Creado
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-elegant-700 dark:text-elegant-300 uppercase tracking-wider">
-                      Acciones
-                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-elegant-200 dark:divide-elegant-700">
@@ -352,6 +350,26 @@ export default function UsersPage() {
                       key={user.uid}
                       className="hover:bg-elegant-50 dark:hover:bg-elegant-800/30 transition-colors"
                     >
+                      <td>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleEditUser(user)}
+                            className="icon-btn-primary"
+                            aria-label="Editar usuario"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(user)}
+                            disabled={user.uid === userProfile?.uid}
+                            className="icon-btn-danger"
+                            aria-label="Eliminar usuario"
+                            title={user.uid === userProfile?.uid ? 'No puedes eliminar tu propio usuario' : 'Eliminar usuario'}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center font-bold text-sm shadow-md">
@@ -385,26 +403,6 @@ export default function UsersPage() {
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4" />
                           {new Date(user.createdAt).toLocaleDateString('es-AR')}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleEditUser(user)}
-                            className="inline-flex items-center gap-2 px-3 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-colors font-medium text-sm"
-                          >
-                            <Edit className="w-4 h-4" />
-                            Editar
-                          </button>
-                          <button
-                            onClick={() => handleDeleteUser(user)}
-                            disabled={user.uid === userProfile?.uid}
-                            className="inline-flex items-center gap-2 px-3 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                            title={user.uid === userProfile?.uid ? 'No puedes eliminar tu propio usuario' : 'Eliminar usuario'}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            Eliminar
-                          </button>
                         </div>
                       </td>
                     </tr>
