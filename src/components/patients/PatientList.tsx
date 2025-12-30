@@ -49,8 +49,10 @@ export default function PatientList() {
 
     return patientAppointments.reduce((sum, appt) => {
       const paid = paymentTotalsByAppointment.get(appt.id) || 0;
-      if (appt.status === 'cancelled' && paid === 0) return sum;
-      const remaining = Math.max(0, (appt.fee || 0) - paid);
+      const deposit = appt.deposit || 0;
+      if (appt.status === 'cancelled' && paid === 0 && deposit === 0) return sum;
+      const totalPaid = paid + deposit;
+      const remaining = Math.max(0, (appt.fee || 0) - totalPaid);
       return sum + remaining;
     }, 0);
   };
