@@ -5,6 +5,7 @@ import { useAppointments } from '@/contexts/AppointmentsContext';
 import { usePayments } from '@/contexts/PaymentsContext';
 import { combineDateAndTime } from '@/lib/dateUtils';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
+import { formatCurrency } from '@/lib/formatCurrency';
 
 interface Stat {
   label: string;
@@ -93,7 +94,7 @@ export default function StatsOverview() {
     },
     {
       label: 'Ingresos Mes',
-      value: `$${monthlyIncome.toLocaleString()}`,
+      value: `$${formatCurrency(monthlyIncome)}`,
       numericValue: monthlyIncome,
       isMonetary: true,
       sub: `${payments.filter(p => (p.status === 'completed' || p.status === 'pending') && new Date(p.date).getMonth() === currentMonth && new Date(p.date).getFullYear() === currentYear).length} pago(s)`,
@@ -101,7 +102,7 @@ export default function StatsOverview() {
     },
     {
       label: 'Pendientes Cobro',
-      value: `$${pendingSummary.amount.toLocaleString()}`,
+      value: `$${formatCurrency(pendingSummary.amount)}`,
       numericValue: pendingSummary.amount,
       isMonetary: true,
       sub: `${pendingSummary.count} pendiente${pendingSummary.count !== 1 ? 's' : ''}`,

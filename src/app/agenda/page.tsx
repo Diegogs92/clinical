@@ -36,6 +36,7 @@ import { DollarSign, CheckCircle2, Ban as BanIcon, Edit2, Trash2 } from 'lucide-
 import { useConfirm } from '@/contexts/ConfirmContext';
 import { usePayments } from '@/contexts/PaymentsContext';
 import { useCalendarSync } from '@/contexts/CalendarSyncContext';
+import { formatCurrency } from '@/lib/formatCurrency';
 
 const locales = { es };
 const localizer = dateFnsLocalizer({
@@ -599,7 +600,7 @@ export default function AgendaPage() {
       if (isToday && evt.fee && evt.appointmentType === 'patient' && evt.patientId && evt.patientName) {
         const charge = await confirm({
           title: 'Cobraste honorarios?',
-          description: `Registrar honorarios de $${evt.fee.toLocaleString()} para este turno cancelado hoy?`,
+          description: `Registrar honorarios de $${formatCurrency(evt.fee)} para este turno cancelado hoy?`,
           confirmText: 'Si, registrar',
           cancelText: 'No, omitir',
           tone: 'success',
@@ -1070,7 +1071,7 @@ export default function AgendaPage() {
                 </div>
                 <div className="bg-elegant-50 dark:bg-elegant-800/50 rounded-lg p-3">
                   <p className="text-xs font-medium text-elegant-500 dark:text-elegant-400 mb-1">Honorarios</p>
-                  <p className="text-lg font-semibold text-primary dark:text-primary-light">{selectedEvent.fee ? `$${selectedEvent.fee.toLocaleString()}` : '-'}</p>
+                  <p className="text-lg font-semibold text-primary dark:text-primary-light">{selectedEvent.fee ? `$${formatCurrency(selectedEvent.fee)}` : '-'}</p>
                 </div>
               </div>
 
@@ -1150,7 +1151,7 @@ export default function AgendaPage() {
                 {paymentDialog.appointment.patientName || paymentDialog.appointment.title || 'Evento'}
               </p>
               <p className="text-lg font-semibold text-primary-dark dark:text-white">
-                Honorarios: ${paymentDialog.appointment.fee?.toLocaleString()}
+                Honorarios: ${paymentDialog.appointment.fee ? formatCurrency(paymentDialog.appointment.fee) : '0'}
               </p>
             </div>
 

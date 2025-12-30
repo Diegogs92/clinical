@@ -16,6 +16,7 @@ import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { combineDateAndTime } from '@/lib/dateUtils';
+import { formatCurrency } from '@/lib/formatCurrency';
 
 export default function PatientList() {
   const { user } = useAuth();
@@ -190,7 +191,7 @@ export default function PatientList() {
                   <td>
                     {totalPaid > 0 ? (
                       <span className="text-green-600 dark:text-green-400 font-semibold">
-                        ${totalPaid.toLocaleString()}
+                        ${formatCurrency(totalPaid)}
                       </span>
                     ) : (
                       <span className="text-secondary dark:text-gray-500">-</span>
@@ -199,7 +200,7 @@ export default function PatientList() {
                   <td>
                     {debt > 0 ? (
                       <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded-full text-xs font-semibold">
-                        ${debt.toLocaleString()}
+                        ${formatCurrency(debt)}
                       </span>
                     ) : (
                       <span className="text-secondary dark:text-gray-500">-</span>
@@ -259,7 +260,7 @@ export default function PatientList() {
                   <div className="text-xs text-secondary dark:text-gray-400 mb-1">Pagado</div>
                   {totalPaid > 0 ? (
                     <span className="text-green-600 dark:text-green-400 font-semibold text-sm">
-                      ${totalPaid.toLocaleString()}
+                      ${formatCurrency(totalPaid)}
                     </span>
                   ) : (
                     <span className="text-secondary dark:text-gray-500">-</span>
@@ -269,7 +270,7 @@ export default function PatientList() {
                   <div className="text-xs text-secondary dark:text-gray-400 mb-1">Deuda</div>
                   {debt > 0 ? (
                     <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded-full text-xs font-semibold">
-                      ${debt.toLocaleString()}
+                      ${formatCurrency(debt)}
                     </span>
                   ) : (
                     <span className="text-secondary dark:text-gray-500">-</span>

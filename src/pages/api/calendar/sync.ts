@@ -5,6 +5,7 @@ import { combineDateAndTime } from '@/lib/dateUtils';
 import { requireUserId } from '@/lib/serverAuth';
 import { getOAuthClient, getRefreshToken } from '@/lib/googleCalendarAuth';
 import { listPaymentsByAppointment } from '@/lib/payments';
+import { formatCurrency } from '@/lib/formatCurrency';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -105,15 +106,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const pending = Math.max(0, fee - totalPaid);
 
       if (fee > 0) {
-        parts.push(`Honorarios: $${fee.toLocaleString('es-AR')}`);
+        parts.push(`Honorarios: $${formatCurrency(fee)}`);
         if (deposit > 0) {
-          parts.push(`Seña: $${deposit.toLocaleString('es-AR')}`);
+          parts.push(`Seña: $${formatCurrency(deposit)}`);
         }
         if (paymentsTotal > 0) {
-          parts.push(`Pagos: $${paymentsTotal.toLocaleString('es-AR')}`);
+          parts.push(`Pagos: $${formatCurrency(paymentsTotal)}`);
         }
         if (pending > 0) {
-          parts.push(`Pendiente: $${pending.toLocaleString('es-AR')}`);
+          parts.push(`Pendiente: $${formatCurrency(pending)}`);
         } else if (totalPaid >= fee) {
           parts.push('Estado: Pagado ✓');
         }

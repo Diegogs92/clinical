@@ -13,6 +13,7 @@ import { Edit2, Trash2 } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { combineDateAndTime } from '@/lib/dateUtils';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
+import { formatCurrency } from '@/lib/formatCurrency';
 export const dynamic = 'force-dynamic';
 
 export default function FeesPage() {
@@ -81,7 +82,7 @@ export default function FeesPage() {
 
     const confirmed = await confirm({
       title: 'Confirmar cambios',
-      description: `¿Actualizar el honorario de ${editingPayment.patientName} de $${editingPayment.amount.toLocaleString()} a $${amountNum.toLocaleString()}?`,
+      description: `¿Actualizar el honorario de ${editingPayment.patientName} de $${formatCurrency(editingPayment.amount)} a $${formatCurrency(amountNum)}?`,
       confirmText: 'Guardar cambios',
       tone: 'success',
     });
@@ -106,7 +107,7 @@ export default function FeesPage() {
   const handleDelete = async (payment: Payment) => {
     const confirmed = await confirm({
       title: 'Eliminar honorario',
-      description: `¿Eliminar el honorario de $${payment.amount.toLocaleString()} de ${payment.patientName}?`,
+      description: `¿Eliminar el honorario de $${formatCurrency(payment.amount)} de ${payment.patientName}?`,
       confirmText: 'Eliminar',
       tone: 'danger',
     });
@@ -191,7 +192,7 @@ export default function FeesPage() {
                   {payments.slice(0, 10).map(p => (
                     <tr key={p.id}>
                       <td>{p.patientName}</td>
-                      <td>${p.amount.toLocaleString()}</td>
+                      <td>${formatCurrency(p.amount)}</td>
                       <td>{new Date(p.date).toLocaleDateString()}</td>
                       <td className="text-right">
                         <div className="flex items-center justify-end gap-1">
@@ -238,7 +239,7 @@ export default function FeesPage() {
                   {pending.slice(0, 10).map(p => (
                     <tr key={p.id}>
                       <td>{p.patientName}</td>
-                      <td>${p.amount.toLocaleString()}</td>
+                      <td>${formatCurrency(p.amount)}</td>
                       <td>{new Date(p.date).toLocaleDateString()}</td>
                       <td className="text-right">
                         <div className="flex items-center justify-end gap-1">

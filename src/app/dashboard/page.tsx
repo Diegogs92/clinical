@@ -28,6 +28,7 @@ import { es } from 'date-fns/locale';
 import { combineDateAndTime } from '@/lib/dateUtils';
 import { usePermissions } from '@/hooks/usePermissions';
 import { listProfessionals } from '@/lib/users';
+import { formatCurrency } from '@/lib/formatCurrency';
 
 const statusOptions = [
   { value: '', label: 'Todos los estados' },
@@ -229,7 +230,7 @@ export default function DashboardPage() {
       if (isToday && appt.fee && appt.appointmentType === 'patient' && appt.patientId && appt.patientName) {
         const charge = await confirm({
           title: 'Cobraste honorarios?',
-          description: `Registrar honorarios de $${appt.fee.toLocaleString()} para este turno cancelado hoy?`,
+          description: `Registrar honorarios de $${formatCurrency(appt.fee)} para este turno cancelado hoy?`,
           confirmText: 'Si, registrar',
           cancelText: 'No, omitir',
           tone: 'success',
@@ -500,7 +501,7 @@ export default function DashboardPage() {
                             <td>
                               {a.fee ? (
                                 <span className="font-semibold text-elegant-900 dark:text-white">
-                                  ${a.fee.toLocaleString()}
+                                  ${formatCurrency(a.fee)}
                                 </span>
                               ) : (
                                 <span className="text-gray-400">-</span>
@@ -530,7 +531,7 @@ export default function DashboardPage() {
                                           : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
                                     }`}
                                     aria-label="Registrar pago"
-                                    title={a.fee && paymentStateFor(a).remainingAmount > 0 ? `Pendiente: $${paymentStateFor(a).remainingAmount.toLocaleString()}` : 'Pago completo'}
+                                    title={a.fee && paymentStateFor(a).remainingAmount > 0 ? `Pendiente: $${formatCurrency(paymentStateFor(a).remainingAmount)}` : 'Pago completo'}
                                   >
                                     <DollarSign className="w-4 h-4" />
                                   </button>
@@ -581,9 +582,9 @@ export default function DashboardPage() {
                       paymentState.status === 'paid'
                         ? 'Pagado'
                         : paymentState.status === 'partial'
-                          ? `$${paymentState.remainingAmount.toLocaleString()}`
+                          ? `$${formatCurrency(paymentState.remainingAmount)}`
                           : a.fee
-                            ? `$${(paymentState.remainingAmount || a.fee).toLocaleString()}`
+                            ? `$${formatCurrency(paymentState.remainingAmount || a.fee)}`
                             : 'Sin honorarios';
                     const paymentTone =
                       paymentState.status === 'paid'
@@ -714,7 +715,7 @@ export default function DashboardPage() {
                 {paymentDialog.appointment.patientName || paymentDialog.appointment.title || 'Evento'}
               </p>
               <p className="text-lg font-semibold text-primary-dark dark:text-white">
-                Honorarios: ${paymentDialog.appointment.fee?.toLocaleString()}
+                Honorarios: ${paymentDialog.appointment.fee ? formatCurrency(paymentDialog.appointment.fee) : '0'}
               </p>
             </div>
 
