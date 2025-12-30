@@ -470,6 +470,7 @@ export default function DashboardPage() {
                   <table className="table-skin">
                     <thead>
                       <tr>
+                        <th className="w-20"></th>
                         <th>Fecha</th>
                         <th>Hora</th>
                         <th>Paciente</th>
@@ -477,7 +478,6 @@ export default function DashboardPage() {
                         <th>Honorarios</th>
                         <th>Estado Turno</th>
                         <th>Estado Pago</th>
-                        <th className="text-right">Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -499,6 +499,28 @@ export default function DashboardPage() {
 
                         return (
                           <tr key={a.id}>
+                            <td>
+                              <div className="flex items-center gap-1">
+                                {(a.userId === user?.uid || permissions.canEditAppointmentsForOthers) && (
+                                  <button
+                                    onClick={() => handleEdit(a)}
+                                    className="icon-btn-primary"
+                                    aria-label="Editar turno"
+                                  >
+                                    <Edit2 className="w-4 h-4" />
+                                  </button>
+                                )}
+                                {(a.userId === user?.uid || permissions.canDeleteAppointmentsForOthers) && (
+                                  <button
+                                    onClick={() => handleDelete(a)}
+                                    className="icon-btn-danger"
+                                    aria-label="Eliminar turno"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+                            </td>
                             <td className="font-medium">{fecha}</td>
                             <td>{a.startTime} - {a.endTime}</td>
                             <td>{a.patientName || a.title || 'Evento'}</td>
@@ -521,17 +543,48 @@ export default function DashboardPage() {
                               )}
                             </td>
                             <td>
-                              <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${
-                                a.status === 'completed' ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200' :
-                                a.status === 'cancelled' ? 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200' :
-                                a.status === 'no-show' ? 'bg-gray-100/80 text-gray-800 dark:bg-gray-700/60 dark:text-gray-200' :
-                                'bg-blue-100/80 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200'
-                              }`}>
-                                {translateAppointmentStatus(a.status)}
-                              </span>
+                              {(a.userId === user?.uid || permissions.canEditAppointmentsForOthers) ? (
+                                <button
+                                  onClick={() => handleCancel(a)}
+                                  disabled={a.status === 'cancelled'}
+                                  className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:hover:scale-100 ${
+                                    a.status === 'completed' ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-800/60' :
+                                    a.status === 'cancelled' ? 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200' :
+                                    a.status === 'no-show' ? 'bg-gray-100/80 text-gray-800 dark:bg-gray-700/60 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600/60' :
+                                    'bg-blue-100/80 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800/60'
+                                  }`}
+                                >
+                                  {translateAppointmentStatus(a.status)}
+                                </button>
+                              ) : (
+                                <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${
+                                  a.status === 'completed' ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200' :
+                                  a.status === 'cancelled' ? 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200' :
+                                  a.status === 'no-show' ? 'bg-gray-100/80 text-gray-800 dark:bg-gray-700/60 dark:text-gray-200' :
+                                  'bg-blue-100/80 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200'
+                                }`}>
+                                  {translateAppointmentStatus(a.status)}
+                                </span>
+                              )}
                             </td>
                             <td>
-                              {a.fee ? (
+                              {a.fee && permissions.canRegisterPayments ? (
+                                <button
+                                  onClick={() => openPaymentDialog(a)}
+                                  disabled={paymentState.status === 'paid'}
+                                  className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:hover:scale-100 ${
+                                    paymentState.status === 'paid'
+                                      ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200'
+                                      : (a.deposit || 0) > 0 && paymentState.remainingAmount > 0
+                                        ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 hover:bg-amber-200 dark:hover:bg-amber-800/60'
+                                        : paymentState.status === 'partial'
+                                          ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 hover:bg-amber-200 dark:hover:bg-amber-800/60'
+                                          : 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800/60'
+                                  }`}
+                                >
+                                  {getPaymentStatusLabel()}
+                                </button>
+                              ) : a.fee ? (
                                 <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${
                                   paymentState.status === 'paid'
                                     ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200'
@@ -546,54 +599,6 @@ export default function DashboardPage() {
                               ) : (
                                 <span className="text-gray-400 text-xs">-</span>
                               )}
-                            </td>
-                            <td className="text-right">
-                              <div className="flex items-center justify-end gap-1">
-                                {permissions.canRegisterPayments && (
-                                  <button
-                                    onClick={() => openPaymentDialog(a)}
-                                    disabled={!a.fee}
-                                    className={`p-1.5 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
-                                      paymentStateFor(a).status === 'paid'
-                                        ? 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'
-                                        : paymentStateFor(a).status === 'partial'
-                                          ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20'
-                                          : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
-                                    }`}
-                                    aria-label="Registrar pago"
-                                    title={a.fee && paymentStateFor(a).remainingAmount > 0 ? `Pendiente: $${formatCurrency(paymentStateFor(a).remainingAmount)}` : 'Pago completo'}
-                                  >
-                                    <DollarSign className="w-4 h-4" />
-                                  </button>
-                                )}
-                                {(a.userId === user?.uid || permissions.canEditAppointmentsForOthers) && (
-                                  <button
-                                    onClick={() => handleEdit(a)}
-                                    className="icon-btn-primary"
-                                    aria-label="Editar turno"
-                                  >
-                                    <Edit2 className="w-4 h-4" />
-                                  </button>
-                                )}
-                                {(a.userId === user?.uid || permissions.canEditAppointmentsForOthers) && (
-                                  <button
-                                    onClick={() => handleCancel(a)}
-                                    className="icon-btn-danger"
-                                    aria-label="Cancelar turno"
-                                  >
-                                    <Ban className="w-4 h-4" />
-                                  </button>
-                                )}
-                                {(a.userId === user?.uid || permissions.canDeleteAppointmentsForOthers) && (
-                                  <button
-                                    onClick={() => handleDelete(a)}
-                                    className="icon-btn-danger"
-                                    aria-label="Eliminar turno"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                )}
-                              </div>
                             </td>
                           </tr>
                         );
