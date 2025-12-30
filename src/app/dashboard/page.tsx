@@ -475,7 +475,8 @@ export default function DashboardPage() {
                         <th>Paciente</th>
                         <th>Profesional</th>
                         <th>Honorarios</th>
-                        <th>Estado</th>
+                        <th>Estado Turno</th>
+                        <th>Estado Pago</th>
                         <th className="text-right">Acciones</th>
                       </tr>
                     </thead>
@@ -484,6 +485,18 @@ export default function DashboardPage() {
                         const d = new Date(a.date);
                         const fecha = d.toLocaleDateString();
                         const professional = professionals.find(p => p.uid === a.userId);
+                        const paymentState = paymentStateFor(a);
+
+                        // Determinar el label del estado de pago
+                        const getPaymentStatusLabel = () => {
+                          if (!a.fee) return 'Sin honorarios';
+                          const deposit = a.deposit || 0;
+                          if (paymentState.status === 'paid') return 'Pagado';
+                          if (deposit > 0 && paymentState.remainingAmount > 0) return 'Señado';
+                          if (paymentState.status === 'partial') return 'Parcial';
+                          return 'Pendiente';
+                        };
+
                         return (
                           <tr key={a.id}>
                             <td className="font-medium">{fecha}</td>
@@ -516,6 +529,23 @@ export default function DashboardPage() {
                               }`}>
                                 {translateAppointmentStatus(a.status)}
                               </span>
+                            </td>
+                            <td>
+                              {a.fee ? (
+                                <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${
+                                  paymentState.status === 'paid'
+                                    ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200'
+                                    : (a.deposit || 0) > 0 && paymentState.remainingAmount > 0
+                                      ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
+                                      : paymentState.status === 'partial'
+                                        ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
+                                        : 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200'
+                                }`}>
+                                  {getPaymentStatusLabel()}
+                                </span>
+                              ) : (
+                                <span className="text-gray-400 text-xs">-</span>
+                              )}
                             </td>
                             <td className="text-right">
                               <div className="flex items-center justify-end gap-1">
