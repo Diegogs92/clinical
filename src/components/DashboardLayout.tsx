@@ -59,13 +59,13 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
 
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/90 dark:bg-elegant-900/90 border-b border-elegant-200/80 dark:border-elegant-800/80 shadow-sm">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14 md:h-16">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="flex items-center justify-center w-9 h-9 md:w-10 md:h-10 rounded-xl overflow-hidden">
+          <div className="flex items-center justify-between h-12 md:h-14">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-xl overflow-hidden">
                 <img src="/logo.svg" alt="DENTIFY Logo" className="w-full h-full object-cover" />
               </div>
               <div className="block">
-                <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+                <h1 className="text-base md:text-lg font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
                   DENTIFY
                 </h1>
                 {user && (
@@ -76,9 +76,9 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
               </div>
             </div>
 
-            <div className="hidden md:flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-3">
               <GlassNavbar items={navItems} />
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <GoogleCalendarToggle />
                 <ThemeToggle />
                 <button
@@ -109,9 +109,9 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
 
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-elegant-200 dark:border-elegant-800 bg-white/98 dark:bg-elegant-900/98 backdrop-blur-xl shadow-xl shadow-primary/10 animate-in slide-in-from-top duration-200">
-            <div className="px-3 py-3 space-y-2">
-              <div className="flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-r from-primary/10 to-secondary/10">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center font-bold text-lg shadow-lg shadow-primary/30">
+            <div className="px-3 py-2 space-y-2">
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-gradient-to-r from-primary/10 to-secondary/10">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center font-bold text-base shadow-lg shadow-primary/30">
                   {user?.displayName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'C'}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -148,7 +148,7 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
         )}
       </header>
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 md:py-8 pb-32 md:pb-12">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 md:py-6 pb-32 md:pb-12">
         {children}
       </main>
 

@@ -127,58 +127,58 @@ export default function FeesPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="space-y-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <h1 className="text-2xl font-bold text-navy-darkest dark:text-white">Honorarios</h1>
+        <div className="space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <h1 className="text-xl md:text-2xl font-bold text-navy-darkest dark:text-white">Honorarios</h1>
           </div>
-          <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4">
-            <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-2xl p-4 md:p-6 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-2xl hover:scale-[1.02] md:hover:scale-105 hover:-translate-y-0.5 md:hover:-translate-y-1 cursor-pointer group backdrop-blur-lg">
+          <div className="grid gap-2.5 md:gap-3 grid-cols-2 lg:grid-cols-4">
+            <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-xl p-3 md:p-4 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 cursor-pointer group backdrop-blur-lg">
               <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-green-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
               <div className="relative z-10">
-                <div className="text-[10px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1.5 md:mb-2 truncate">Total Ingresos</div>
-                <div className="text-2xl md:text-4xl font-bold font-mono text-black dark:text-white mb-1 md:mb-2 transition-all duration-300 group-hover:scale-110">
+                <div className="text-[10px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">Total Ingresos</div>
+                <div className="text-xl md:text-3xl font-bold font-mono text-black dark:text-white mb-0.5 md:mb-1 transition-all duration-300 group-hover:scale-105">
                   <AnimatedCounter end={totalRevenue} prefix="$" duration={1200} />
                 </div>
               </div>
-              <div className="absolute -right-4 -bottom-4 w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-green-500 to-green-600 rounded-full opacity-0 group-hover:opacity-20 transition-all duration-300 group-hover:scale-150" />
+              <div className="absolute -right-4 -bottom-4 w-14 h-14 md:w-20 md:h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full opacity-0 group-hover:opacity-20 transition-all duration-300 group-hover:scale-125" />
             </div>
 
-            <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-2xl p-4 md:p-6 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-2xl hover:scale-[1.02] md:hover:scale-105 hover:-translate-y-0.5 md:hover:-translate-y-1 cursor-pointer group backdrop-blur-lg" style={{ animationDelay: '0.1s' }}>
+            <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-xl p-3 md:p-4 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 cursor-pointer group backdrop-blur-lg" style={{ animationDelay: '0.1s' }}>
               <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-amber-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
               <div className="relative z-10">
-                <div className="text-[10px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1.5 md:mb-2 truncate">Pendientes</div>
-                <div className="text-2xl md:text-4xl font-bold font-mono text-black dark:text-white mb-1 md:mb-2 transition-all duration-300 group-hover:scale-110">
+                <div className="text-[10px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">Pendientes</div>
+                <div className="text-xl md:text-3xl font-bold font-mono text-black dark:text-white mb-0.5 md:mb-1 transition-all duration-300 group-hover:scale-105">
                   <AnimatedCounter end={pendingSummary.amount} prefix="$" duration={1200} />
                 </div>
               </div>
-              <div className="absolute -right-4 -bottom-4 w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full opacity-0 group-hover:opacity-20 transition-all duration-300 group-hover:scale-150" />
+              <div className="absolute -right-4 -bottom-4 w-14 h-14 md:w-20 md:h-20 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full opacity-0 group-hover:opacity-20 transition-all duration-300 group-hover:scale-125" />
             </div>
 
-            <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-2xl p-4 md:p-6 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-2xl hover:scale-[1.02] md:hover:scale-105 hover:-translate-y-0.5 md:hover:-translate-y-1 cursor-pointer group backdrop-blur-lg" style={{ animationDelay: '0.2s' }}>
+            <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-xl p-3 md:p-4 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 cursor-pointer group backdrop-blur-lg" style={{ animationDelay: '0.2s' }}>
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
               <div className="relative z-10">
-                <div className="text-[10px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1.5 md:mb-2 truncate">Cobros</div>
-                <div className="text-2xl md:text-4xl font-bold font-mono text-black dark:text-white mb-1 md:mb-2 transition-all duration-300 group-hover:scale-110">
+                <div className="text-[10px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">Cobros</div>
+                <div className="text-xl md:text-3xl font-bold font-mono text-black dark:text-white mb-0.5 md:mb-1 transition-all duration-300 group-hover:scale-105">
                   <AnimatedCounter end={payments.length} duration={1000} />
                 </div>
               </div>
-              <div className="absolute -right-4 -bottom-4 w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full opacity-0 group-hover:opacity-20 transition-all duration-300 group-hover:scale-150" />
+              <div className="absolute -right-4 -bottom-4 w-14 h-14 md:w-20 md:h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full opacity-0 group-hover:opacity-20 transition-all duration-300 group-hover:scale-125" />
             </div>
 
-            <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-2xl p-4 md:p-6 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-2xl hover:scale-[1.02] md:hover:scale-105 hover:-translate-y-0.5 md:hover:-translate-y-1 cursor-pointer group backdrop-blur-lg" style={{ animationDelay: '0.3s' }}>
+            <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-xl p-3 md:p-4 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 cursor-pointer group backdrop-blur-lg" style={{ animationDelay: '0.3s' }}>
               <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-red-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
               <div className="relative z-10">
-                <div className="text-[10px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1.5 md:mb-2 truncate">Pendientes Cobro</div>
-                <div className="text-2xl md:text-4xl font-bold font-mono text-black dark:text-white mb-1 md:mb-2 transition-all duration-300 group-hover:scale-110">
+                <div className="text-[10px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">Pendientes Cobro</div>
+                <div className="text-xl md:text-3xl font-bold font-mono text-black dark:text-white mb-0.5 md:mb-1 transition-all duration-300 group-hover:scale-105">
                   <AnimatedCounter end={pendingSummary.count} duration={1000} />
                 </div>
               </div>
-              <div className="absolute -right-4 -bottom-4 w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-red-500 to-red-600 rounded-full opacity-0 group-hover:opacity-20 transition-all duration-300 group-hover:scale-150" />
+              <div className="absolute -right-4 -bottom-4 w-14 h-14 md:w-20 md:h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full opacity-0 group-hover:opacity-20 transition-all duration-300 group-hover:scale-125" />
             </div>
           </div>
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-4">
             <div className="card overflow-x-auto">
-              <h2 className="font-semibold text-primary-dark dark:text-white mb-4">Últimos Cobros</h2>
+              <h2 className="font-semibold text-primary-dark dark:text-white mb-3">Últimos Cobros</h2>
               <table className="table-skin">
                 <thead>
                   <tr>

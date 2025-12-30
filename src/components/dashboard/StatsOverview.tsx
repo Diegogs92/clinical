@@ -111,20 +111,20 @@ export default function StatsOverview() {
   ];
 
   return (
-    <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-2.5 md:gap-3 grid-cols-2 lg:grid-cols-4">
       {stats.map((s, index) => (
         <div
           key={s.label}
-          className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-2xl p-4 md:p-6 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-2xl hover:scale-[1.02] md:hover:scale-105 hover:-translate-y-0.5 md:hover:-translate-y-1 cursor-pointer group backdrop-blur-lg"
+          className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-xl p-3 md:p-4 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 cursor-pointer group backdrop-blur-lg"
           style={{ animationDelay: `${index * 0.1}s` }}
         >
           <div className={`absolute inset-0 bg-gradient-to-br ${s.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
 
           <div className="relative z-10">
-            <div className="text-[10px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1.5 md:mb-2 truncate">
+            <div className="text-[10px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">
               {s.label}
             </div>
-            <div className="text-2xl md:text-4xl font-bold font-mono text-black dark:text-white mb-1 md:mb-2 transition-all duration-300 group-hover:scale-110">
+            <div className="text-xl md:text-3xl font-bold font-mono text-black dark:text-white mb-0.5 md:mb-1 transition-all duration-300 group-hover:scale-105">
               {s.numericValue !== undefined ? (
                 s.isMonetary ? (
                   <AnimatedCounter end={s.numericValue} prefix="$" duration={1200} />
@@ -142,7 +142,7 @@ export default function StatsOverview() {
             )}
           </div>
 
-          <div className={`absolute -right-4 -bottom-4 w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br ${s.color} rounded-full opacity-0 group-hover:opacity-20 transition-all duration-300 group-hover:scale-150`} />
+          <div className={`absolute -right-4 -bottom-4 w-14 h-14 md:w-20 md:h-20 bg-gradient-to-br ${s.color} rounded-full opacity-0 group-hover:opacity-20 transition-all duration-300 group-hover:scale-125`} />
         </div>
       ))}
     </div>

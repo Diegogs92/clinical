@@ -749,15 +749,15 @@ export default function AgendaPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Header */}
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+              <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
                 Agenda Semanal
               </h1>
-              <p className="text-sm text-elegant-600 dark:text-elegant-400 mt-1">
+              <p className="text-xs md:text-sm text-elegant-600 dark:text-elegant-400 mt-0.5">
                 Visualiza y gestiona tus turnos de la semana
               </p>
             </div>
@@ -773,7 +773,7 @@ export default function AgendaPage() {
 
         {/* Navegación de semana */}
         <div className="card">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3">
             <button onClick={goToPreviousWeek} className="icon-btn">
               <ChevronLeft className="w-5 h-5" />
             </button>

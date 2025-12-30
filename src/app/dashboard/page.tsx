@@ -414,7 +414,7 @@ export default function DashboardPage() {
 
           <div className="card relative overflow-hidden">
             <div className="absolute inset-x-0 -top-24 h-40 bg-gradient-to-r from-primary/10 via-secondary/5 to-primary/10 blur-3xl pointer-events-none" />
-            <div className="relative flex flex-col gap-3 mb-4">
+            <div className="relative flex flex-col gap-2.5 mb-3">
               <GlassViewSelector
                 options={[
                   { value: 'day', label: 'Dia' },
@@ -426,7 +426,7 @@ export default function DashboardPage() {
                 onChange={(v) => setView(v as 'day' | 'week' | 'month' | 'year')}
               />
 
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-2.5">
                 <label className="flex items-center gap-2 px-3 py-2 rounded-lg bg-elegant-100 dark:bg-elegant-800 text-sm text-elegant-700 dark:text-elegant-300">
                   <Search className="w-4 h-4" />
                   <input
@@ -621,7 +621,7 @@ export default function DashboardPage() {
                   </table>
                 </div>
 
-                <div className="md:hidden space-y-3">
+                <div className="md:hidden space-y-2.5">
                   {filtered.map(a => {
                     const d = new Date(a.date);
                     const fecha = d.toLocaleDateString();

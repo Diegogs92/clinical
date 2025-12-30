@@ -130,7 +130,7 @@ export default function PatientList() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div className="relative md:max-w-xs flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary dark:text-gray-400" />

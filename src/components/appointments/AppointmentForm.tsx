@@ -468,9 +468,9 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
         {/* Paciente y Profesional */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Paciente</label>
             <Controller
@@ -507,7 +507,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         </div>
 
         {/* Fecha, Hora y Duración */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2.5">
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Fecha</label>
             <Controller
@@ -561,7 +561,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         </div>
 
         {/* Tipo y Honorarios */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Tratamiento</label>
             <Controller
@@ -644,9 +644,9 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         </div>
 
         {/* Seguimiento */}
-        <div className="border-t border-elegant-200 dark:border-gray-700 pt-3">
-          <h4 className="text-sm font-medium text-primary-dark dark:text-white mb-2">Recordatorio de Seguimiento</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="border-t border-elegant-200 dark:border-gray-700 pt-2.5">
+          <h4 className="text-sm font-medium text-primary-dark dark:text-white mb-1.5">Recordatorio de Seguimiento</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
             <div>
               <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Recordar en</label>
               <input

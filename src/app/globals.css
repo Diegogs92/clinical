@@ -141,8 +141,8 @@ input[type="tel"],
 
   /* Botones - Smooth y con focus states mejorados */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 font-medium rounded-lg py-2.5 px-4
-           text-white shadow-sm
+    @apply inline-flex items-center justify-center gap-1.5 font-medium rounded-lg py-2 px-3
+           text-white shadow-sm text-sm
            transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary/50
            active:scale-[0.98]
@@ -158,8 +158,8 @@ input[type="tel"],
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 font-medium rounded-lg py-2.5 px-4
-           shadow-sm
+    @apply inline-flex items-center justify-center gap-1.5 font-medium rounded-lg py-2 px-3
+           shadow-sm text-sm
            transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-elegant-300
            active:scale-[0.98]
@@ -185,8 +185,8 @@ input[type="tel"],
   }
 
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 font-medium rounded-lg py-2.5 px-4
-           text-white shadow-sm
+    @apply inline-flex items-center justify-center gap-1.5 font-medium rounded-lg py-2 px-3
+           text-white shadow-sm text-sm
            transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-danger/50
            active:scale-[0.98]
@@ -202,8 +202,8 @@ input[type="tel"],
   }
 
   .btn-success {
-    @apply inline-flex items-center justify-center gap-2 font-medium rounded-lg py-2.5 px-4
-           text-white shadow-sm
+    @apply inline-flex items-center justify-center gap-1.5 font-medium rounded-lg py-2 px-3
+           text-white shadow-sm text-sm
            transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500/50
            active:scale-[0.98]
@@ -220,7 +220,7 @@ input[type="tel"],
 
   /* Cards - Smooth hover con lift effect */
   .card {
-    @apply bg-white dark:bg-elegant-900 rounded-xl shadow-sm p-6
+    @apply bg-white dark:bg-elegant-900 rounded-xl shadow-sm p-4
            border border-elegant-200/60 dark:border-elegant-800/60
            transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-elegant-300/80 dark:hover:border-elegant-700/80;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -228,8 +228,8 @@ input[type="tel"],
 
   /* Inputs - Con focus mejorado y efecto glow */
   .input-field {
-    @apply w-full px-4 py-2.5 border border-elegant-300/60 dark:border-elegant-700/60
-           rounded-lg bg-white dark:bg-elegant-900
+    @apply w-full px-3 py-2 border border-elegant-300/60 dark:border-elegant-700/60
+           rounded-lg bg-white dark:bg-elegant-900 text-sm
            text-elegant-900 dark:text-white placeholder-elegant-400 dark:placeholder-elegant-500
            focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/60
            transition-all duration-200 hover:border-primary/40 dark:hover:border-primary/40
@@ -348,11 +348,11 @@ input[type="tel"],
   }
 
   .table-skin th {
-    @apply p-3.5 text-left text-xs font-semibold uppercase tracking-wide;
+    @apply p-2.5 text-left text-xs font-semibold uppercase tracking-wide;
   }
 
   .table-skin td {
-    @apply p-3.5 align-middle text-elegant-800 dark:text-elegant-100;
+    @apply p-2.5 align-middle text-elegant-800 dark:text-elegant-100 text-sm;
   }
 
   .table-skin tbody tr {

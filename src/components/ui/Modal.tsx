@@ -52,22 +52,22 @@ export default function Modal({
         }`}
         style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)' }}
       >
-        <div className="flex-shrink-0 flex items-center justify-between gap-3 px-6 py-4 border-b border-elegant-200/60 dark:border-elegant-800/60 bg-elegant-50/50 dark:bg-elegant-900/50">
+        <div className="flex-shrink-0 flex items-center justify-between gap-3 px-4 py-3 border-b border-elegant-200/60 dark:border-elegant-800/60 bg-elegant-50/50 dark:bg-elegant-900/50">
           {title && (
-            <h3 className="text-lg font-semibold text-elegant-900 dark:text-white">
+            <h3 className="text-base font-semibold text-elegant-900 dark:text-white">
               {title}
             </h3>
           )}
           <button
             onClick={onClose}
-            className="flex-shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-lg text-elegant-500 hover:text-elegant-800 hover:bg-elegant-200/80 dark:text-elegant-300 dark:hover:text-white dark:hover:bg-elegant-800/80 transition-all duration-150 active:scale-95"
+            className="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg text-elegant-500 hover:text-elegant-800 hover:bg-elegant-200/80 dark:text-elegant-300 dark:hover:text-white dark:hover:bg-elegant-800/80 transition-all duration-150 active:scale-95"
             aria-label="Cerrar modal"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-5">
+        <div className="flex-1 overflow-y-auto p-4">
           {children}
         </div>
       </div>
