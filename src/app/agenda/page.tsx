@@ -1062,91 +1062,133 @@ export default function AgendaPage() {
               </div>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4">
               {/* Información principal */}
-              <div className="bg-gradient-to-r from-primary/5 to-primary-dark/5 dark:from-primary/10 dark:to-primary-dark/10 rounded-xl p-4 border border-primary/20 dark:border-primary/30">
-                <h3 className="text-2xl font-bold text-elegant-900 dark:text-white mb-2">
-                  {selectedEvent.patientName || 'Sin nombre'}
-                </h3>
-                <div className="flex flex-wrap items-center gap-3 text-sm text-elegant-600 dark:text-elegant-300">
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4" />
-                    <span>{format(selectedEvent.start, 'dd/MM/yyyy HH:mm', { locale: es })} - {format(selectedEvent.end, 'HH:mm', { locale: es })}</span>
+              <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 dark:from-primary/20 dark:via-primary/10 dark:to-secondary/20 rounded-2xl p-5 border border-primary/30 dark:border-primary/40">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-elegant-900 dark:text-white mb-1">
+                      {selectedEvent.patientName || 'Sin nombre'}
+                    </h3>
+                    <p className="text-sm text-elegant-600 dark:text-elegant-300">
+                      {selectedProfessionalName || 'N/D'}
+                    </p>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <User className="w-4 h-4" />
-                    <span>{selectedProfessionalName || 'N/D'}</span>
+                  <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
+                    selectedEvent.status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' :
+                    selectedEvent.status === 'cancelled' ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' :
+                    selectedEvent.status === 'no-show' ? 'bg-gray-100 text-gray-700 dark:bg-gray-700/40 dark:text-gray-300' :
+                    'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                  }`}>
+                    {translateAppointmentStatus(selectedEvent.status)}
                   </div>
                 </div>
-              </div>
 
-              {/* Detalles adicionales */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-elegant-50 dark:bg-elegant-800/50 rounded-lg p-3">
-                  <p className="text-xs font-medium text-elegant-500 dark:text-elegant-400 mb-1">Estado</p>
-                  <p className="text-lg font-semibold text-elegant-900 dark:text-white">{translateAppointmentStatus(selectedEvent.status)}</p>
+                <div className="flex items-center gap-2 text-sm text-elegant-700 dark:text-elegant-200 mb-2">
+                  <Calendar className="w-4 h-4 text-primary" />
+                  <span className="font-medium">{format(selectedEvent.start, "EEEE d 'de' MMMM, yyyy", { locale: es })}</span>
                 </div>
-                <div className="bg-elegant-50 dark:bg-elegant-800/50 rounded-lg p-3">
-                  <p className="text-xs font-medium text-elegant-500 dark:text-elegant-400 mb-1">Honorarios</p>
-                  <p className="text-lg font-semibold text-primary dark:text-primary-light">{selectedEvent.fee ? `$${formatCurrency(selectedEvent.fee)}` : '-'}</p>
+
+                <div className="flex items-center gap-2 text-sm text-elegant-700 dark:text-elegant-200">
+                  <Clock className="w-4 h-4 text-primary" />
+                  <span className="font-medium">{format(selectedEvent.start, 'HH:mm')} - {format(selectedEvent.end, 'HH:mm')}</span>
                 </div>
+
+                {selectedEvent.fee && (
+                  <div className="mt-3 pt-3 border-t border-primary/20 dark:border-primary/30">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-elegant-600 dark:text-elegant-300">Honorarios</span>
+                      <span className="text-lg font-bold text-primary dark:text-primary-light">${formatCurrency(selectedEvent.fee)}</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {selectedEvent.notes && (
-                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
-                  <p className="text-xs font-medium text-amber-800 dark:text-amber-400 mb-1">Notas</p>
-                  <p className="text-sm text-amber-900 dark:text-amber-200 whitespace-pre-line">{selectedEvent.notes}</p>
+                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4 border border-amber-200 dark:border-amber-800">
+                  <div className="flex items-start gap-2">
+                    <div className="text-amber-600 dark:text-amber-400 mt-0.5">📝</div>
+                    <div className="flex-1">
+                      <p className="text-xs font-semibold text-amber-800 dark:text-amber-400 mb-1">Notas del turno</p>
+                      <p className="text-sm text-amber-900 dark:text-amber-200 whitespace-pre-line">{selectedEvent.notes}</p>
+                    </div>
+                  </div>
                 </div>
               )}
 
-              {/* Acciones principales */}
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-elegant-500 dark:text-elegant-400 uppercase tracking-wide">Acciones rápidas</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => openPaymentDialog(selectedEvent)}
-                    className="btn-primary flex items-center justify-center gap-2 py-3"
-                  >
-                    <DollarSign className="w-5 h-5" />
-                    <span>Registrar pago</span>
-                  </button>
-                  <button
-                    onClick={() => handleAttendance(selectedEvent)}
-                    className="btn-success flex items-center justify-center gap-2 py-3"
-                  >
-                    <CheckCircle2 className="w-5 h-5" />
-                    <span>Asistencia</span>
-                  </button>
-                </div>
+              {/* Acciones principales en cards grandes */}
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => {
+                    openPaymentDialog(selectedEvent);
+                    setSelectedEvent(null);
+                  }}
+                  disabled={!selectedEvent.fee || selectedEvent.status === 'cancelled'}
+                  className="group relative overflow-hidden bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl p-4 transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed"
+                >
+                  <div className="relative z-10 flex flex-col items-center gap-2">
+                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                      <DollarSign className="w-6 h-6" />
+                    </div>
+                    <span className="text-sm font-semibold">Registrar Pago</span>
+                  </div>
+                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-200" />
+                </button>
+
+                <button
+                  onClick={() => {
+                    handleAttendance(selectedEvent);
+                    setSelectedEvent(null);
+                  }}
+                  disabled={selectedEvent.status === 'completed' || selectedEvent.status === 'cancelled'}
+                  className="group relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl p-4 transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed"
+                >
+                  <div className="relative z-10 flex flex-col items-center gap-2">
+                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                      <CheckCircle2 className="w-6 h-6" />
+                    </div>
+                    <span className="text-sm font-semibold">Marcar Asistencia</span>
+                  </div>
+                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-200" />
+                </button>
               </div>
 
-              {/* Acciones secundarias */}
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-elegant-500 dark:text-elegant-400 uppercase tracking-wide">Otras acciones</p>
-                <div className="flex flex-wrap gap-2">
+              {/* Acciones secundarias más pequeñas */}
+              <div className="border-t border-elegant-200 dark:border-elegant-700 pt-3">
+                <p className="text-xs font-semibold text-elegant-500 dark:text-elegant-400 mb-2">Más opciones</p>
+                <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => {
-                      toast.info('Arrastra y suelta el turno en la Agenda para reprogramar.');
+                      toast.info('Arrastra el turno en el calendario para cambiar fecha/hora');
                       setSelectedEvent(null);
                     }}
-                    className="btn-secondary flex items-center gap-2 text-sm"
+                    className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-elegant-100 hover:bg-elegant-200 dark:bg-elegant-800 dark:hover:bg-elegant-700 transition-colors"
                   >
-                    <Edit2 className="w-4 h-4" />
-                    Reprogramar
+                    <Edit2 className="w-5 h-5 text-elegant-600 dark:text-elegant-300" />
+                    <span className="text-xs font-medium text-elegant-700 dark:text-elegant-200">Reprogramar</span>
                   </button>
+
                   <button
-                    onClick={() => handleCancelAppointment(selectedEvent)}
-                    className="btn-warning flex items-center gap-2 text-sm"
+                    onClick={() => {
+                      handleCancelAppointment(selectedEvent);
+                      setSelectedEvent(null);
+                    }}
+                    disabled={selectedEvent.status === 'cancelled'}
+                    className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:hover:bg-amber-900/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <BanIcon className="w-4 h-4" />
-                    Cancelar
+                    <BanIcon className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                    <span className="text-xs font-medium text-amber-700 dark:text-amber-300">Cancelar</span>
                   </button>
+
                   <button
-                    onClick={() => handleDelete(selectedEvent)}
-                    className="btn-danger flex items-center gap-2 text-sm"
+                    onClick={() => {
+                      handleDelete(selectedEvent);
+                      setSelectedEvent(null);
+                    }}
+                    className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 transition-colors"
                   >
-                    <Trash2 className="w-4 h-4" />
-                    Eliminar
+                    <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
+                    <span className="text-xs font-medium text-red-700 dark:text-red-300">Eliminar</span>
                   </button>
                 </div>
               </div>
