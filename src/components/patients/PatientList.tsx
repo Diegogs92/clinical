@@ -59,9 +59,12 @@ export default function PatientList() {
 
   // Helper function to calculate total paid
   const getPatientPaid = (patientId: string) => {
+    const patientAppointments = appointments.filter(a => a.patientId === patientId && a.fee);
     const patientPayments = payments.filter(p => p.patientId === patientId);
     const completed = patientPayments.filter(p => p.status === 'completed' || p.status === 'pending');
-    return completed.reduce((sum, p) => sum + p.amount, 0);
+    const paymentsTotal = completed.reduce((sum, p) => sum + p.amount, 0);
+    const depositsTotal = patientAppointments.reduce((sum, appt) => sum + (appt.deposit || 0), 0);
+    return paymentsTotal + depositsTotal;
   };
 
   const loadData = useCallback(async ({ showLoading = false } = {}) => {
@@ -163,6 +166,7 @@ export default function PatientList() {
         <table className="table-skin">
           <thead>
             <tr>
+              <th className="w-20"></th>
               <th>Apellido</th>
               <th>Nombre</th>
               <th>DNI</th>
@@ -170,7 +174,6 @@ export default function PatientList() {
               <th>Turnos</th>
               <th>Pagado</th>
               <th>Deuda</th>
-              <th className="text-right">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -181,6 +184,16 @@ export default function PatientList() {
 
               return (
                 <tr key={p.id}>
+                  <td>
+                    <div className="flex items-center gap-1">
+                      <Link href={`/patients/${p.id}`} className="icon-btn-primary" aria-label="Editar paciente">
+                        <Edit className="w-4 h-4" />
+                      </Link>
+                      <button onClick={() => handleDelete(p.id)} className="icon-btn-danger" aria-label="Eliminar paciente">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
                   <td className="font-medium">{p.lastName}</td>
                   <td>{p.firstName}</td>
                   <td>{p.dni}</td>
@@ -207,12 +220,6 @@ export default function PatientList() {
                     ) : (
                       <span className="text-secondary dark:text-gray-500">-</span>
                     )}
-                  </td>
-                  <td>
-                    <div className="flex gap-2 justify-end">
-                      <Link href={`/patients/${p.id}`} className="text-primary-dark dark:text-blue-400 hover:underline hover:scale-110 hover:shadow-sm transition-all duration-200 flex items-center gap-1 font-medium"><Edit className="w-4 h-4" /> Editar</Link>
-                      <button onClick={() => handleDelete(p.id)} className="text-red-600 dark:text-red-400 hover:underline hover:scale-110 hover:shadow-sm transition-all duration-200 flex items-center gap-1 font-medium"><Trash2 className="w-4 h-4" /> Borrar</button>
-                    </div>
                   </td>
                 </tr>
               );
