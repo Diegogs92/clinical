@@ -97,7 +97,7 @@ export default function StatsOverview() {
       value: `$${formatCurrency(monthlyIncome)}`,
       numericValue: monthlyIncome,
       isMonetary: true,
-      sub: `${payments.filter(p => (p.status === 'completed' || p.status === 'pending') && new Date(p.date).getMonth() === currentMonth && new Date(p.date).getFullYear() === currentYear).length} pago(s)`,
+      sub: '',
       color: 'from-green-500 to-green-600'
     },
     {
