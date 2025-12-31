@@ -67,6 +67,7 @@ export default function AgendaPage() {
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week');
   const [draggedAppointment, setDraggedAppointment] = useState<any | null>(null);
   const [dragOverDate, setDragOverDate] = useState<Date | null>(null);
+  const [dragOverSlot, setDragOverSlot] = useState<{ date: Date; time: string } | null>(null);
   const [successModal, setSuccessModal] = useState<{ show: boolean; title: string; message?: string }>({
     show: false,
     title: '',
@@ -460,6 +461,19 @@ export default function AgendaPage() {
     }
   };
 
+  // Generar franjas horarias cada 30 minutos (09:00 - 19:00)
+  const generateTimeSlots = () => {
+    const slots: string[] = [];
+    for (let hour = 9; hour < 19; hour++) {
+      slots.push(`${String(hour).padStart(2, '0')}:00`);
+      slots.push(`${String(hour).padStart(2, '0')}:30`);
+    }
+    slots.push('19:00');
+    return slots;
+  };
+
+  const timeSlots = useMemo(() => generateTimeSlots(), []);
+
   // Drag and Drop handlers
   const handleDragStart = (e: React.DragEvent, apt: any) => {
     if (!canModifyAppointment(apt, user, userProfile)) {
@@ -471,35 +485,55 @@ export default function AgendaPage() {
     e.dataTransfer.effectAllowed = 'move';
   };
 
-  const handleDragOver = (e: React.DragEvent, date: Date) => {
+  const handleDragOver = (e: React.DragEvent, date: Date, timeSlot?: string) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    setDragOverDate(date);
+    if (timeSlot) {
+      setDragOverSlot({ date, time: timeSlot });
+    } else {
+      setDragOverDate(date);
+    }
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOverDate(null);
+    setDragOverSlot(null);
   };
 
-  const handleDrop = async (e: React.DragEvent, targetDate: Date) => {
+  const handleDrop = async (e: React.DragEvent, targetDate: Date, targetTime?: string) => {
     e.preventDefault();
     setDragOverDate(null);
+    setDragOverSlot(null);
 
     if (!draggedAppointment) return;
 
+    // Calcular la nueva hora de inicio y fin
+    const newStartTime = targetTime || draggedAppointment.startTime;
+    const [startHour, startMinute] = newStartTime.split(':').map(Number);
+    const [oldStartHour, oldStartMinute] = draggedAppointment.startTime.split(':').map(Number);
+    const [oldEndHour, oldEndMinute] = draggedAppointment.endTime.split(':').map(Number);
+
+    // Calcular duración del turno en minutos
+    const durationMinutes = (oldEndHour * 60 + oldEndMinute) - (oldStartHour * 60 + oldStartMinute);
+
+    // Calcular nueva hora de fin
+    const endTotalMinutes = startHour * 60 + startMinute + durationMinutes;
+    const endHour = Math.floor(endTotalMinutes / 60);
+    const endMinute = endTotalMinutes % 60;
+    const newEndTime = `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`;
+
+    // Verificar conflictos con franjas bloqueadas
     const hasConflict = blockedSlots.some(slot => {
       if (!isSameDay(parseISO(slot.date), targetDate)) return false;
 
       const slotStartTime = slot.startTime;
       const slotEndTime = slot.endTime;
-      const aptStartTime = draggedAppointment.startTime;
-      const aptEndTime = draggedAppointment.endTime;
 
       return (
-        (aptStartTime >= slotStartTime && aptStartTime < slotEndTime) ||
-        (aptEndTime > slotStartTime && aptEndTime <= slotEndTime) ||
-        (aptStartTime <= slotStartTime && aptEndTime >= slotEndTime)
+        (newStartTime >= slotStartTime && newStartTime < slotEndTime) ||
+        (newEndTime > slotStartTime && newEndTime <= slotEndTime) ||
+        (newStartTime <= slotStartTime && newEndTime >= slotEndTime)
       );
     });
 
@@ -514,11 +548,15 @@ export default function AgendaPage() {
 
       await updateAppointment(draggedAppointment.id, {
         date: newDate,
+        startTime: newStartTime,
+        endTime: newEndTime,
       });
 
       const updated = {
         ...draggedAppointment,
         date: newDate,
+        startTime: newStartTime,
+        endTime: newEndTime,
       };
 
       const nextEventId = await syncAppointment(
@@ -774,17 +812,13 @@ export default function AgendaPage() {
         {viewMode === 'week' && (
           <div className="flex gap-3">
             {/* Columna de horarios */}
-            <div className="hidden lg:block w-20 flex-shrink-0">
-              <div className="card sticky top-4">
-                <div className="mb-3 pb-3 border-b border-elegant-200 dark:border-elegant-700">
-                  <div className="text-center text-xs font-medium text-elegant-500 dark:text-elegant-400">
-                    Hora
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  {Array.from({ length: 11 }, (_, i) => 9 + i).map((hour) => (
-                    <div key={hour} className="text-center text-xs font-medium text-elegant-600 dark:text-elegant-400 py-1">
-                      {String(hour).padStart(2, '0')}:00
+            <div className="hidden lg:block w-16 flex-shrink-0">
+              <div className="sticky top-4">
+                <div className="h-20"></div>
+                <div className="space-y-0">
+                  {timeSlots.filter((_, i) => i % 2 === 0).map((slot) => (
+                    <div key={slot} className="h-16 flex items-start text-[10px] font-medium text-elegant-500 dark:text-elegant-400">
+                      {slot}
                     </div>
                   ))}
                 </div>
@@ -796,18 +830,15 @@ export default function AgendaPage() {
             {weekDays.map((day) => {
               const { dayAppointments, dayBlocked, dayBirthdays } = getEventsForDay(day);
               const isToday = isSameDay(day, new Date());
-              const isDragOver = dragOverDate && isSameDay(dragOverDate, day);
 
               return (
                 <div
                   key={day.toISOString()}
-                  onDragOver={(e) => handleDragOver(e, day)}
-                  onDragLeave={handleDragLeave}
-                  onDrop={(e) => handleDrop(e, day)}
                   className={`card min-h-[400px] transition-all ${
                     isToday ? 'ring-2 ring-primary' : ''
-                  } ${isDragOver ? 'ring-2 ring-blue-400 bg-blue-50 dark:bg-blue-900/20' : ''}`}
+                  }`}
                 >
+                  {/* Header del día */}
                   <div className="mb-3 pb-3 border-b border-elegant-200 dark:border-elegant-700">
                     <div className="text-center">
                       <div className="text-xs font-medium text-elegant-500 dark:text-elegant-400 uppercase">
@@ -822,76 +853,100 @@ export default function AgendaPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    {dayBirthdays.map((patient) => (
-                      <div
-                        key={`birthday-${patient.id}`}
-                        className="bg-pink-100 dark:bg-pink-900/30 border border-pink-300 dark:border-pink-700 rounded-lg p-3"
-                      >
-                        <div className="text-center">
-                          <div className="text-2xl mb-1">🎂</div>
-                          <div className="text-xs font-semibold text-pink-700 dark:text-pink-300">
-                            {patient.firstName} {patient.lastName}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-
-                    {dayBlocked.map((slot) => (
-                      <div
-                        key={`blocked-${slot.id}`}
-                        className="bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg p-3 group hover:shadow-md transition-shadow"
-                      >
-                        <div className="flex items-start gap-2">
-                          <Ban className="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs font-semibold text-red-700 dark:text-red-300 mb-1">
-                              {slot.startTime} - {slot.endTime}
-                            </div>
-                            <div className="text-xs text-red-600 dark:text-red-400 line-clamp-2">
-                              {slot.reason}
+                  {/* Cumpleaños */}
+                  {dayBirthdays.length > 0 && (
+                    <div className="mb-3 space-y-2">
+                      {dayBirthdays.map((patient) => (
+                        <div
+                          key={`birthday-${patient.id}`}
+                          className="bg-pink-100 dark:bg-pink-900/30 border border-pink-300 dark:border-pink-700 rounded-lg p-2"
+                        >
+                          <div className="text-center">
+                            <div className="text-xl mb-1">🎂</div>
+                            <div className="text-xs font-semibold text-pink-700 dark:text-pink-300">
+                              {patient.firstName} {patient.lastName}
                             </div>
                           </div>
-                          <button
-                            onClick={async () => {
-                              if (await confirm({
-                                title: 'Eliminar franja bloqueada',
-                                description: `¿Estás seguro de que deseas eliminar esta franja bloqueada (${slot.startTime} - ${slot.endTime})?`,
-                                confirmText: 'Eliminar',
-                                tone: 'danger'
-                              })) {
-                                try {
-                                  await deleteBlockedSlot(slot.id);
-                                  const slots = await getBlockedSlotsByUser(user!.uid);
-                                  setBlockedSlots(slots);
-                                  setSuccessModal({ show: true, title: 'Franja eliminada', message: 'La franja bloqueada se ha eliminado correctamente' });
-                                } catch (error) {
-                                  console.error('Error eliminando franja:', error);
-                                  toast.error('No se pudo eliminar la franja bloqueada');
-                                }
-                              }
-                            }}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-red-200 dark:hover:bg-red-800/50"
-                            title="Eliminar franja bloqueada"
-                          >
-                            <X className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
-                          </button>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  )}
 
-                    {dayAppointments
-                      .sort((a, b) => a.startTime.localeCompare(b.startTime))
-                      .map((apt) => renderAppointmentCard(apt))}
+                  {/* Franjas horarias granulares */}
+                  <div className="relative space-y-0">
+                    {timeSlots.map((timeSlot) => {
+                      const isDragOverSlot = dragOverSlot &&
+                        isSameDay(dragOverSlot.date, day) &&
+                        dragOverSlot.time === timeSlot;
 
-                    {dayAppointments.length === 0 && dayBlocked.length === 0 && dayBirthdays.length === 0 && (
-                      <div className="text-center py-8">
-                        <Calendar className="w-8 h-8 mx-auto text-elegant-300 dark:text-elegant-600 mb-2" />
-                        <p className="text-xs text-elegant-400 dark:text-elegant-500">
-                          Sin turnos
-                        </p>
-                      </div>
-                    )}
+                      // Verificar si hay un turno en este slot
+                      const slotAppointment = dayAppointments.find(apt => apt.startTime === timeSlot);
+
+                      // Verificar si hay una franja bloqueada en este slot
+                      const slotBlocked = dayBlocked.find(slot =>
+                        timeSlot >= slot.startTime && timeSlot < slot.endTime
+                      );
+
+                      return (
+                        <div
+                          key={timeSlot}
+                          onDragOver={(e) => handleDragOver(e, day, timeSlot)}
+                          onDragLeave={handleDragLeave}
+                          onDrop={(e) => handleDrop(e, day, timeSlot)}
+                          className={`h-8 border-t border-elegant-100 dark:border-elegant-800 transition-colors ${
+                            isDragOverSlot ? 'bg-blue-100 dark:bg-blue-900/30 border-l-2 border-l-blue-400' : ''
+                          } ${slotBlocked ? 'bg-red-50 dark:bg-red-900/10' : ''}`}
+                        >
+                          {/* Renderizar turno si existe */}
+                          {slotAppointment && (
+                            <div className="relative -mt-1">
+                              {renderAppointmentCard(slotAppointment)}
+                            </div>
+                          )}
+
+                          {/* Renderizar franja bloqueada solo en el primer slot */}
+                          {slotBlocked && slotBlocked.startTime === timeSlot && (
+                            <div className="bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg p-2 group hover:shadow-md transition-shadow">
+                              <div className="flex items-start gap-1">
+                                <Ban className="w-3 h-3 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-xs font-semibold text-red-700 dark:text-red-300">
+                                    {slotBlocked.startTime} - {slotBlocked.endTime}
+                                  </div>
+                                  <div className="text-xs text-red-600 dark:text-red-400 line-clamp-1">
+                                    {slotBlocked.reason}
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={async () => {
+                                    if (await confirm({
+                                      title: 'Eliminar franja bloqueada',
+                                      description: `¿Estás seguro de que deseas eliminar esta franja bloqueada (${slotBlocked.startTime} - ${slotBlocked.endTime})?`,
+                                      confirmText: 'Eliminar',
+                                      tone: 'danger'
+                                    })) {
+                                      try {
+                                        await deleteBlockedSlot(slotBlocked.id);
+                                        const slots = await getBlockedSlotsByUser(user!.uid);
+                                        setBlockedSlots(slots);
+                                        setSuccessModal({ show: true, title: 'Franja eliminada', message: 'La franja bloqueada se ha eliminado correctamente' });
+                                      } catch (error) {
+                                        console.error('Error eliminando franja:', error);
+                                        toast.error('No se pudo eliminar la franja bloqueada');
+                                      }
+                                    }
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-red-200 dark:hover:bg-red-800/50"
+                                  title="Eliminar franja bloqueada"
+                                >
+                                  <X className="w-3 h-3 text-red-600 dark:text-red-400" />
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               );
