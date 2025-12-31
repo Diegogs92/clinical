@@ -49,7 +49,7 @@ export default function DashboardPage() {
   const permissions = usePermissions();
   const [professionals, setProfessionals] = useState<UserProfile[]>([]);
   const [loadingProfessionals, setLoadingProfessionals] = useState(false);
-  const [view, setView] = useState<'day' | 'week' | 'month' | 'year'>('week');
+  const [view, setView] = useState<'day' | 'week' | 'month' | 'year' | 'all'>('week');
   const [showForm, setShowForm] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; appointment?: Appointment; mode: 'total' | 'partial'; amount: string }>({
@@ -140,6 +140,12 @@ export default function DashboardPage() {
       case 'year': {
         const start = startOfYear(startBase);
         const end = addYears(start, 1);
+        return { start, end };
+      }
+      case 'all': {
+        // Para "todas las fechas", usar un rango muy amplio
+        const start = new Date(2020, 0, 1); // Desde 1 de enero de 2020
+        const end = new Date(2099, 11, 31); // Hasta 31 de diciembre de 2099
         return { start, end };
       }
       default:
@@ -441,10 +447,11 @@ export default function DashboardPage() {
                   { value: 'day', label: 'Dia' },
                   { value: 'week', label: 'Semana' },
                   { value: 'month', label: 'Mes' },
-                  { value: 'year', label: 'Año' }
+                  { value: 'year', label: 'Año' },
+                  { value: 'all', label: 'Todas las fechas' }
                 ]}
                 value={view}
-                onChange={(v) => setView(v as 'day' | 'week' | 'month' | 'year')}
+                onChange={(v) => setView(v as 'day' | 'week' | 'month' | 'year' | 'all')}
               />
 
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-2.5">
