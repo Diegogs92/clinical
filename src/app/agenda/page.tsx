@@ -639,13 +639,6 @@ export default function AgendaPage() {
             </div>
             <div className="flex gap-2">
               <button
-                onClick={newAppointment}
-                className="btn-primary flex items-center gap-2 whitespace-nowrap"
-              >
-                <PlusCircle className="w-4 h-4" />
-                Nuevo Turno
-              </button>
-              <button
                 onClick={() => setShowBlockModal(true)}
                 className="btn-danger flex items-center gap-2 whitespace-nowrap"
               >
