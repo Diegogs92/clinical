@@ -8,9 +8,9 @@ import { usePatients } from '@/contexts/PatientsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { canModifyAppointment, getPermissionDeniedMessage } from '@/lib/appointmentPermissions';
 import { useToast } from '@/contexts/ToastContext';
-import { format, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, isWithinInterval, startOfDay, endOfDay, parse, differenceInMinutes, setHours, setMinutes } from 'date-fns';
+import { format, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, isWithinInterval, startOfDay, endOfDay, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, isSameMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, Clock, User, Ban, ChevronLeft, ChevronRight, X, PlusCircle, MapPin, FileText, GripVertical } from 'lucide-react';
+import { Calendar, Clock, User, Ban, ChevronLeft, ChevronRight, X, PlusCircle, FileText, GripVertical } from 'lucide-react';
 import { BlockedSlot, SchedulePreference } from '@/types';
 import {
   getBlockedSlotsByUser,
@@ -28,7 +28,7 @@ import Modal from '@/components/ui/Modal';
 import { createPayment } from '@/lib/payments';
 import { deleteAppointment } from '@/lib/appointments';
 import { translateAppointmentStatus } from '@/lib/translations';
-import { DollarSign, CheckCircle2, Ban as BanIcon, Edit2, Trash2 } from 'lucide-react';
+import { DollarSign, CheckCircle2, Ban as BanIcon, Trash2 } from 'lucide-react';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import { usePayments } from '@/contexts/PaymentsContext';
 import { useCalendarSync } from '@/contexts/CalendarSyncContext';
@@ -63,7 +63,7 @@ export default function AgendaPage() {
     amount: '',
   });
   const [submittingPayment, setSubmittingPayment] = useState(false);
-  const [viewMode, setViewMode] = useState<'day' | 'week'>('week');
+  const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week');
   const [draggedAppointment, setDraggedAppointment] = useState<any | null>(null);
   const [dragOverDate, setDragOverDate] = useState<Date | null>(null);
 
@@ -78,7 +78,6 @@ export default function AgendaPage() {
       } catch (error: any) {
         console.error('Error loading blocked slots:', error);
 
-        // Si es un error de índice, mostrar en consola
         if (error?.message?.includes('index')) {
           console.warn('⚠️ Se necesita crear un índice en Firestore. Busca el enlace "You can create it here" en la consola.');
         }
@@ -114,12 +113,14 @@ export default function AgendaPage() {
     loadSchedulePreferences();
   }, []);
 
-  // Calcular semana o día actual
-  const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Lunes
-  const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 }); // Domingo
+  // Calcular rangos de fechas
+  const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+  const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-  const dayStart = startOfDay(currentDate);
-  const dayEnd = endOfDay(currentDate);
+
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  const monthDays = eachDayOfInterval({ start: startOfWeek(monthStart, { weekStartsOn: 1 }), end: endOfWeek(monthEnd, { weekStartsOn: 1 }) });
 
   // Obtener información del paciente
   const getPatientInfo = (patientId: string | undefined) => {
@@ -129,7 +130,9 @@ export default function AgendaPage() {
 
   // Navegación
   const goToPrevious = () => {
-    if (viewMode === 'week') {
+    if (viewMode === 'month') {
+      setCurrentDate(addMonths(currentDate, -1));
+    } else if (viewMode === 'week') {
       setCurrentDate(addDays(currentDate, -7));
     } else {
       setCurrentDate(addDays(currentDate, -1));
@@ -137,7 +140,9 @@ export default function AgendaPage() {
   };
 
   const goToNext = () => {
-    if (viewMode === 'week') {
+    if (viewMode === 'month') {
+      setCurrentDate(addMonths(currentDate, 1));
+    } else if (viewMode === 'week') {
       setCurrentDate(addDays(currentDate, 7));
     } else {
       setCurrentDate(addDays(currentDate, 1));
@@ -194,24 +199,27 @@ export default function AgendaPage() {
     }
   };
 
-  // Estadísticas de la semana
-  const weekStats = useMemo(() => {
-    const weekAppointments = appointments.filter(apt => {
+  // Estadísticas
+  const stats = useMemo(() => {
+    const rangeStart = viewMode === 'month' ? monthStart : weekStart;
+    const rangeEnd = viewMode === 'month' ? monthEnd : weekEnd;
+
+    const rangeAppointments = appointments.filter(apt => {
       if (!apt.date) return false;
       const aptDate = parseISO(apt.date);
-      return isWithinInterval(aptDate, { start: weekStart, end: weekEnd });
+      return isWithinInterval(aptDate, { start: rangeStart, end: rangeEnd });
     });
 
     return {
-      total: weekAppointments.length,
-      confirmed: weekAppointments.filter(a => a.status === 'confirmed').length,
-      pending: weekAppointments.filter(a => a.status === 'scheduled').length,
+      total: rangeAppointments.length,
+      confirmed: rangeAppointments.filter(a => a.status === 'confirmed').length,
+      pending: rangeAppointments.filter(a => a.status === 'scheduled').length,
       blocked: blockedSlots.filter(slot => {
         const slotDate = parseISO(slot.date);
-        return isWithinInterval(slotDate, { start: weekStart, end: weekEnd });
+        return isWithinInterval(slotDate, { start: rangeStart, end: rangeEnd });
       }).length,
     };
-  }, [appointments, blockedSlots, weekStart, weekEnd]);
+  }, [appointments, blockedSlots, viewMode, weekStart, weekEnd, monthStart, monthEnd]);
 
   // Función para obtener turnos y eventos de un día específico
   const getEventsForDay = (date: Date) => {
@@ -453,7 +461,6 @@ export default function AgendaPage() {
 
     if (!draggedAppointment) return;
 
-    // Verificar si hay conflicto con franjas bloqueadas
     const hasConflict = blockedSlots.some(slot => {
       if (!isSameDay(parseISO(slot.date), targetDate)) return false;
 
@@ -508,7 +515,7 @@ export default function AgendaPage() {
   };
 
   // Función para renderizar card de turno
-  const renderAppointmentCard = (apt: any) => {
+  const renderAppointmentCard = (apt: any, compact: boolean = false) => {
     const patient = getPatientInfo(apt.patientId);
     const patientName = apt.appointmentType === 'personal'
       ? apt.title || 'Evento personal'
@@ -519,7 +526,6 @@ export default function AgendaPage() {
     const professional = professionals.find(p => p.uid === apt.userId);
     const professionalColor = professional?.color || '#38bdf8';
 
-    // Colores según estado
     let statusColor = 'bg-sky-100 border-sky-300 dark:bg-sky-900/30 dark:border-sky-700';
     let statusText = 'text-sky-700 dark:text-sky-300';
 
@@ -542,6 +548,29 @@ export default function AgendaPage() {
 
     const isDragging = draggedAppointment?.id === apt.id;
     const canDrag = canModifyAppointment(apt, user, userProfile);
+
+    if (compact) {
+      return (
+        <div
+          key={apt.id}
+          draggable={canDrag}
+          onDragStart={(e) => handleDragStart(e, apt)}
+          onClick={() => setSelectedEvent(apt)}
+          className={`${statusColor} border-l-2 rounded p-1.5 cursor-pointer hover:shadow-sm transition-all text-xs ${
+            isDragging ? 'opacity-50' : ''
+          } ${canDrag ? 'cursor-move' : 'cursor-pointer'}`}
+          style={{ borderLeftColor: professionalColor }}
+        >
+          <div className="flex items-center gap-1">
+            {canDrag && <GripVertical className="w-3 h-3 text-elegant-400 dark:text-elegant-500 flex-shrink-0" />}
+            <div className="flex-1 min-w-0">
+              <div className={`font-medium ${statusText} truncate text-xs`}>{patientName}</div>
+              <div className="text-[10px] text-elegant-600 dark:text-elegant-400">{apt.startTime}</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div
@@ -634,7 +663,9 @@ export default function AgendaPage() {
               </button>
               <div className="text-center min-w-[200px]">
                 <h2 className="text-lg font-semibold text-elegant-900 dark:text-white">
-                  {viewMode === 'week'
+                  {viewMode === 'month'
+                    ? format(currentDate, "MMMM yyyy", { locale: es })
+                    : viewMode === 'week'
                     ? `${format(weekStart, 'd MMM', { locale: es })} - ${format(weekEnd, 'd MMM yyyy', { locale: es })}`
                     : format(currentDate, "EEEE d 'de' MMMM, yyyy", { locale: es })
                   }
@@ -651,7 +682,7 @@ export default function AgendaPage() {
             <div className="flex items-center gap-2 bg-elegant-100 dark:bg-elegant-800/60 p-1 rounded-lg">
               <button
                 onClick={() => setViewMode('day')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition ${
+                className={`px-3 py-2 rounded-md text-sm font-medium transition ${
                   viewMode === 'day'
                     ? 'bg-primary text-white shadow'
                     : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
@@ -661,7 +692,7 @@ export default function AgendaPage() {
               </button>
               <button
                 onClick={() => setViewMode('week')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition ${
+                className={`px-3 py-2 rounded-md text-sm font-medium transition ${
                   viewMode === 'week'
                     ? 'bg-primary text-white shadow'
                     : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
@@ -669,25 +700,35 @@ export default function AgendaPage() {
               >
                 Semana
               </button>
+              <button
+                onClick={() => setViewMode('month')}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition ${
+                  viewMode === 'month'
+                    ? 'bg-primary text-white shadow'
+                    : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
+                }`}
+              >
+                Mes
+              </button>
             </div>
           </div>
 
           {/* Estadísticas */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="p-3 rounded-xl bg-primary/10 dark:bg-primary/25 border border-primary/20 dark:border-primary/30">
-              <div className="text-2xl font-bold text-primary dark:text-primary-light">{weekStats.total}</div>
+              <div className="text-2xl font-bold text-primary dark:text-primary-light">{stats.total}</div>
               <div className="text-xs text-elegant-600 dark:text-elegant-300">Total Turnos</div>
             </div>
             <div className="p-3 rounded-xl bg-green-500/10 dark:bg-green-500/25 border border-green-500/20 dark:border-green-500/30">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">{weekStats.confirmed}</div>
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.confirmed}</div>
               <div className="text-xs text-elegant-600 dark:text-elegant-300">Confirmados</div>
             </div>
             <div className="p-3 rounded-xl bg-amber-500/10 dark:bg-amber-500/25 border border-amber-500/20 dark:border-amber-500/30">
-              <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{weekStats.pending}</div>
+              <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{stats.pending}</div>
               <div className="text-xs text-elegant-600 dark:text-elegant-300">Pendientes</div>
             </div>
             <div className="p-3 rounded-xl bg-red-500/10 dark:bg-red-500/25 border border-red-500/20 dark:border-red-500/30">
-              <div className="text-2xl font-bold text-red-600 dark:text-red-400">{weekStats.blocked}</div>
+              <div className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.blocked}</div>
               <div className="text-xs text-elegant-600 dark:text-elegant-300">Bloqueados</div>
             </div>
           </div>
@@ -695,7 +736,7 @@ export default function AgendaPage() {
 
         {/* Vista de Semana */}
         {viewMode === 'week' && (
-          <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-2">
             {weekDays.map((day) => {
               const { dayAppointments, dayBlocked, dayBirthdays } = getEventsForDay(day);
               const isToday = isSameDay(day, new Date());
@@ -707,11 +748,10 @@ export default function AgendaPage() {
                   onDragOver={(e) => handleDragOver(e, day)}
                   onDragLeave={handleDragLeave}
                   onDrop={(e) => handleDrop(e, day)}
-                  className={`card min-h-[300px] transition-all ${
+                  className={`card min-h-[350px] transition-all ${
                     isToday ? 'ring-2 ring-primary' : ''
                   } ${isDragOver ? 'ring-2 ring-blue-400 bg-blue-50 dark:bg-blue-900/20' : ''}`}
                 >
-                  {/* Header del día */}
                   <div className="mb-3 pb-3 border-b border-elegant-200 dark:border-elegant-700">
                     <div className="text-center">
                       <div className="text-xs font-medium text-elegant-500 dark:text-elegant-400 uppercase">
@@ -726,9 +766,7 @@ export default function AgendaPage() {
                     </div>
                   </div>
 
-                  {/* Lista de eventos */}
                   <div className="space-y-2">
-                    {/* Cumpleaños */}
                     {dayBirthdays.map((patient) => (
                       <div
                         key={`birthday-${patient.id}`}
@@ -743,7 +781,6 @@ export default function AgendaPage() {
                       </div>
                     ))}
 
-                    {/* Franjas bloqueadas */}
                     {dayBlocked.map((slot) => (
                       <div
                         key={`blocked-${slot.id}`}
@@ -763,12 +800,10 @@ export default function AgendaPage() {
                       </div>
                     ))}
 
-                    {/* Turnos */}
                     {dayAppointments
                       .sort((a, b) => a.startTime.localeCompare(b.startTime))
                       .map((apt) => renderAppointmentCard(apt))}
 
-                    {/* Mensaje si no hay eventos */}
                     {dayAppointments.length === 0 && dayBlocked.length === 0 && dayBirthdays.length === 0 && (
                       <div className="text-center py-8">
                         <Calendar className="w-8 h-8 mx-auto text-elegant-300 dark:text-elegant-600 mb-2" />
@@ -784,6 +819,51 @@ export default function AgendaPage() {
           </div>
         )}
 
+        {/* Vista Mensual */}
+        {viewMode === 'month' && (
+          <div className="card">
+            <div className="grid grid-cols-7 gap-px bg-elegant-200 dark:bg-elegant-700 border border-elegant-200 dark:border-elegant-700 rounded-lg overflow-hidden">
+              {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((day) => (
+                <div key={day} className="bg-elegant-100 dark:bg-elegant-800 p-2 text-center">
+                  <span className="text-xs font-semibold text-elegant-600 dark:text-elegant-400">{day}</span>
+                </div>
+              ))}
+              {monthDays.map((day) => {
+                const { dayAppointments } = getEventsForDay(day);
+                const isToday = isSameDay(day, new Date());
+                const isCurrentMonth = isSameMonth(day, currentDate);
+                const isDragOver = dragOverDate && isSameDay(dragOverDate, day);
+
+                return (
+                  <div
+                    key={day.toISOString()}
+                    onDragOver={(e) => handleDragOver(e, day)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, day)}
+                    className={`bg-white dark:bg-elegant-900 p-2 min-h-[100px] transition-all ${
+                      !isCurrentMonth ? 'opacity-40' : ''
+                    } ${isToday ? 'ring-2 ring-inset ring-primary' : ''} ${
+                      isDragOver ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                    }`}
+                  >
+                    <div className={`text-sm font-medium mb-1 ${isToday ? 'text-primary' : 'text-elegant-900 dark:text-white'}`}>
+                      {format(day, 'd')}
+                    </div>
+                    <div className="space-y-1">
+                      {dayAppointments.slice(0, 3).map((apt) => renderAppointmentCard(apt, true))}
+                      {dayAppointments.length > 3 && (
+                        <div className="text-[10px] text-elegant-500 dark:text-elegant-400 text-center">
+                          +{dayAppointments.length - 3} más
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Vista de Día */}
         {viewMode === 'day' && (
           <div className="card">
@@ -792,7 +872,6 @@ export default function AgendaPage() {
 
               return (
                 <div className="space-y-3">
-                  {/* Cumpleaños */}
                   {dayBirthdays.length > 0 && (
                     <div>
                       <h3 className="text-sm font-semibold text-elegant-700 dark:text-elegant-300 mb-2">
@@ -816,7 +895,6 @@ export default function AgendaPage() {
                     </div>
                   )}
 
-                  {/* Franjas bloqueadas */}
                   {dayBlocked.length > 0 && (
                     <div>
                       <h3 className="text-sm font-semibold text-elegant-700 dark:text-elegant-300 mb-2">
@@ -851,7 +929,6 @@ export default function AgendaPage() {
                     </div>
                   )}
 
-                  {/* Turnos */}
                   {dayAppointments.length > 0 && (
                     <div>
                       <h3 className="text-sm font-semibold text-elegant-700 dark:text-elegant-300 mb-2">
@@ -865,7 +942,6 @@ export default function AgendaPage() {
                     </div>
                   )}
 
-                  {/* Mensaje si no hay eventos */}
                   {dayAppointments.length === 0 && dayBlocked.length === 0 && dayBirthdays.length === 0 && (
                     <div className="text-center py-16">
                       <Calendar className="w-16 h-16 mx-auto text-elegant-300 dark:text-elegant-600 mb-4" />
@@ -989,45 +1065,57 @@ export default function AgendaPage() {
       {selectedEvent && (
         <Modal open={!!selectedEvent} onClose={() => setSelectedEvent(null)} title="Detalle de turno" maxWidth="max-w-2xl">
           <div className="space-y-4">
-            {/* Información principal */}
-            <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 dark:from-primary/20 dark:via-primary/10 dark:to-secondary/20 rounded-2xl p-5 border border-primary/30 dark:border-primary/40">
-              <div className="flex items-start justify-between mb-3">
+            {/* Card principal con gradiente similar al calendario */}
+            <div className="bg-gradient-to-br from-sky-50 via-white to-blue-50 dark:from-sky-900/20 dark:via-elegant-900 dark:to-blue-900/20 border-l-4 rounded-xl p-6 shadow-sm"
+              style={{ borderLeftColor: professionals.find(p => p.uid === selectedEvent.userId)?.color || '#38bdf8' }}
+            >
+              <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-elegant-900 dark:text-white mb-1">
+                  <h3 className="text-2xl font-bold text-elegant-900 dark:text-white mb-1">
                     {selectedEvent.patientName || 'Sin nombre'}
                   </h3>
                   <p className="text-sm text-elegant-600 dark:text-elegant-300">
                     {selectedProfessionalName || 'N/D'}
                   </p>
                 </div>
-                <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
-                  selectedEvent.status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' :
+                <div className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase ${
+                  selectedEvent.status === 'completed' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' :
+                  selectedEvent.status === 'confirmed' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' :
                   selectedEvent.status === 'cancelled' ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' :
                   selectedEvent.status === 'no-show' ? 'bg-gray-100 text-gray-700 dark:bg-gray-700/40 dark:text-gray-300' :
-                  'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                  'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300'
                 }`}>
                   {translateAppointmentStatus(selectedEvent.status)}
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 text-sm text-elegant-700 dark:text-elegant-200 mb-2">
-                <Calendar className="w-4 h-4 text-primary" />
-                <span className="font-medium">{format(parseISO(selectedEvent.date), "EEEE d 'de' MMMM, yyyy", { locale: es })}</span>
-              </div>
-
-              <div className="flex items-center gap-2 text-sm text-elegant-700 dark:text-elegant-200">
-                <Clock className="w-4 h-4 text-primary" />
-                <span className="font-medium">{selectedEvent.startTime} - {selectedEvent.endTime}</span>
-              </div>
-
-              {selectedEvent.fee && (
-                <div className="mt-3 pt-3 border-t border-primary/20 dark:border-primary/30">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-elegant-600 dark:text-elegant-300">Honorarios</span>
-                    <span className="text-lg font-bold text-primary dark:text-primary-light">${formatCurrency(selectedEvent.fee)}</span>
-                  </div>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 text-sm">
+                  <Calendar className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+                  <span className="font-medium text-elegant-900 dark:text-white">
+                    {format(parseISO(selectedEvent.date), "EEEE d 'de' MMMM, yyyy", { locale: es })}
+                  </span>
                 </div>
-              )}
+
+                <div className="flex items-center gap-3 text-sm">
+                  <Clock className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+                  <span className="font-medium text-elegant-900 dark:text-white">
+                    {selectedEvent.startTime} - {selectedEvent.endTime}
+                  </span>
+                </div>
+
+                {selectedEvent.fee && (
+                  <div className="flex items-center gap-3 pt-3 mt-3 border-t border-elegant-200 dark:border-elegant-700">
+                    <DollarSign className="w-5 h-5 text-primary" />
+                    <div className="flex-1 flex items-center justify-between">
+                      <span className="text-sm text-elegant-600 dark:text-elegant-300">Honorarios</span>
+                      <span className="text-xl font-bold text-primary dark:text-primary-light">
+                        ${formatCurrency(selectedEvent.fee)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {selectedEvent.notes && (
@@ -1042,7 +1130,7 @@ export default function AgendaPage() {
               </div>
             )}
 
-            {/* Acciones principales en cards grandes */}
+            {/* Acciones principales */}
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => {
@@ -1058,7 +1146,6 @@ export default function AgendaPage() {
                   </div>
                   <span className="text-sm font-semibold">Registrar Pago</span>
                 </div>
-                <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-200" />
               </button>
 
               <button
@@ -1075,11 +1162,10 @@ export default function AgendaPage() {
                   </div>
                   <span className="text-sm font-semibold">Marcar Asistencia</span>
                 </div>
-                <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-200" />
               </button>
             </div>
 
-            {/* Acciones secundarias más pequeñas */}
+            {/* Acciones secundarias */}
             <div className="border-t border-elegant-200 dark:border-elegant-700 pt-3">
               <p className="text-xs font-semibold text-elegant-500 dark:text-elegant-400 mb-2">Más opciones</p>
               <div className="grid grid-cols-2 gap-2">
