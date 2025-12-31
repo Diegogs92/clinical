@@ -116,7 +116,7 @@ export default function AgendaPage() {
   // Calcular rangos de fechas
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
-  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const weekDays = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i)); // Solo lunes a viernes
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -736,7 +736,7 @@ export default function AgendaPage() {
 
         {/* Vista de Semana */}
         {viewMode === 'week' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
             {weekDays.map((day) => {
               const { dayAppointments, dayBlocked, dayBirthdays } = getEventsForDay(day);
               const isToday = isSameDay(day, new Date());
@@ -748,7 +748,7 @@ export default function AgendaPage() {
                   onDragOver={(e) => handleDragOver(e, day)}
                   onDragLeave={handleDragLeave}
                   onDrop={(e) => handleDrop(e, day)}
-                  className={`card min-h-[350px] transition-all ${
+                  className={`card min-h-[400px] transition-all ${
                     isToday ? 'ring-2 ring-primary' : ''
                   } ${isDragOver ? 'ring-2 ring-blue-400 bg-blue-50 dark:bg-blue-900/20' : ''}`}
                 >
