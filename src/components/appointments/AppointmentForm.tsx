@@ -29,9 +29,9 @@ const schema = z.object({
   professionalId: z.string().min(1, 'Selecciona un profesional'),
   date: z.string().min(1, 'Fecha requerida'), // ISO date yyyy-MM-dd
   startTime: z.string().min(1, 'Hora inicio requerida'), // HH:mm
-  duration: z.coerce.number().refine(val => [45, 60, 90, 120, 160].includes(val), {
+  duration: z.coerce.number().refine(val => [30, 60, 90, 120, 150].includes(val), {
     message: 'Selecciona una duración válida'
-  }).default(45),
+  }).default(30),
   type: z.enum(['odontologia-general', 'ortodoncia', 'endodoncia', 'armonizacion']).default('odontologia-general'),
   fee: z.coerce.number().optional(),
   deposit: z.coerce.number().optional(),
@@ -71,7 +71,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch, control } = useForm<AppointmentFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      duration: initialData?.duration || 45,
+      duration: initialData?.duration || 30,
       type: (initialData?.type && ['odontologia-general', 'ortodoncia', 'endodoncia', 'armonizacion'].includes(initialData.type)
         ? initialData.type
         : 'odontologia-general') as 'odontologia-general' | 'ortodoncia' | 'endodoncia' | 'armonizacion',
@@ -352,16 +352,16 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
     }
   };
 
-  // Generar opciones de horario desde 09:00 hasta 19:30 en intervalos de 30 minutos (memoizado)
+  // Generar opciones de horario desde 09:00 hasta 19:45 en intervalos de 15 minutos (memoizado)
   const timeOptions = useMemo((): SelectOption[] => {
     const options: SelectOption[] = [];
     const startHour = 9;
     const endHour = 19;
-    const endMinute = 30;
+    const endMinute = 45;
 
     for (let hour = startHour; hour <= endHour; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        // Si es la última hora (19), solo permitir hasta 19:30
+      for (let minute = 0; minute < 60; minute += 15) {
+        // Si es la última hora (19), solo permitir hasta 19:45
         if (hour === endHour && minute > endMinute) break;
 
         const timeString = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
@@ -372,11 +372,11 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
   }, []); // No dependencies, static list
 
   const durationOptions = useMemo((): SelectOption[] => [
-    { value: 45, label: '45 min' },
+    { value: 30, label: '30 min' },
     { value: 60, label: '60 min' },
     { value: 90, label: '90 min' },
     { value: 120, label: '120 min' },
-    { value: 160, label: '160 min' },
+    { value: 150, label: '150 min' },
   ], []);
 
   const treatmentOptions = useMemo((): SelectOption[] => [
