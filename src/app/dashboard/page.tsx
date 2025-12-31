@@ -161,13 +161,24 @@ export default function DashboardPage() {
         const inDateRange = d >= windowRange.start && d < windowRange.end;
         const matchesPatient = !filterPatient || a.patientId === filterPatient;
         const matchesStatus = !filterStatus || a.status === filterStatus;
-        const professionalName = getProfessionalName(a.userId) || '';
-        const searchableText = `${a.patientName || a.title || ''} ${professionalName}`;
-        const matchesSearch = !query || searchableText.toLowerCase().includes(query);
-        return inDateRange && matchesPatient && matchesStatus && matchesSearch;
+
+        // Búsqueda mejorada: incluye nombre, DNI y obra social
+        if (query) {
+          const patient = patients.find(p => p.id === a.patientId);
+          const professionalName = getProfessionalName(a.userId) || '';
+          const patientDNI = patient?.dni || '';
+          const patientInsurance = patient?.insuranceName || '';
+
+          const searchableText = `${a.patientName || a.title || ''} ${professionalName} ${patientDNI} ${patientInsurance}`;
+          const matchesSearch = searchableText.toLowerCase().includes(query);
+
+          if (!matchesSearch) return false;
+        }
+
+        return inDateRange && matchesPatient && matchesStatus;
       })
       .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
-  }, [appointments, filterPatient, filterStatus, search, windowRange.end, windowRange.start, professionals]);
+  }, [appointments, filterPatient, filterStatus, search, windowRange.end, windowRange.start, professionals, patients]);
 
   const paymentStateFor = useMemo(() => {
     return (appt: Appointment) => {
@@ -443,7 +454,7 @@ export default function DashboardPage() {
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Buscar paciente"
+                    placeholder="Buscar por paciente, DNI u obra social"
                     className="flex-1 bg-transparent outline-none text-sm placeholder:text-elegant-400 dark:placeholder:text-elegant-500"
                   />
                 </label>
