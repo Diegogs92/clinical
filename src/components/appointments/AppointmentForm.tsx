@@ -335,7 +335,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
     }
   };
 
-  // Generar opciones de horario desde 09:00 hasta 19:30 en intervalos de 15 minutos (memoizado)
+  // Generar opciones de horario desde 09:00 hasta 19:30 en intervalos de 30 minutos (memoizado)
   const timeOptions = useMemo((): SelectOption[] => {
     const options: SelectOption[] = [];
     const startHour = 9;
@@ -343,7 +343,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
     const endMinute = 30;
 
     for (let hour = startHour; hour <= endHour; hour++) {
-      for (let minute = 0; minute < 60; minute += 15) {
+      for (let minute = 0; minute < 60; minute += 30) {
         // Si es la última hora (19), solo permitir hasta 19:30
         if (hour === endHour && minute > endMinute) break;
 
