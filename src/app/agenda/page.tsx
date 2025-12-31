@@ -525,6 +525,19 @@ export default function AgendaPage() {
   };
 
   // Función para renderizar card de turno
+  // Calcular monto pendiente de pagar
+  const calculatePending = (apt: any) => {
+    const deposit = apt.deposit || 0;
+    const completed = payments
+      .filter(p => p.appointmentId === apt.id && p.status === 'completed')
+      .reduce((sum, p) => sum + p.amount, 0);
+    const pending = [...payments, ...pendingPayments]
+      .filter(p => p.appointmentId === apt.id && p.status === 'pending')
+      .reduce((sum, p) => sum + p.amount, 0);
+    const totalPaid = deposit + completed + pending;
+    return (apt.fee || 0) - totalPaid;
+  };
+
   const renderAppointmentCard = (apt: any, compact: boolean = false) => {
     const patient = getPatientInfo(apt.patientId);
     const patientName = apt.appointmentType === 'personal'
@@ -535,6 +548,7 @@ export default function AgendaPage() {
 
     const professional = professionals.find(p => p.uid === apt.userId);
     const professionalColor = professional?.color || '#38bdf8';
+    const pendingAmount = calculatePending(apt);
 
     let statusColor = 'bg-sky-100 border-sky-300 dark:bg-sky-900/30 dark:border-sky-700';
     let statusText = 'text-sky-700 dark:text-sky-300';
@@ -597,32 +611,34 @@ export default function AgendaPage() {
           {canDrag && (
             <GripVertical className="w-4 h-4 text-elegant-400 dark:text-elegant-500 flex-shrink-0 mt-0.5" />
           )}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <h4 className={`font-semibold text-sm ${statusText} line-clamp-1`}>
-                {patientName}
-              </h4>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor} ${statusText} whitespace-nowrap`}>
-                {translateAppointmentStatus(apt.status)}
-              </span>
-            </div>
+          <div className="flex-1 min-w-0 space-y-1.5">
+            {/* Nombre del paciente */}
+            <h4 className={`font-semibold text-sm ${statusText} line-clamp-2`}>
+              {patientName}
+            </h4>
 
-            <div className="flex items-center gap-1.5 text-xs text-elegant-600 dark:text-elegant-300 mb-1">
-              <Clock className="w-3.5 h-3.5" />
+            {/* Horario */}
+            <div className="flex items-center gap-1.5 text-xs text-elegant-600 dark:text-elegant-300">
+              <Clock className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="font-medium">{apt.startTime} - {apt.endTime}</span>
             </div>
 
-            {professional && (
-              <div className="flex items-center gap-1.5 text-xs text-elegant-600 dark:text-elegant-300 mb-1">
-                <User className="w-3.5 h-3.5" />
-                <span>{professional.displayName}</span>
+            {/* Tipo de tratamiento */}
+            {apt.type && (
+              <div className="text-xs text-elegant-600 dark:text-elegant-300">
+                {apt.type === 'odontologia-general' ? 'Odontología General' :
+                 apt.type === 'ortodoncia' ? 'Ortodoncia' :
+                 apt.type === 'endodoncia' ? 'Endodoncia' :
+                 apt.type === 'armonizacion' ? 'Armonización' :
+                 apt.type}
               </div>
             )}
 
-            {apt.fee && (
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-primary dark:text-primary-light mt-2">
-                <DollarSign className="w-3.5 h-3.5" />
-                <span>${formatCurrency(apt.fee)}</span>
+            {/* Monto pendiente */}
+            {pendingAmount > 0 && (
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400">
+                <DollarSign className="w-3.5 h-3.5 flex-shrink-0" />
+                <span>Pendiente: ${formatCurrency(pendingAmount)}</span>
               </div>
             )}
           </div>
