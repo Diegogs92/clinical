@@ -773,10 +773,11 @@ export default function AgendaPage() {
             {/* Columna de horarios */}
             <div className="hidden lg:block w-16 flex-shrink-0">
               <div className="sticky top-4">
-                <div className="h-20"></div>
+                {/* Espacio para header del día - debe coincidir exactamente con el header de las cards */}
+                <div className="h-[88px]"></div>
                 <div className="space-y-0">
                   {timeSlots.filter((_, i) => i % 2 === 0).map((slot) => (
-                    <div key={slot} className="h-16 flex items-start text-[10px] font-medium text-elegant-500 dark:text-elegant-400">
+                    <div key={slot} className="h-16 flex items-start text-[10px] font-medium text-elegant-500 dark:text-elegant-400 pr-2">
                       {slot}
                     </div>
                   ))}
@@ -797,7 +798,7 @@ export default function AgendaPage() {
                     isToday ? 'ring-2 ring-primary' : ''
                   }`}
                 >
-                  {/* Header del día */}
+                  {/* Header del día con indicador de cumpleaños */}
                   <div className="mb-3 pb-3 border-b border-elegant-200 dark:border-elegant-700">
                     <div className="text-center">
                       <div className="text-xs font-medium text-elegant-500 dark:text-elegant-400 uppercase">
@@ -809,27 +810,14 @@ export default function AgendaPage() {
                       <div className="text-xs text-elegant-500 dark:text-elegant-400">
                         {format(day, 'MMM', { locale: es })}
                       </div>
+                      {/* Indicador de cumpleaños en el header */}
+                      {dayBirthdays.length > 0 && (
+                        <div className="mt-2 text-xl" title={dayBirthdays.map(p => `${p.firstName} ${p.lastName}`).join(', ')}>
+                          🎂
+                        </div>
+                      )}
                     </div>
                   </div>
-
-                  {/* Cumpleaños */}
-                  {dayBirthdays.length > 0 && (
-                    <div className="mb-3 space-y-2">
-                      {dayBirthdays.map((patient) => (
-                        <div
-                          key={`birthday-${patient.id}`}
-                          className="bg-pink-100 dark:bg-pink-900/30 border border-pink-300 dark:border-pink-700 rounded-lg p-2"
-                        >
-                          <div className="text-center">
-                            <div className="text-xl mb-1">🎂</div>
-                            <div className="text-xs font-semibold text-pink-700 dark:text-pink-300">
-                              {patient.firstName} {patient.lastName}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
 
                   {/* Franjas horarias granulares */}
                   <div className="relative space-y-0">
