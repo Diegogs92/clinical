@@ -35,7 +35,7 @@ const schema = z.object({
   deposit: z.coerce.number().optional(),
   notes: z.string().optional(),
   followUpMonths: z.coerce.number().optional(),
-  followUpValue: z.coerce.number().optional(),
+  followUpValue: z.coerce.number().transform(val => isNaN(val) ? undefined : val).optional(),
   followUpUnit: z.enum(['days', 'weeks', 'months']).optional(),
   followUpReason: z.string().optional(),
   noReminder: z.boolean().optional(),
