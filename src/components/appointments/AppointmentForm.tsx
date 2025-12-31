@@ -12,6 +12,7 @@ import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { Appointment, UserProfile, FollowUpReason } from '@/types';
 import { useToast } from '@/hooks/useToast';
 import Modal from '@/components/ui/Modal';
+import SuccessModal from '@/components/ui/SuccessModal';
 import PatientForm from '@/components/patients/PatientForm';
 import PatientSelect from '@/components/forms/PatientSelect';
 import ProfessionalSelect from '@/components/forms/ProfessionalSelect';
@@ -72,6 +73,11 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
   const [showFollowUpReasonModal, setShowFollowUpReasonModal] = useState(false);
   const [newFollowUpReason, setNewFollowUpReason] = useState('');
   const [noDeposit, setNoDeposit] = useState(false);
+  const [successModal, setSuccessModal] = useState<{ show: boolean; title: string; message?: string }>({
+    show: false,
+    title: '',
+    message: ''
+  });
   const toast = useToast();
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch, control } = useForm<AppointmentFormValues>({
     resolver: zodResolver(schema),
@@ -309,7 +315,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         if (onSuccess) {
           onSuccess('Turno actualizado', 'El turno se ha actualizado correctamente');
         } else {
-          toast.success('Turno actualizado');
+          setSuccessModal({ show: true, title: 'Turno actualizado', message: 'El turno se ha actualizado correctamente' });
         }
         await refreshAppointments();
         await saveFollowUpReason(values.followUpReason || '', values.professionalId, false);
@@ -334,7 +340,13 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
               : 'El turno se ha creado correctamente'
           );
         } else {
-          toast.success(values.deposit && values.deposit > 0 ? 'Turno creado con seña registrada' : 'Turno creado');
+          setSuccessModal({
+            show: true,
+            title: values.deposit && values.deposit > 0 ? 'Turno creado con seña registrada' : 'Turno creado',
+            message: values.deposit && values.deposit > 0
+              ? 'El turno se ha creado y la seña ha sido registrada'
+              : 'El turno se ha creado correctamente'
+          });
         }
         await refreshAppointments();
         await saveFollowUpReason(values.followUpReason || '', values.professionalId, false);
@@ -788,6 +800,13 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
           </div>
         </form>
       </Modal>
+
+      <SuccessModal
+        isOpen={successModal.show}
+        onClose={() => setSuccessModal({ show: false, title: '', message: '' })}
+        title={successModal.title}
+        message={successModal.message}
+      />
     </>
   );
 });
