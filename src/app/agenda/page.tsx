@@ -72,6 +72,10 @@ export default function AgendaPage() {
     title: '',
     message: ''
   });
+  const [attendanceDialog, setAttendanceDialog] = useState<{ open: boolean; appointment?: any }>({
+    open: false,
+    appointment: undefined
+  });
 
   // Cargar franjas bloqueadas al montar el componente
   useEffect(() => {
@@ -252,16 +256,29 @@ export default function AgendaPage() {
     ? professionals.find(p => p.uid === selectedEvent.userId)?.displayName || ''
     : '';
 
-  const handleAttendance = async (evt: any) => {
+  const handleAttendance = (evt: any) => {
     if (!canModifyAppointment(evt, user, userProfile)) {
       toast.error(getPermissionDeniedMessage());
       return;
     }
+    setAttendanceDialog({ open: true, appointment: evt });
+  };
+
+  const submitAttendance = async (status: 'completed' | 'no-show') => {
+    const evt = attendanceDialog.appointment;
+    if (!evt) return;
 
     try {
-      await updateAppointment(evt.id, { status: 'completed' });
+      await updateAppointment(evt.id, { status });
       await refreshAppointments();
-      setSuccessModal({ show: true, title: 'Asistencia registrada', message: 'El paciente ha sido marcado como presente' });
+      setAttendanceDialog({ open: false, appointment: undefined });
+      setSuccessModal({
+        show: true,
+        title: status === 'completed' ? 'Asistencia registrada' : 'Ausencia registrada',
+        message: status === 'completed'
+          ? 'El paciente ha sido marcado como presente'
+          : 'El paciente ha sido marcado como ausente'
+      });
     } catch (error) {
       console.error('Error marcando asistencia:', error);
       toast.error('No se pudo registrar la asistencia');
@@ -1338,6 +1355,47 @@ export default function AgendaPage() {
             </div>
           );
         })()}
+      </Modal>
+
+      {/* Modal de confirmación de asistencia */}
+      <Modal
+        open={attendanceDialog.open}
+        onClose={() => setAttendanceDialog({ open: false, appointment: undefined })}
+        title="Registrar asistencia"
+        maxWidth="max-w-md"
+      >
+        {attendanceDialog.appointment && (
+          <div className="space-y-6">
+            <p className="text-elegant-600 dark:text-elegant-300 text-center">
+              ¿El paciente <span className="font-semibold text-elegant-900 dark:text-white">{attendanceDialog.appointment.patientName}</span> asistió a la cita?
+            </p>
+
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => submitAttendance('completed')}
+                className="flex flex-col items-center gap-3 p-6 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transition-all duration-200 hover:shadow-lg hover:scale-105"
+              >
+                <CheckCircle2 className="w-12 h-12" />
+                <span className="text-lg font-bold">Asistió</span>
+              </button>
+
+              <button
+                onClick={() => submitAttendance('no-show')}
+                className="flex flex-col items-center gap-3 p-6 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white transition-all duration-200 hover:shadow-lg hover:scale-105"
+              >
+                <Ban className="w-12 h-12" />
+                <span className="text-lg font-bold">Ausente</span>
+              </button>
+            </div>
+
+            <button
+              onClick={() => setAttendanceDialog({ open: false, appointment: undefined })}
+              className="w-full btn-secondary"
+            >
+              Cancelar
+            </button>
+          </div>
+        )}
       </Modal>
 
       {/* Modal de éxito */}
