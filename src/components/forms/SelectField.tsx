@@ -16,6 +16,7 @@ interface SelectFieldProps {
   error?: string;
   isLoading?: boolean;
   noOptionsMessage?: string;
+  disabled?: boolean;
 }
 
 const CustomSingleValue = (props: SingleValueProps<SelectOption>) => {
@@ -33,7 +34,8 @@ const SelectField = memo(function SelectField({
   placeholder = 'Selecciona una opción',
   error,
   isLoading = false,
-  noOptionsMessage = 'No hay opciones disponibles'
+  noOptionsMessage = 'No hay opciones disponibles',
+  disabled = false
 }: SelectFieldProps) {
   const selectedOption = useMemo(() =>
     options.find(opt => opt.value === value) || null,
@@ -53,6 +55,7 @@ const SelectField = memo(function SelectField({
         }}
         placeholder={placeholder}
         isLoading={isLoading}
+        isDisabled={disabled}
         noOptionsMessage={() => noOptionsMessage}
         components={{ SingleValue: CustomSingleValue }}
         classNames={{

@@ -754,10 +754,12 @@ export default function DashboardPage() {
               onCreated={(appt: Appointment) => {
                 setShowForm(false);
                 setEditingAppointment(null);
-                // Toast se muestra en AppointmentForm con información de sincronización
                 refreshAppointments();
               }}
               onCancel={()=>{setShowForm(false); setEditingAppointment(null);}}
+              onSuccess={(title: string, message: string) => {
+                setSuccessModal({ show: true, title, message });
+              }}
             />
           </Modal>
         </div>

@@ -49,9 +49,10 @@ interface Props {
   initialData?: Appointment;
   onCreated?: (appt?: any) => void;
   onCancel?: () => void;
+  onSuccess?: (title: string, message: string) => void;
 }
 
-const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, onCancel }: Props) {
+const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, onCancel, onSuccess }: Props) {
   const { user } = useAuth();
   const { syncAppointment } = useCalendarSync();
   const [loading, setLoading] = useState(false);
@@ -298,7 +299,11 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         }
 
         console.log('[AppointmentForm] Turno actualizado exitosamente');
-        toast.success('Turno actualizado');
+        if (onSuccess) {
+          onSuccess('Turno actualizado', 'El turno se ha actualizado correctamente');
+        } else {
+          toast.success('Turno actualizado');
+        }
         await refreshAppointments();
         await saveFollowUpReason(values.followUpReason || '', values.professionalId, false);
         reset();
@@ -314,7 +319,16 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         }
 
         console.log('[AppointmentForm] Turno creado exitosamente con ID:', id);
-        toast.success(values.deposit && values.deposit > 0 ? 'Turno creado con seña registrada' : 'Turno creado');
+        if (onSuccess) {
+          onSuccess(
+            values.deposit && values.deposit > 0 ? 'Turno creado con seña registrada' : 'Turno creado',
+            values.deposit && values.deposit > 0
+              ? 'El turno se ha creado y la seña ha sido registrada'
+              : 'El turno se ha creado correctamente'
+          );
+        } else {
+          toast.success(values.deposit && values.deposit > 0 ? 'Turno creado con seña registrada' : 'Turno creado');
+        }
         await refreshAppointments();
         await saveFollowUpReason(values.followUpReason || '', values.professionalId, false);
         reset();
@@ -639,7 +653,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         </div>
 
         {/* Seguimiento */}
-        <div className="border-t border-elegant-200 dark:border-gray-700 pt-2.5">
+        <div className={`border-t border-elegant-200 dark:border-gray-700 pt-2.5 ${watch('noReminder') ? 'opacity-50 pointer-events-none' : ''}`}>
           <h4 className="text-sm font-medium text-primary-dark dark:text-white mb-1.5">Recordatorio de Seguimiento</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
             <div>
@@ -649,6 +663,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
                 className="input-field"
                 placeholder="0"
                 min="0"
+                disabled={watch('noReminder')}
                 {...register('followUpValue', { valueAsNumber: true })}
               />
             </div>
@@ -667,6 +682,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
                     value={field.value || 'months'}
                     onChange={field.onChange}
                     placeholder="Selecciona unidad"
+                    disabled={watch('noReminder')}
                   />
                 )}
               />
@@ -680,7 +696,8 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
                     setNewFollowUpReason('');
                     setShowFollowUpReasonModal(true);
                   }}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark dark:text-primary-light transition"
+                  disabled={watch('noReminder')}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark dark:text-primary-light transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Nuevo
                 </button>
@@ -696,6 +713,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
                     placeholder="Selecciona un motivo"
                     isLoading={loadingFollowUpReasons}
                     noOptionsMessage="No hay motivos guardados"
+                    disabled={watch('noReminder')}
                   />
                 )}
               />
