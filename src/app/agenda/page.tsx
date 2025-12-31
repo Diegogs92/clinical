@@ -772,7 +772,27 @@ export default function AgendaPage() {
 
         {/* Vista de Semana */}
         {viewMode === 'week' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div className="flex gap-3">
+            {/* Columna de horarios */}
+            <div className="hidden lg:block w-20 flex-shrink-0">
+              <div className="card sticky top-4">
+                <div className="mb-3 pb-3 border-b border-elegant-200 dark:border-elegant-700">
+                  <div className="text-center text-xs font-medium text-elegant-500 dark:text-elegant-400">
+                    Hora
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  {Array.from({ length: 11 }, (_, i) => 9 + i).map((hour) => (
+                    <div key={hour} className="text-center text-xs font-medium text-elegant-600 dark:text-elegant-400 py-1">
+                      {String(hour).padStart(2, '0')}:00
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Grid de días */}
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
             {weekDays.map((day) => {
               const { dayAppointments, dayBlocked, dayBirthdays } = getEventsForDay(day);
               const isToday = isSameDay(day, new Date());
@@ -820,7 +840,7 @@ export default function AgendaPage() {
                     {dayBlocked.map((slot) => (
                       <div
                         key={`blocked-${slot.id}`}
-                        className="bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg p-3"
+                        className="bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg p-3 group hover:shadow-md transition-shadow"
                       >
                         <div className="flex items-start gap-2">
                           <Ban className="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
@@ -832,6 +852,30 @@ export default function AgendaPage() {
                               {slot.reason}
                             </div>
                           </div>
+                          <button
+                            onClick={async () => {
+                              if (await confirm({
+                                title: 'Eliminar franja bloqueada',
+                                message: `¿Estás seguro de que deseas eliminar esta franja bloqueada (${slot.startTime} - ${slot.endTime})?`,
+                                confirmText: 'Eliminar',
+                                cancelText: 'Cancelar'
+                              })) {
+                                try {
+                                  await deleteBlockedSlot(slot.id);
+                                  const slots = await getBlockedSlotsByUser(user!.uid);
+                                  setBlockedSlots(slots);
+                                  setSuccessModal({ show: true, title: 'Franja eliminada', message: 'La franja bloqueada se ha eliminado correctamente' });
+                                } catch (error) {
+                                  console.error('Error eliminando franja:', error);
+                                  toast.error('No se pudo eliminar la franja bloqueada');
+                                }
+                              }
+                            }}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-red-200 dark:hover:bg-red-800/50"
+                            title="Eliminar franja bloqueada"
+                          >
+                            <X className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -852,6 +896,7 @@ export default function AgendaPage() {
                 </div>
               );
             })}
+            </div>
           </div>
         )}
 
