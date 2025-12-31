@@ -40,6 +40,7 @@ const schema = z.object({
   followUpValue: z.coerce.number().optional(),
   followUpUnit: z.enum(['days', 'weeks', 'months']).optional(),
   followUpReason: z.string().optional(),
+  noReminder: z.boolean().optional(),
 });
 
 export type AppointmentFormValues = z.infer<typeof schema>;
@@ -84,6 +85,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
       followUpValue: undefined,
       followUpUnit: 'months',
       followUpReason: initialData?.followUpReason || '',
+      noReminder: (initialData as any)?.noReminder || false,
     },
   });
 
@@ -268,6 +270,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         appointmentType: 'patient', // Siempre es tipo paciente en este formulario
         createdAt: initialData?.createdAt || '',
         updatedAt: '',
+        noReminder: values.noReminder || false,
       } as any;
 
       // Remover campos undefined para evitar errores en Firestore
@@ -620,6 +623,19 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         <div>
           <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Notas</label>
           <textarea className="input-field resize-none h-16" placeholder="Indicaciones o comentarios adicionales..." {...register('notes')} />
+        </div>
+
+        {/* Sin recordatorio */}
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="noReminder"
+            className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            {...register('noReminder')}
+          />
+          <label htmlFor="noReminder" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+            Sin recordatorio
+          </label>
         </div>
 
         {/* Seguimiento */}

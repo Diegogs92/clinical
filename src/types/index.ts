@@ -80,6 +80,7 @@ export interface Appointment {
   followUpMonths?: number; // Meses para recordar seguimiento (1, 3, 6, 12)
   followUpReason?: string; // Motivo del seguimiento
   followUpDate?: string; // Fecha calculada para el seguimiento
+  noReminder?: boolean; // Sin recordatorio
   createdAt: string;
   updatedAt: string;
   userId: string; // Professional ID
