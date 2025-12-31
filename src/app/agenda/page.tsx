@@ -210,28 +210,6 @@ export default function AgendaPage() {
     }
   };
 
-  // Estadísticas
-  const stats = useMemo(() => {
-    const rangeStart = viewMode === 'month' ? monthStart : weekStart;
-    const rangeEnd = viewMode === 'month' ? monthEnd : weekEnd;
-
-    const rangeAppointments = appointments.filter(apt => {
-      if (!apt.date) return false;
-      const aptDate = parseISO(apt.date);
-      return isWithinInterval(aptDate, { start: rangeStart, end: rangeEnd });
-    });
-
-    return {
-      total: rangeAppointments.length,
-      confirmed: rangeAppointments.filter(a => a.status === 'confirmed').length,
-      pending: rangeAppointments.filter(a => a.status === 'scheduled').length,
-      blocked: blockedSlots.filter(slot => {
-        const slotDate = parseISO(slot.date);
-        return isWithinInterval(slotDate, { start: rangeStart, end: rangeEnd });
-      }).length,
-    };
-  }, [appointments, blockedSlots, viewMode, weekStart, weekEnd, monthStart, monthEnd]);
-
   // Función para obtener turnos y eventos de un día específico
   const getEventsForDay = (date: Date) => {
     const dayAppointments = appointments.filter(apt => {
@@ -787,25 +765,6 @@ export default function AgendaPage() {
             </div>
           </div>
 
-          {/* Estadísticas */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="p-3 rounded-xl bg-primary/10 dark:bg-primary/25 border border-primary/20 dark:border-primary/30">
-              <div className="text-2xl font-bold text-primary dark:text-primary-light">{stats.total}</div>
-              <div className="text-xs text-elegant-600 dark:text-elegant-300">Total Turnos</div>
-            </div>
-            <div className="p-3 rounded-xl bg-green-500/10 dark:bg-green-500/25 border border-green-500/20 dark:border-green-500/30">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.confirmed}</div>
-              <div className="text-xs text-elegant-600 dark:text-elegant-300">Confirmados</div>
-            </div>
-            <div className="p-3 rounded-xl bg-amber-500/10 dark:bg-amber-500/25 border border-amber-500/20 dark:border-amber-500/30">
-              <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{stats.pending}</div>
-              <div className="text-xs text-elegant-600 dark:text-elegant-300">Pendientes</div>
-            </div>
-            <div className="p-3 rounded-xl bg-red-500/10 dark:bg-red-500/25 border border-red-500/20 dark:border-red-500/30">
-              <div className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.blocked}</div>
-              <div className="text-xs text-elegant-600 dark:text-elegant-300">Bloqueados</div>
-            </div>
-          </div>
         </div>
 
         {/* Vista de Semana */}
