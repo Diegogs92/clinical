@@ -856,9 +856,9 @@ export default function AgendaPage() {
                             onClick={async () => {
                               if (await confirm({
                                 title: 'Eliminar franja bloqueada',
-                                message: `¿Estás seguro de que deseas eliminar esta franja bloqueada (${slot.startTime} - ${slot.endTime})?`,
+                                description: `¿Estás seguro de que deseas eliminar esta franja bloqueada (${slot.startTime} - ${slot.endTime})?`,
                                 confirmText: 'Eliminar',
-                                cancelText: 'Cancelar'
+                                tone: 'danger'
                               })) {
                                 try {
                                   await deleteBlockedSlot(slot.id);
