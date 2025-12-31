@@ -37,6 +37,12 @@ const DateTimePicker = memo(function DateTimePicker({
   error,
   placeholder
 }: DateTimePickerProps) {
+  // Función para filtrar sábados (6) y domingos (0)
+  const filterWeekdays = (date: Date) => {
+    const day = date.getDay();
+    return day !== 0 && day !== 6;
+  };
+
   return (
     <div>
       <DatePicker
@@ -49,6 +55,7 @@ const DateTimePicker = memo(function DateTimePicker({
         calendarClassName="!font-sans"
         wrapperClassName="w-full"
         locale={es}
+        filterDate={filterWeekdays}
       />
       {error && <p className="text-red-600 text-xs mt-0.5">{error}</p>}
     </div>

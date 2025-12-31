@@ -312,15 +312,20 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         }
 
         console.log('[AppointmentForm] Turno actualizado exitosamente');
-        if (onSuccess) {
-          onSuccess('Turno actualizado', 'El turno se ha actualizado correctamente');
-        } else {
-          setSuccessModal({ show: true, title: 'Turno actualizado', message: 'El turno se ha actualizado correctamente' });
-        }
         await refreshAppointments();
         await saveFollowUpReason(values.followUpReason || '', values.professionalId, false);
         reset();
-        onCreated?.(updated);
+
+        if (onSuccess) {
+          onSuccess('Turno actualizado', 'El turno se ha actualizado correctamente');
+          onCreated?.(updated);
+        } else {
+          setSuccessModal({ show: true, title: 'Turno actualizado', message: 'El turno se ha actualizado correctamente' });
+          // Cerrar el formulario después de que se cierre el modal (2 segundos)
+          setTimeout(() => {
+            onCreated?.(updated);
+          }, 2100);
+        }
       } else {
         console.log('[AppointmentForm] Creando nuevo turno...');
         const id = await createAppointment(payload);
@@ -332,6 +337,10 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         }
 
         console.log('[AppointmentForm] Turno creado exitosamente con ID:', id);
+        await refreshAppointments();
+        await saveFollowUpReason(values.followUpReason || '', values.professionalId, false);
+        reset();
+
         if (onSuccess) {
           onSuccess(
             values.deposit && values.deposit > 0 ? 'Turno creado con seña registrada' : 'Turno creado',
@@ -339,6 +348,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
               ? 'El turno se ha creado y la seña ha sido registrada'
               : 'El turno se ha creado correctamente'
           );
+          onCreated?.(created);
         } else {
           setSuccessModal({
             show: true,
@@ -347,11 +357,11 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
               ? 'El turno se ha creado y la seña ha sido registrada'
               : 'El turno se ha creado correctamente'
           });
+          // Cerrar el formulario después de que se cierre el modal (2 segundos)
+          setTimeout(() => {
+            onCreated?.(created);
+          }, 2100);
         }
-        await refreshAppointments();
-        await saveFollowUpReason(values.followUpReason || '', values.professionalId, false);
-        reset();
-        onCreated?.(created);
       }
     } catch (e: any) {
       console.error('[AppointmentForm] Error completo:', e);
