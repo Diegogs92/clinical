@@ -1063,34 +1063,34 @@ export default function AgendaPage() {
       )}
 
       {selectedEvent && (
-        <Modal open={!!selectedEvent} onClose={() => setSelectedEvent(null)} title="Detalle de turno" maxWidth="max-w-3xl">
-          <div className="space-y-6">
+        <Modal open={!!selectedEvent} onClose={() => setSelectedEvent(null)} title="Detalle de turno" maxWidth="max-w-2xl">
+          <div className="space-y-4">
             {/* Card principal con diseño mejorado */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-white via-sky-50/30 to-blue-50/50 dark:from-elegant-800 dark:via-sky-900/10 dark:to-blue-900/10 rounded-2xl shadow-xl border border-elegant-200/50 dark:border-elegant-700/50">
+            <div className="relative overflow-hidden bg-gradient-to-br from-white via-sky-50/30 to-blue-50/50 dark:from-elegant-800 dark:via-sky-900/10 dark:to-blue-900/10 rounded-xl shadow-lg border border-elegant-200/50 dark:border-elegant-700/50">
               {/* Barra lateral colorida del profesional */}
               <div
                 className="absolute left-0 top-0 bottom-0 w-1.5"
                 style={{ backgroundColor: professionals.find(p => p.uid === selectedEvent.userId)?.color || '#38bdf8' }}
               />
 
-              <div className="p-8">
+              <div className="p-5">
                 {/* Header con nombre y estado */}
-                <div className="flex items-start justify-between mb-6 pb-6 border-b border-elegant-200 dark:border-elegant-700">
+                <div className="flex items-start justify-between mb-4 pb-4 border-b border-elegant-200 dark:border-elegant-700">
                   <div className="flex-1">
-                    <h3 className="text-3xl font-bold text-elegant-900 dark:text-white mb-2">
+                    <h3 className="text-xl font-bold text-elegant-900 dark:text-white mb-1">
                       {selectedEvent.patientName || 'Sin nombre'}
                     </h3>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       <div
-                        className="w-3 h-3 rounded-full"
+                        className="w-2.5 h-2.5 rounded-full"
                         style={{ backgroundColor: professionals.find(p => p.uid === selectedEvent.userId)?.color || '#38bdf8' }}
                       />
-                      <p className="text-base font-medium text-elegant-600 dark:text-elegant-300">
+                      <p className="text-sm font-medium text-elegant-600 dark:text-elegant-300">
                         {selectedProfessionalName || 'N/D'}
                       </p>
                     </div>
                   </div>
-                  <div className={`px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wide shadow-sm ${
+                  <div className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide ${
                     selectedEvent.status === 'completed' ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white' :
                     selectedEvent.status === 'confirmed' ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white' :
                     selectedEvent.status === 'cancelled' ? 'bg-gradient-to-r from-red-500 to-red-600 text-white' :
@@ -1102,29 +1102,29 @@ export default function AgendaPage() {
                 </div>
 
                 {/* Información del turno */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div className="bg-white dark:bg-elegant-800/50 rounded-xl p-5 border border-elegant-200 dark:border-elegant-700 shadow-sm">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center shadow-md">
-                        <Calendar className="w-6 h-6 text-white" />
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="bg-white dark:bg-elegant-800/50 rounded-lg p-3 border border-elegant-200 dark:border-elegant-700">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center flex-shrink-0">
+                        <Calendar className="w-4 h-4 text-white" />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-xs font-semibold text-elegant-500 dark:text-elegant-400 mb-1">Fecha</p>
-                        <p className="text-sm font-bold text-elegant-900 dark:text-white capitalize">
-                          {format(parseISO(selectedEvent.date), "EEEE d 'de' MMMM, yyyy", { locale: es })}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-elegant-500 dark:text-elegant-400">Fecha</p>
+                        <p className="text-xs font-bold text-elegant-900 dark:text-white capitalize truncate">
+                          {format(parseISO(selectedEvent.date), "EEE d 'de' MMM", { locale: es })}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-elegant-800/50 rounded-xl p-5 border border-elegant-200 dark:border-elegant-700 shadow-sm">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-md">
-                        <Clock className="w-6 h-6 text-white" />
+                  <div className="bg-white dark:bg-elegant-800/50 rounded-lg p-3 border border-elegant-200 dark:border-elegant-700">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center flex-shrink-0">
+                        <Clock className="w-4 h-4 text-white" />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-xs font-semibold text-elegant-500 dark:text-elegant-400 mb-1">Horario</p>
-                        <p className="text-sm font-bold text-elegant-900 dark:text-white">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-elegant-500 dark:text-elegant-400">Horario</p>
+                        <p className="text-xs font-bold text-elegant-900 dark:text-white">
                           {selectedEvent.startTime} - {selectedEvent.endTime}
                         </p>
                       </div>
@@ -1134,22 +1134,20 @@ export default function AgendaPage() {
 
                 {/* Honorarios */}
                 {selectedEvent.fee && (
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-6 border-2 border-green-200 dark:border-green-800 shadow-sm">
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-3 border border-green-200 dark:border-green-800">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
-                          <DollarSign className="w-7 h-7 text-white" />
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
+                          <DollarSign className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                          <p className="text-xs font-semibold text-green-700 dark:text-green-400 mb-0.5">Honorarios del turno</p>
-                          <p className="text-sm text-green-600 dark:text-green-500">Monto total a cobrar</p>
+                          <p className="text-xs font-semibold text-green-700 dark:text-green-400">Honorarios</p>
+                          <p className="text-xs text-green-600 dark:text-green-500">Total a cobrar</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <span className="text-3xl font-black text-green-600 dark:text-green-400">
-                          ${formatCurrency(selectedEvent.fee)}
-                        </span>
-                      </div>
+                      <span className="text-xl font-black text-green-600 dark:text-green-400">
+                        ${formatCurrency(selectedEvent.fee)}
+                      </span>
                     </div>
                   </div>
                 )}
@@ -1158,35 +1156,32 @@ export default function AgendaPage() {
 
             {/* Notas */}
             {selectedEvent.notes && (
-              <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-6 border-2 border-amber-200 dark:border-amber-800 shadow-sm">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-md flex-shrink-0">
-                    <FileText className="w-5 h-5 text-white" />
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg p-3 border border-amber-200 dark:border-amber-800">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-4 h-4 text-white" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-bold text-amber-800 dark:text-amber-400 mb-2">Notas del turno</p>
-                    <p className="text-sm text-amber-900 dark:text-amber-200 whitespace-pre-line leading-relaxed">{selectedEvent.notes}</p>
+                    <p className="text-xs font-bold text-amber-800 dark:text-amber-400 mb-1">Notas</p>
+                    <p className="text-xs text-amber-900 dark:text-amber-200 whitespace-pre-line leading-relaxed">{selectedEvent.notes}</p>
                   </div>
                 </div>
               </div>
             )}
 
             {/* Acciones principales */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => {
                   openPaymentDialog(selectedEvent);
                   setSelectedEvent(null);
                 }}
                 disabled={!selectedEvent.fee || selectedEvent.status === 'cancelled'}
-                className="group relative overflow-hidden bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 hover:from-green-600 hover:via-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl p-6 transition-all duration-300 hover:shadow-2xl hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed shadow-lg"
+                className="group relative overflow-hidden bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 hover:from-green-600 hover:via-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg p-3.5 transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed"
               >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="relative z-10 flex items-center justify-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-md">
-                    <DollarSign className="w-7 h-7" />
-                  </div>
-                  <span className="text-base font-bold">Registrar Pago</span>
+                <div className="flex items-center justify-center gap-2">
+                  <DollarSign className="w-5 h-5" />
+                  <span className="text-sm font-bold">Registrar Pago</span>
                 </div>
               </button>
 
@@ -1196,44 +1191,38 @@ export default function AgendaPage() {
                   setSelectedEvent(null);
                 }}
                 disabled={selectedEvent.status === 'completed' || selectedEvent.status === 'cancelled'}
-                className="group relative overflow-hidden bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl p-6 transition-all duration-300 hover:shadow-2xl hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed shadow-lg"
+                className="group relative overflow-hidden bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg p-3.5 transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed"
               >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="relative z-10 flex items-center justify-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-md">
-                    <CheckCircle2 className="w-7 h-7" />
-                  </div>
-                  <span className="text-base font-bold">Marcar Asistencia</span>
+                <div className="flex items-center justify-center gap-2">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span className="text-sm font-bold">Marcar Asistencia</span>
                 </div>
               </button>
             </div>
 
             {/* Acciones secundarias */}
-            <div className="bg-elegant-50 dark:bg-elegant-800/30 rounded-xl p-5 border border-elegant-200 dark:border-elegant-700">
-              <p className="text-sm font-bold text-elegant-600 dark:text-elegant-400 mb-4">Opciones adicionales</p>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => {
-                    handleCancelAppointment(selectedEvent);
-                    setSelectedEvent(null);
-                  }}
-                  disabled={selectedEvent.status === 'cancelled'}
-                  className="flex items-center justify-center gap-2.5 p-4 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 hover:from-amber-200 hover:to-orange-200 dark:from-amber-900/30 dark:to-orange-900/30 dark:hover:from-amber-900/50 dark:hover:to-orange-900/50 transition-all duration-200 border border-amber-300 dark:border-amber-700 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <BanIcon className="w-5 h-5 text-amber-700 dark:text-amber-400" />
-                  <span className="text-sm font-bold text-amber-800 dark:text-amber-300">Cancelar turno</span>
-                </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  handleCancelAppointment(selectedEvent);
+                  setSelectedEvent(null);
+                }}
+                disabled={selectedEvent.status === 'cancelled'}
+                className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-lg bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:hover:bg-amber-900/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-amber-300 dark:border-amber-700"
+              >
+                <BanIcon className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                <span className="text-xs font-bold text-amber-800 dark:text-amber-300">Cancelar</span>
+              </button>
 
-                <button
-                  onClick={() => {
-                    handleDelete(selectedEvent);
-                  }}
-                  className="flex items-center justify-center gap-2.5 p-4 rounded-xl bg-gradient-to-br from-red-100 to-pink-100 hover:from-red-200 hover:to-pink-200 dark:from-red-900/30 dark:to-pink-900/30 dark:hover:from-red-900/50 dark:hover:to-pink-900/50 transition-all duration-200 border border-red-300 dark:border-red-700 hover:shadow-md"
-                >
-                  <Trash2 className="w-5 h-5 text-red-700 dark:text-red-400" />
-                  <span className="text-sm font-bold text-red-800 dark:text-red-300">Eliminar turno</span>
-                </button>
-              </div>
+              <button
+                onClick={() => {
+                  handleDelete(selectedEvent);
+                }}
+                className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-lg bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 transition-all border border-red-300 dark:border-red-700"
+              >
+                <Trash2 className="w-4 h-4 text-red-700 dark:text-red-400" />
+                <span className="text-xs font-bold text-red-800 dark:text-red-300">Eliminar</span>
+              </button>
             </div>
           </div>
         </Modal>
