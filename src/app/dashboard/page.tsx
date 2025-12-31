@@ -15,6 +15,7 @@ import { useAppointments } from '@/contexts/AppointmentsContext';
 import AppointmentForm from '@/components/appointments/AppointmentForm';
 import { CalendarDays, PlusCircle, Edit, DollarSign, Search, Clock, Ban, Trash2, CheckCircle2 } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
+import SuccessModal from '@/components/ui/SuccessModal';
 import { useToast } from '@/contexts/ToastContext';
 import { translateAppointmentStatus } from '@/lib/translations';
 import ECGLoader from '@/components/ui/ECGLoader';
@@ -62,7 +63,11 @@ export default function DashboardPage() {
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [search, setSearch] = useState<string>('');
   const [now, setNow] = useState<Date>(new Date());
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successModal, setSuccessModal] = useState<{ show: boolean; title: string; message?: string }>({
+    show: false,
+    title: '',
+    message: ''
+  });
 
   const toast = useToast();
   const openNewAppointment = () => {
@@ -253,7 +258,7 @@ export default function DashboardPage() {
       await refreshAppointments();
       await refreshPayments();
       await refreshPendingPayments();
-      toast.success('Turno cancelado');
+      setSuccessModal({ show: true, title: 'Turno cancelado', message: 'El turno se ha cancelado correctamente' });
     } catch (error) {
       console.error('Error al cancelar turno:', error);
       toast.error('No se pudo cancelar el turno');
@@ -288,8 +293,7 @@ export default function DashboardPage() {
       await refreshAppointments();
       await refreshPayments();
       await refreshPendingPayments();
-      setShowSuccessModal(true);
-      setTimeout(() => setShowSuccessModal(false), 2000);
+      setSuccessModal({ show: true, title: 'Turno eliminado', message: 'El turno se ha eliminado correctamente' });
     } catch (error) {
       console.error('Error al eliminar turno:', error);
       toast.error('No se pudo eliminar el turno');
@@ -383,7 +387,11 @@ export default function DashboardPage() {
       await refreshPayments();
       await refreshPendingPayments();
       console.log('[submitPayment] Todo completado exitosamente');
-      toast.success(isTotal ? 'Pago registrado con exito' : 'Pago parcial registrado con exito');
+      setSuccessModal({
+        show: true,
+        title: isTotal ? 'Pago registrado' : 'Pago parcial registrado',
+        message: isTotal ? 'El pago se ha registrado con éxito' : 'El pago parcial se ha registrado con éxito'
+      });
       setPaymentDialog({ open: false, appointment: undefined, mode: 'total', amount: '' });
     } catch (error) {
       console.error('[submitPayment] Error al registrar pago:', error);
@@ -839,24 +847,13 @@ export default function DashboardPage() {
         })()}
       </Modal>
 
-      {/* Modal de éxito después de eliminar */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-elegant-800 rounded-2xl shadow-2xl p-8 max-w-md mx-4 transform animate-in fade-in zoom-in duration-200">
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mb-4 shadow-lg">
-                <CheckCircle2 className="w-10 h-10 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold text-elegant-900 dark:text-white mb-2">
-                Turno eliminado
-              </h3>
-              <p className="text-elegant-600 dark:text-elegant-300">
-                El turno se ha eliminado correctamente
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modal de éxito */}
+      <SuccessModal
+        isOpen={successModal.show}
+        onClose={() => setSuccessModal({ show: false, title: '', message: '' })}
+        title={successModal.title}
+        message={successModal.message}
+      />
 
       </DashboardLayout>
     </ProtectedRoute>

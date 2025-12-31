@@ -25,6 +25,7 @@ import { combineDateAndTime } from '@/lib/dateUtils';
 import { listProfessionals } from '@/lib/users';
 import { UserProfile } from '@/types';
 import Modal from '@/components/ui/Modal';
+import SuccessModal from '@/components/ui/SuccessModal';
 import { createPayment } from '@/lib/payments';
 import { deleteAppointment } from '@/lib/appointments';
 import { translateAppointmentStatus } from '@/lib/translations';
@@ -66,7 +67,11 @@ export default function AgendaPage() {
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week');
   const [draggedAppointment, setDraggedAppointment] = useState<any | null>(null);
   const [dragOverDate, setDragOverDate] = useState<Date | null>(null);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successModal, setSuccessModal] = useState<{ show: boolean; title: string; message?: string }>({
+    show: false,
+    title: '',
+    message: ''
+  });
 
   // Cargar franjas bloqueadas al montar el componente
   useEffect(() => {
@@ -175,7 +180,7 @@ export default function AgendaPage() {
         endTime: '10:00',
         reason: '',
       });
-      toast.success('Franja bloqueada creada exitosamente');
+      setSuccessModal({ show: true, title: 'Franja bloqueada', message: 'La franja se ha bloqueado exitosamente' });
     } catch (error: any) {
       console.error('Error creating blocked slot:', error);
       if (error?.message?.includes('index')) {
@@ -193,7 +198,7 @@ export default function AgendaPage() {
     try {
       await deleteBlockedSlot(id);
       setBlockedSlots(blockedSlots.filter(b => b.id !== id));
-      toast.success('Franja bloqueada eliminada exitosamente');
+      setSuccessModal({ show: true, title: 'Franja eliminada', message: 'La franja bloqueada se eliminó exitosamente' });
     } catch (error) {
       console.error('Error deleting blocked slot:', error);
       toast.error('Error al eliminar la franja bloqueada. Por favor intenta de nuevo.');
@@ -256,7 +261,7 @@ export default function AgendaPage() {
     try {
       await updateAppointment(evt.id, { status: 'completed' });
       await refreshAppointments();
-      toast.success('Asistencia registrada');
+      setSuccessModal({ show: true, title: 'Asistencia registrada', message: 'El paciente ha sido marcado como presente' });
     } catch (error) {
       console.error('Error marcando asistencia:', error);
       toast.error('No se pudo registrar la asistencia');
@@ -312,7 +317,7 @@ export default function AgendaPage() {
       await refreshAppointments();
       await refreshPayments();
       await refreshPendingPayments();
-      toast.success('Turno cancelado');
+      setSuccessModal({ show: true, title: 'Turno cancelado', message: 'El turno se ha cancelado correctamente' });
     } catch (error) {
       console.error('Error cancelando turno:', error);
       toast.error('No se pudo cancelar el turno');
@@ -344,8 +349,7 @@ export default function AgendaPage() {
       await refreshPayments();
       await refreshPendingPayments();
       setSelectedEvent(null);
-      setShowSuccessModal(true);
-      setTimeout(() => setShowSuccessModal(false), 2000);
+      setSuccessModal({ show: true, title: 'Turno eliminado', message: 'El turno se ha eliminado correctamente' });
     } catch (error) {
       console.error('Error eliminando turno:', error);
       toast.error('No se pudo eliminar el turno');
@@ -425,7 +429,11 @@ export default function AgendaPage() {
       await refreshPayments();
       await refreshPendingPayments();
 
-      toast.success(isTotal ? 'Pago registrado con éxito' : 'Pago parcial registrado con éxito');
+      setSuccessModal({
+        show: true,
+        title: isTotal ? 'Pago registrado' : 'Pago parcial registrado',
+        message: isTotal ? 'El pago se ha registrado con éxito' : 'El pago parcial se ha registrado con éxito'
+      });
       setPaymentDialog({ open: false, appointment: undefined, mode: 'total', amount: '' });
     } catch (error) {
       console.error('Error registrando pago:', error);
@@ -507,7 +515,7 @@ export default function AgendaPage() {
       }
 
       await refreshAppointments();
-      toast.success('Turno reprogramado');
+      setSuccessModal({ show: true, title: 'Turno reprogramado', message: 'El turno se ha reprogramado correctamente' });
     } catch (error) {
       console.error('Error moviendo turno:', error);
       toast.error('No se pudo mover el turno');
@@ -1316,24 +1324,13 @@ export default function AgendaPage() {
         })()}
       </Modal>
 
-      {/* Modal de éxito después de eliminar */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-elegant-800 rounded-2xl shadow-2xl p-8 max-w-md mx-4 transform animate-in fade-in zoom-in duration-200">
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mb-4 shadow-lg">
-                <CheckCircle2 className="w-10 h-10 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold text-elegant-900 dark:text-white mb-2">
-                Turno eliminado
-              </h3>
-              <p className="text-elegant-600 dark:text-elegant-300">
-                El turno se ha eliminado correctamente
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modal de éxito */}
+      <SuccessModal
+        isOpen={successModal.show}
+        onClose={() => setSuccessModal({ show: false, title: '', message: '' })}
+        title={successModal.title}
+        message={successModal.message}
+      />
     </DashboardLayout>
   );
 }
