@@ -318,7 +318,10 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
 
         if (onSuccess) {
           onSuccess('Turno actualizado', 'El turno se ha actualizado correctamente');
-          onCreated?.(updated);
+          // Esperar a que el modal se cierre antes de cerrar el formulario
+          setTimeout(() => {
+            onCreated?.(updated);
+          }, 2100);
         } else {
           setSuccessModal({ show: true, title: 'Turno actualizado', message: 'El turno se ha actualizado correctamente' });
           // Cerrar el formulario después de que se cierre el modal (2 segundos)
@@ -348,7 +351,10 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
               ? 'El turno se ha creado y la seña ha sido registrada'
               : 'El turno se ha creado correctamente'
           );
-          onCreated?.(created);
+          // Esperar a que el modal se cierre antes de cerrar el formulario
+          setTimeout(() => {
+            onCreated?.(created);
+          }, 2100);
         } else {
           setSuccessModal({
             show: true,
