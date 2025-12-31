@@ -135,6 +135,8 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
   };
 
   const onSubmit = async (values: AppointmentFormValues) => {
+    console.log('[AppointmentForm] onSubmit ejecutado con valores:', values);
+
     if (!user) {
       console.error('[AppointmentForm] No hay usuario autenticado');
       toast.error('Debes iniciar sesión para crear turnos');
@@ -479,7 +481,9 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+      <form onSubmit={handleSubmit(onSubmit, (errors) => {
+        console.log('[AppointmentForm] Errores de validación:', errors);
+      })} className="space-y-3">
         {/* Paciente y Profesional */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           <div>
@@ -722,7 +726,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         {/* Botones */}
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-elegant-200 dark:border-gray-700">
           <button type="button" onClick={onCancel} className="btn-secondary">Cancelar</button>
-          <button disabled={loading} className="btn-primary disabled:opacity-50">
+          <button type="submit" disabled={loading} className="btn-primary disabled:opacity-50">
             {loading ? 'Guardando...' : (initialData ? 'Actualizar' : 'Crear')}
           </button>
         </div>
