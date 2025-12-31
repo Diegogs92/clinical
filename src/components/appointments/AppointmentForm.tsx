@@ -29,9 +29,7 @@ const schema = z.object({
   professionalId: z.string().min(1, 'Selecciona un profesional'),
   date: z.string().min(1, 'Fecha requerida'), // ISO date yyyy-MM-dd
   startTime: z.string().min(1, 'Hora inicio requerida'), // HH:mm
-  duration: z.coerce.number().refine(val => [30, 60, 90, 120, 150].includes(val), {
-    message: 'Selecciona una duración válida'
-  }).default(30),
+  duration: z.coerce.number().min(15, 'La duración mínima es 15 minutos').default(30),
   type: z.enum(['odontologia-general', 'ortodoncia', 'endodoncia', 'armonizacion']).default('odontologia-general'),
   fee: z.coerce.number().optional(),
   deposit: z.coerce.number().optional(),
