@@ -8,9 +8,9 @@ import { usePatients } from '@/contexts/PatientsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { canModifyAppointment, getPermissionDeniedMessage } from '@/lib/appointmentPermissions';
 import { useToast } from '@/contexts/ToastContext';
-import { format, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { format, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, isWithinInterval, startOfDay, endOfDay, parse, differenceInMinutes, setHours, setMinutes } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, Clock, User, Ban, ChevronLeft, ChevronRight, X, PlusCircle, MapPin, FileText } from 'lucide-react';
+import { Calendar, Clock, User, Ban, ChevronLeft, ChevronRight, X, PlusCircle, MapPin, FileText, GripVertical } from 'lucide-react';
 import { BlockedSlot, SchedulePreference } from '@/types';
 import {
   getBlockedSlotsByUser,
@@ -64,6 +64,8 @@ export default function AgendaPage() {
   });
   const [submittingPayment, setSubmittingPayment] = useState(false);
   const [viewMode, setViewMode] = useState<'day' | 'week'>('week');
+  const [draggedAppointment, setDraggedAppointment] = useState<any | null>(null);
+  const [dragOverDate, setDragOverDate] = useState<Date | null>(null);
 
   // Cargar franjas bloqueadas al montar el componente
   useEffect(() => {
@@ -423,6 +425,88 @@ export default function AgendaPage() {
     }
   };
 
+  // Drag and Drop handlers
+  const handleDragStart = (e: React.DragEvent, apt: any) => {
+    if (!canModifyAppointment(apt, user, userProfile)) {
+      e.preventDefault();
+      toast.error(getPermissionDeniedMessage());
+      return;
+    }
+    setDraggedAppointment(apt);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, date: Date) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverDate(date);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOverDate(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetDate: Date) => {
+    e.preventDefault();
+    setDragOverDate(null);
+
+    if (!draggedAppointment) return;
+
+    // Verificar si hay conflicto con franjas bloqueadas
+    const hasConflict = blockedSlots.some(slot => {
+      if (!isSameDay(parseISO(slot.date), targetDate)) return false;
+
+      const slotStartTime = slot.startTime;
+      const slotEndTime = slot.endTime;
+      const aptStartTime = draggedAppointment.startTime;
+      const aptEndTime = draggedAppointment.endTime;
+
+      return (
+        (aptStartTime >= slotStartTime && aptStartTime < slotEndTime) ||
+        (aptEndTime > slotStartTime && aptEndTime <= slotEndTime) ||
+        (aptStartTime <= slotStartTime && aptEndTime >= slotEndTime)
+      );
+    });
+
+    if (hasConflict) {
+      toast.error('No se puede mover el turno a una franja horaria bloqueada');
+      setDraggedAppointment(null);
+      return;
+    }
+
+    try {
+      const newDate = targetDate.toISOString();
+
+      await updateAppointment(draggedAppointment.id, {
+        date: newDate,
+      });
+
+      const updated = {
+        ...draggedAppointment,
+        date: newDate,
+      };
+
+      const nextEventId = await syncAppointment(
+        updated,
+        draggedAppointment.googleCalendarEventId ? 'update' : 'create',
+        draggedAppointment.googleCalendarEventId
+      );
+
+      if (nextEventId && !draggedAppointment.googleCalendarEventId) {
+        await updateAppointment(draggedAppointment.id, { googleCalendarEventId: nextEventId });
+      }
+
+      await refreshAppointments();
+      toast.success('Turno reprogramado');
+    } catch (error) {
+      console.error('Error moviendo turno:', error);
+      toast.error('No se pudo mover el turno');
+    } finally {
+      setDraggedAppointment(null);
+    }
+  };
+
   // Función para renderizar card de turno
   const renderAppointmentCard = (apt: any) => {
     const patient = getPatientInfo(apt.patientId);
@@ -456,40 +540,54 @@ export default function AgendaPage() {
       statusText = 'text-purple-700 dark:text-purple-300';
     }
 
+    const isDragging = draggedAppointment?.id === apt.id;
+    const canDrag = canModifyAppointment(apt, user, userProfile);
+
     return (
       <div
         key={apt.id}
+        draggable={canDrag}
+        onDragStart={(e) => handleDragStart(e, apt)}
         onClick={() => setSelectedEvent(apt)}
-        className={`${statusColor} border-l-4 rounded-lg p-3 cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02]`}
+        className={`${statusColor} border-l-4 rounded-lg p-3 cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02] ${
+          isDragging ? 'opacity-50' : ''
+        } ${canDrag ? 'cursor-move' : 'cursor-pointer'}`}
         style={{ borderLeftColor: professionalColor }}
       >
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <h4 className={`font-semibold text-sm ${statusText} line-clamp-1`}>
-            {patientName}
-          </h4>
-          <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor} ${statusText} whitespace-nowrap`}>
-            {translateAppointmentStatus(apt.status)}
-          </span>
-        </div>
+        <div className="flex items-start gap-2">
+          {canDrag && (
+            <GripVertical className="w-4 h-4 text-elegant-400 dark:text-elegant-500 flex-shrink-0 mt-0.5" />
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <h4 className={`font-semibold text-sm ${statusText} line-clamp-1`}>
+                {patientName}
+              </h4>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor} ${statusText} whitespace-nowrap`}>
+                {translateAppointmentStatus(apt.status)}
+              </span>
+            </div>
 
-        <div className="flex items-center gap-1.5 text-xs text-elegant-600 dark:text-elegant-300 mb-1">
-          <Clock className="w-3.5 h-3.5" />
-          <span className="font-medium">{apt.startTime} - {apt.endTime}</span>
-        </div>
+            <div className="flex items-center gap-1.5 text-xs text-elegant-600 dark:text-elegant-300 mb-1">
+              <Clock className="w-3.5 h-3.5" />
+              <span className="font-medium">{apt.startTime} - {apt.endTime}</span>
+            </div>
 
-        {professional && (
-          <div className="flex items-center gap-1.5 text-xs text-elegant-600 dark:text-elegant-300 mb-1">
-            <User className="w-3.5 h-3.5" />
-            <span>{professional.displayName}</span>
+            {professional && (
+              <div className="flex items-center gap-1.5 text-xs text-elegant-600 dark:text-elegant-300 mb-1">
+                <User className="w-3.5 h-3.5" />
+                <span>{professional.displayName}</span>
+              </div>
+            )}
+
+            {apt.fee && (
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-primary dark:text-primary-light mt-2">
+                <DollarSign className="w-3.5 h-3.5" />
+                <span>${formatCurrency(apt.fee)}</span>
+              </div>
+            )}
           </div>
-        )}
-
-        {apt.fee && (
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-primary dark:text-primary-light mt-2">
-            <DollarSign className="w-3.5 h-3.5" />
-            <span>${formatCurrency(apt.fee)}</span>
-          </div>
-        )}
+        </div>
       </div>
     );
   };
@@ -505,7 +603,7 @@ export default function AgendaPage() {
                 Agenda
               </h1>
               <p className="text-xs md:text-sm text-elegant-600 dark:text-elegant-400 mt-0.5">
-                Gestiona tus turnos y citas
+                Gestiona tus turnos y citas - Arrastra para reprogramar
               </p>
             </div>
             <div className="flex gap-2">
@@ -601,11 +699,17 @@ export default function AgendaPage() {
             {weekDays.map((day) => {
               const { dayAppointments, dayBlocked, dayBirthdays } = getEventsForDay(day);
               const isToday = isSameDay(day, new Date());
+              const isDragOver = dragOverDate && isSameDay(dragOverDate, day);
 
               return (
                 <div
                   key={day.toISOString()}
-                  className={`card min-h-[300px] ${isToday ? 'ring-2 ring-primary' : ''}`}
+                  onDragOver={(e) => handleDragOver(e, day)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, day)}
+                  className={`card min-h-[300px] transition-all ${
+                    isToday ? 'ring-2 ring-primary' : ''
+                  } ${isDragOver ? 'ring-2 ring-blue-400 bg-blue-50 dark:bg-blue-900/20' : ''}`}
                 >
                   {/* Header del día */}
                   <div className="mb-3 pb-3 border-b border-elegant-200 dark:border-elegant-700">

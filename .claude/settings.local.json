@@ -31,7 +31,9 @@
       "Bash(npm install:*)",
       "Bash(while read file)",
       "Bash(do sed -i \"s|from ''''@/contexts/ToastContext''''|from ''''@/hooks/useToast''''|g\" \"$file\" echo \"Actualizado: $file\" done)",
-      "Bash(npm search:*)"
+      "Bash(npm search:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
