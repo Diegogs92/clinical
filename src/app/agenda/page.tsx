@@ -66,6 +66,7 @@ export default function AgendaPage() {
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week');
   const [draggedAppointment, setDraggedAppointment] = useState<any | null>(null);
   const [dragOverDate, setDragOverDate] = useState<Date | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Cargar franjas bloqueadas al montar el componente
   useEffect(() => {
@@ -342,8 +343,9 @@ export default function AgendaPage() {
       await refreshAppointments();
       await refreshPayments();
       await refreshPendingPayments();
-      toast.success('Turno eliminado');
       setSelectedEvent(null);
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 2000);
     } catch (error) {
       console.error('Error eliminando turno:', error);
       toast.error('No se pudo eliminar el turno');
@@ -1320,6 +1322,25 @@ export default function AgendaPage() {
           );
         })()}
       </Modal>
+
+      {/* Modal de éxito después de eliminar */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-elegant-800 rounded-2xl shadow-2xl p-8 max-w-md mx-4 transform animate-in fade-in zoom-in duration-200">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mb-4 shadow-lg">
+                <CheckCircle2 className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-elegant-900 dark:text-white mb-2">
+                Turno eliminado
+              </h3>
+              <p className="text-elegant-600 dark:text-elegant-300">
+                El turno se ha eliminado correctamente
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
