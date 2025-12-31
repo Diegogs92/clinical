@@ -821,13 +821,22 @@ export default function AgendaPage() {
 
                   {/* Franjas horarias granulares */}
                   <div className="relative space-y-0">
-                    {timeSlots.map((timeSlot) => {
+                    {timeSlots.map((timeSlot, slotIndex) => {
                       const isDragOverSlot = dragOverSlot &&
                         isSameDay(dragOverSlot.date, day) &&
                         dragOverSlot.time === timeSlot;
 
-                      // Verificar si hay un turno en este slot
-                      const slotAppointment = dayAppointments.find(apt => apt.startTime === timeSlot);
+                      // Verificar si hay un turno que empieza en este slot o entre este slot y el siguiente
+                      const nextSlot = timeSlots[slotIndex + 1];
+                      const slotAppointment = dayAppointments.find(apt => {
+                        if (nextSlot) {
+                          // El turno empieza en o después de este slot, pero antes del siguiente
+                          return apt.startTime >= timeSlot && apt.startTime < nextSlot;
+                        } else {
+                          // Último slot, incluir cualquier turno que empiece en o después
+                          return apt.startTime >= timeSlot;
+                        }
+                      });
 
                       // Verificar si hay una franja bloqueada en este slot
                       const slotBlocked = dayBlocked.find(slot =>
