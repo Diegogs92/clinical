@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google';
+import { Source_Sans_3, Source_Code_Pro } from 'next/font/google';
 import './globals.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import { ThemeProvider } from '@/contexts/ThemeContext';
@@ -14,14 +14,14 @@ import { CalendarSyncProvider } from '@/contexts/CalendarSyncContext';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import GlobalLoader from '@/components/GlobalLoader';
 
-const sourceSans = IBM_Plex_Sans({
+const sourceSans = Source_Sans_3({
   subsets: ['latin'],
   display: 'swap',
   weight: ['400', '500', '600', '700'],
   variable: '--font-sans',
 });
 
-const sourceCode = IBM_Plex_Mono({
+const sourceCode = Source_Code_Pro({
   subsets: ['latin'],
   display: 'swap',
   weight: ['400', '500', '600', '700'],
