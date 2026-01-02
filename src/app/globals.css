@@ -18,13 +18,15 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: var(--font-sans, 'Source Sans 3'), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: var(--font-sans, 'IBM Plex Sans'), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-size: 16px;
-  line-height: 1.55;
+  font-size: 17px;
+  line-height: 1.65;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
   background: radial-gradient(circle at 10% 20%, rgba(14, 165, 233, 0.08), transparent 30%),
               radial-gradient(circle at 90% 10%, rgba(52, 211, 153, 0.08), transparent 25%),
               radial-gradient(circle at 50% 90%, rgba(99, 102, 241, 0.05), transparent 35%);
@@ -82,7 +84,7 @@ a {
 }
 
 .mobile-chip {
-  @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-tight;
+  @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-semibold tracking-tight;
 }
 
 .mobile-nav-guard {
@@ -94,6 +96,8 @@ input[type="number"],
 input[type="tel"],
 .text-number {
   color: #000000 !important;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
 }
 
 .dark input[type="number"],
@@ -115,12 +119,13 @@ input[type="tel"],
     transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  /* Fuente para números - Source Sans 3 con números tabulares */
+  /* Fuente para numeros - soporte tabular y legible */
   .font-mono {
-    font-family: var(--font-sans, 'Source Sans 3'), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: var(--font-mono, 'IBM Plex Mono'), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
     font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1, 'lnum' 1;
     letter-spacing: -0.01em;
-    font-weight: 700;
+    font-weight: 600;
   }
 }
 
@@ -368,31 +373,31 @@ input[type="tel"],
 
   /* Utilidades tipográficas para títulos y secciones */
   .section-title {
-    @apply text-[1.625rem] font-semibold text-elegant-900 dark:text-white tracking-tight;
+    @apply text-[1.75rem] font-semibold text-elegant-900 dark:text-white tracking-tight;
   }
 
   .section-subtitle {
-    @apply text-[1.0625rem] font-medium text-elegant-600 dark:text-elegant-400;
+    @apply text-[1.125rem] font-medium text-elegant-600 dark:text-elegant-400;
   }
 
   .card-title {
-    @apply text-[1.125rem] font-semibold text-elegant-900 dark:text-white tracking-tight;
+    @apply text-[1.1875rem] font-semibold text-elegant-900 dark:text-white tracking-tight;
   }
 
   .card-description {
-    @apply text-[0.9375rem] text-elegant-600 dark:text-elegant-400 leading-relaxed;
+    @apply text-[1rem] text-elegant-600 dark:text-elegant-400 leading-relaxed;
   }
 
   .label-text {
-    @apply text-[0.9375rem] font-medium text-elegant-700 dark:text-elegant-300;
+    @apply text-[1rem] font-medium text-elegant-700 dark:text-elegant-300;
   }
 
   .helper-text {
-    @apply text-[0.8125rem] text-elegant-500 dark:text-elegant-400;
+    @apply text-[0.875rem] text-elegant-500 dark:text-elegant-400;
   }
 
   .error-text {
-    @apply text-[0.8125rem] text-red-600 dark:text-red-400 font-medium;
+    @apply text-[0.875rem] text-red-600 dark:text-red-400 font-medium;
   }
 }
 
@@ -695,7 +700,7 @@ textarea:focus-visible {
 
 /* Agenda calendar - minimal look */
 .agenda-calendar {
-  font-family: var(--font-sans, 'Source Sans 3'), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-sans, 'IBM Plex Sans'), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #0f172a;
 }
 
@@ -1073,7 +1078,7 @@ calendar-date,
 calendar-range,
 calendar-multi {
   display: block;
-  font-family: var(--font-sans, 'Source Sans 3'), system-ui, sans-serif;
+  font-family: var(--font-sans, 'IBM Plex Sans'), system-ui, sans-serif;
   --color-accent: #0EA5E9;
   --color-text-primary: #0f172a;
   --color-text-secondary: #64748b;

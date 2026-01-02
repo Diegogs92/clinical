@@ -428,11 +428,11 @@ export default function DashboardPage() {
                 <Clock className="w-5 h-5 md:w-6 md:h-6" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] md:text-xs uppercase tracking-[0.1em] md:tracking-[0.15em] text-elegant-500">Inicio</p>
+                <p className="text-[12px] md:text-xs uppercase tracking-[0.1em] md:tracking-[0.15em] text-elegant-500">Inicio</p>
                 <h1 className="text-xl md:text-2xl font-bold text-primary-dark dark:text-white truncate">
                   {format(now, 'dd/MM/yyyy HH:mm')}
                 </h1>
-                <p className="text-[10px] md:text-xs text-elegant-500 dark:text-elegant-400 truncate">Agenda sincronizada</p>
+                <p className="text-[12px] md:text-xs text-elegant-500 dark:text-elegant-400 truncate">Agenda sincronizada</p>
               </div>
             </div>
           </div>
@@ -686,13 +686,13 @@ export default function DashboardPage() {
                                 {fecha} · {a.startTime} - {a.endTime}
                               </p>
                               {professional && (
-                                <p className="text-[11px] text-elegant-500 dark:text-elegant-400 mt-0.5 truncate">
+                                <p className="text-[12px] text-elegant-500 dark:text-elegant-400 mt-0.5 truncate">
                                   {professional.displayName || professional.email}
                                 </p>
                               )}
                             </div>
                             <div className="flex flex-col items-end gap-1.5 shrink-0">
-                              <span className={`inline-block px-2 py-1 rounded-full text-[10px] font-bold ${
+                              <span className={`inline-block px-2 py-1 rounded-full text-[12px] font-bold ${
                                 a.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200' :
                                 a.status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200' :
                                 a.status === 'no-show' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700/50 dark:text-gray-200' :
@@ -715,7 +715,7 @@ export default function DashboardPage() {
                               </span>
                             )}
                             {a.type && (
-                              <span className="inline-flex items-center px-2.5 py-1.5 rounded-xl bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light text-[10px] font-bold">
+                              <span className="inline-flex items-center px-2.5 py-1.5 rounded-xl bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light text-[12px] font-bold">
                                 {a.type}
                               </span>
                             )}

@@ -58,7 +58,7 @@ export default function MobileNavBar({ items, action }: MobileNavBarProps) {
 
                   {/* Label */}
                   <span
-                    className={`text-[12px] font-medium transition-colors duration-150 ${
+                    className={`text-[13px] font-medium transition-colors duration-150 ${
                       active
                         ? 'text-primary dark:text-primary-light font-semibold'
                         : 'text-elegant-500 dark:text-elegant-400'

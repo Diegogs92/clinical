@@ -627,7 +627,7 @@ export default function AgendaPage() {
             {canDrag && <GripVertical className="w-3 h-3 text-elegant-400 dark:text-elegant-500 flex-shrink-0" />}
             <div className="flex-1 min-w-0">
               <div className={`font-medium ${statusText} truncate text-xs`}>{patientName}</div>
-              <div className="text-[10px] text-elegant-600 dark:text-elegant-400">{apt.startTime}</div>
+              <div className="text-[12px] text-elegant-600 dark:text-elegant-400">{apt.startTime}</div>
             </div>
           </div>
         </div>
@@ -965,7 +965,7 @@ export default function AgendaPage() {
                     <div className="space-y-1">
                       {dayAppointments.slice(0, 3).map((apt) => renderAppointmentCard(apt, true))}
                       {dayAppointments.length > 3 && (
-                        <div className="text-[10px] text-elegant-500 dark:text-elegant-400 text-center">
+                        <div className="text-[12px] text-elegant-500 dark:text-elegant-400 text-center">
                           +{dayAppointments.length - 3} más
                         </div>
                       )}

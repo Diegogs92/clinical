@@ -8,15 +8,19 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
+      },
       fontSize: {
-        'xs': ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.01em' }],
-        'sm': ['0.875rem', { lineHeight: '1.25rem', letterSpacing: '0' }],
-        'base': ['1rem', { lineHeight: '1.5rem', letterSpacing: '-0.011em' }],
-        'lg': ['1.125rem', { lineHeight: '1.75rem', letterSpacing: '-0.014em' }],
-        'xl': ['1.25rem', { lineHeight: '1.75rem', letterSpacing: '-0.017em' }],
-        '2xl': ['1.5rem', { lineHeight: '2rem', letterSpacing: '-0.019em' }],
-        '3xl': ['1.875rem', { lineHeight: '2.25rem', letterSpacing: '-0.021em' }],
-        '4xl': ['2.25rem', { lineHeight: '2.5rem', letterSpacing: '-0.022em' }],
+        'xs': ['0.8125rem', { lineHeight: '1.125rem', letterSpacing: '0.005em' }],
+        'sm': ['0.9375rem', { lineHeight: '1.375rem', letterSpacing: '0' }],
+        'base': ['1.0625rem', { lineHeight: '1.65rem', letterSpacing: '-0.01em' }],
+        'lg': ['1.1875rem', { lineHeight: '1.75rem', letterSpacing: '-0.012em' }],
+        'xl': ['1.375rem', { lineHeight: '1.875rem', letterSpacing: '-0.014em' }],
+        '2xl': ['1.625rem', { lineHeight: '2.125rem', letterSpacing: '-0.016em' }],
+        '3xl': ['2rem', { lineHeight: '2.5rem', letterSpacing: '-0.018em' }],
+        '4xl': ['2.375rem', { lineHeight: '2.75rem', letterSpacing: '-0.02em' }],
       },
       fontWeight: {
         normal: '400',

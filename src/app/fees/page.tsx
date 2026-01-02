@@ -135,7 +135,7 @@ export default function FeesPage() {
             <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-xl p-3 md:p-4 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 cursor-pointer group backdrop-blur-lg">
               <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-green-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
               <div className="relative z-10">
-                <div className="text-[10px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">Total Ingresos</div>
+                <div className="text-[12px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">Total Ingresos</div>
                 <div className="text-xl md:text-3xl font-bold font-mono text-black dark:text-white mb-0.5 md:mb-1 transition-all duration-300 group-hover:scale-105">
                   <AnimatedCounter end={totalRevenue} prefix="$" duration={1200} />
                 </div>
@@ -146,7 +146,7 @@ export default function FeesPage() {
             <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-xl p-3 md:p-4 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 cursor-pointer group backdrop-blur-lg" style={{ animationDelay: '0.1s' }}>
               <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-amber-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
               <div className="relative z-10">
-                <div className="text-[10px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">Pendientes</div>
+                <div className="text-[12px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">Pendientes</div>
                 <div className="text-xl md:text-3xl font-bold font-mono text-black dark:text-white mb-0.5 md:mb-1 transition-all duration-300 group-hover:scale-105">
                   <AnimatedCounter end={pendingSummary.amount} prefix="$" duration={1200} />
                 </div>
@@ -157,7 +157,7 @@ export default function FeesPage() {
             <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-xl p-3 md:p-4 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 cursor-pointer group backdrop-blur-lg" style={{ animationDelay: '0.2s' }}>
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
               <div className="relative z-10">
-                <div className="text-[10px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">Cobros</div>
+                <div className="text-[12px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">Cobros</div>
                 <div className="text-xl md:text-3xl font-bold font-mono text-black dark:text-white mb-0.5 md:mb-1 transition-all duration-300 group-hover:scale-105">
                   <AnimatedCounter end={payments.length} duration={1000} />
                 </div>
@@ -168,7 +168,7 @@ export default function FeesPage() {
             <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-xl p-3 md:p-4 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 cursor-pointer group backdrop-blur-lg" style={{ animationDelay: '0.3s' }}>
               <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-red-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
               <div className="relative z-10">
-                <div className="text-[10px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">Pendientes Cobro</div>
+                <div className="text-[12px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">Pendientes Cobro</div>
                 <div className="text-xl md:text-3xl font-bold font-mono text-black dark:text-white mb-0.5 md:mb-1 transition-all duration-300 group-hover:scale-105">
                   <AnimatedCounter end={pendingSummary.count} duration={1000} />
                 </div>

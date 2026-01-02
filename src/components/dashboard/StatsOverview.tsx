@@ -120,7 +120,7 @@ export default function StatsOverview() {
           <div className={`absolute inset-0 bg-gradient-to-br ${s.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
 
           <div className="relative z-10">
-            <div className="text-[11px] md:text-[0.8125rem] uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">
+            <div className="text-[12px] md:text-[0.875rem] uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">
               {s.label}
             </div>
             <div className="text-xl md:text-3xl font-bold font-mono text-black dark:text-white mb-0.5 md:mb-1 transition-all duration-300 group-hover:scale-105">
@@ -131,7 +131,7 @@ export default function StatsOverview() {
                 : s.value}
             </div>
             {s.sub && (
-              <div className="text-[11px] md:text-[0.8125rem] text-elegant-500 dark:text-elegant-400 font-medium truncate">
+              <div className="text-[12px] md:text-[0.875rem] text-elegant-500 dark:text-elegant-400 font-medium truncate">
                 {s.sub}
               </div>
             )}

@@ -26,7 +26,7 @@ export default function IconWithBadge({
       <Icon className={iconClassName} />
       {showBadge && (
         <span
-          className={`absolute -top-2 -right-2 ${color} text-white text-[10px] font-bold rounded-full min-w-4 h-4 px-1 flex items-center justify-center border-2 border-white dark:border-elegant-900 transition-all duration-200 ${
+          className={`absolute -top-2 -right-2 ${color} text-white text-[12px] font-bold rounded-full min-w-4 h-4 px-1 flex items-center justify-center border-2 border-white dark:border-elegant-900 transition-all duration-200 ${
             badge && badge > 0 ? 'animate-pulse' : ''
           } ${badgeClassName}`}
         >
