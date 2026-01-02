@@ -66,13 +66,15 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
         const p = await getPatient(patientId);
         if (p) {
           setInitialPatient(p);
-          setSelectedType(p.insuranceType || 'particular');
+          // Convertir 'prepaga' a 'obra-social' para pacientes existentes
+          const insuranceType = p.insuranceType === 'prepaga' ? 'obra-social' : (p.insuranceType || 'particular');
+          setSelectedType(insuranceType);
           reset({
             firstName: p.firstName,
             lastName: p.lastName,
             dni: p.dni,
             phone: p.phone,
-            insuranceType: p.insuranceType || 'particular',
+            insuranceType: insuranceType,
             insuranceName: p.insuranceName || '',
             insuranceId: p.insuranceId || '',
             insuranceNumber: p.insuranceNumber || '',
