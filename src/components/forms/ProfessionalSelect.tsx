@@ -59,10 +59,10 @@ const ProfessionalSelect = memo(function ProfessionalSelect({
         placeholder={loading ? "Cargando..." : "Selecciona un profesional"}
         isLoading={loading}
         noOptionsMessage={() => 'No se encontraron profesionales'}
-        components={{ SingleValue: CustomSingleValue }}
+        components={{ SingleValue: CustomSingleValue, IndicatorSeparator: () => null }}
         classNames={{
           control: () =>
-            `!min-h-[42px] !border-elegant-200 dark:!border-gray-700 !rounded-lg hover:!border-primary-light dark:hover:!border-primary-dark !shadow-sm ${
+            `!min-h-[42px] !bg-white dark:!bg-elegant-900 !border-elegant-200 dark:!border-gray-700 !rounded-lg hover:!border-primary-light dark:hover:!border-primary-dark !shadow-sm ${
               error ? '!border-red-500' : ''
             }`,
           menu: () =>
@@ -70,11 +70,11 @@ const ProfessionalSelect = memo(function ProfessionalSelect({
           option: (state) =>
             `!cursor-pointer ${
               state.isFocused
-                ? '!bg-primary-50 dark:!bg-primary-900/20'
-                : '!bg-transparent'
+                ? '!bg-primary-50 dark:!bg-primary-900/20 !text-elegant-900 dark:!text-white'
+                : '!bg-transparent !text-elegant-900 dark:!text-white'
             } ${
               state.isSelected
-                ? '!bg-primary-100 dark:!bg-primary-900/40'
+                ? '!bg-primary-100 dark:!bg-primary-900/40 !text-elegant-900 dark:!text-white'
                 : ''
             }`,
           placeholder: () => '!text-gray-400 dark:!text-gray-500',
@@ -84,7 +84,11 @@ const ProfessionalSelect = memo(function ProfessionalSelect({
         styles={{
           control: (base) => ({
             ...base,
-            backgroundColor: 'var(--tw-bg-opacity, 1)',
+            backgroundColor: 'transparent',
+          }),
+          menu: (base) => ({
+            ...base,
+            backgroundColor: 'transparent',
           }),
         }}
       />
