@@ -777,7 +777,7 @@ export default function AgendaPage() {
                 <div className="h-[88px]"></div>
                 <div className="space-y-0">
                   {timeSlots.filter((_, i) => i % 2 === 0).map((slot) => (
-                    <div key={slot} className="h-16 flex items-start text-[10px] font-medium text-elegant-500 dark:text-elegant-400 pr-2">
+                    <div key={slot} className="h-16 flex items-start text-sm font-semibold text-elegant-600 dark:text-elegant-300 pr-2">
                       {slot}
                     </div>
                   ))}
@@ -800,7 +800,15 @@ export default function AgendaPage() {
                 >
                   {/* Header del día con indicador de cumpleaños */}
                   <div className="mb-3 pb-3 border-b border-elegant-200 dark:border-elegant-700">
-                    <div className="text-center">
+                    <div className="relative text-center">
+                      {dayBirthdays.length > 0 && (
+                        <div
+                          className="absolute top-0 right-0 text-lg"
+                          title={dayBirthdays.map(p => `${p.firstName} ${p.lastName}`).join(', ')}
+                        >
+                          🎂
+                        </div>
+                      )}
                       <div className="text-xs font-medium text-elegant-500 dark:text-elegant-400 uppercase">
                         {format(day, 'EEE', { locale: es })}
                       </div>
@@ -810,12 +818,6 @@ export default function AgendaPage() {
                       <div className="text-xs text-elegant-500 dark:text-elegant-400">
                         {format(day, 'MMM', { locale: es })}
                       </div>
-                      {/* Indicador de cumpleaños en el header */}
-                      {dayBirthdays.length > 0 && (
-                        <div className="mt-2 text-xl" title={dayBirthdays.map(p => `${p.firstName} ${p.lastName}`).join(', ')}>
-                          🎂
-                        </div>
-                      )}
                     </div>
                   </div>
 
