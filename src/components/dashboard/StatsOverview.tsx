@@ -4,7 +4,6 @@ import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { usePayments } from '@/contexts/PaymentsContext';
 import { combineDateAndTime } from '@/lib/dateUtils';
-import AnimatedCounter from '@/components/ui/AnimatedCounter';
 import { formatCurrency } from '@/lib/formatCurrency';
 
 interface Stat {
@@ -125,15 +124,11 @@ export default function StatsOverview() {
               {s.label}
             </div>
             <div className="text-xl md:text-3xl font-bold font-mono text-black dark:text-white mb-0.5 md:mb-1 transition-all duration-300 group-hover:scale-105">
-              {s.numericValue !== undefined ? (
-                s.isMonetary ? (
-                  <AnimatedCounter end={s.numericValue} prefix="$" duration={1200} />
-                ) : (
-                  <AnimatedCounter end={s.numericValue} duration={1000} />
-                )
-              ) : (
-                s.value
-              )}
+              {s.numericValue !== undefined
+                ? s.isMonetary
+                  ? `$${formatCurrency(s.numericValue)}`
+                  : s.numericValue
+                : s.value}
             </div>
             {s.sub && (
               <div className="text-[11px] md:text-[0.8125rem] text-elegant-500 dark:text-elegant-400 font-medium truncate">
