@@ -31,8 +31,9 @@ export default function PatientPanoramicControls({
     if (!files || files.length === 0) return;
     const file = files[0];
 
-    if (file.type !== 'application/pdf') {
-      toast.error('Solo se permite PDF para la panorámica.');
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Solo se permite PDF o imagen para la panor\u00e1mica.');
       e.target.value = '';
       return;
     }
@@ -74,7 +75,7 @@ export default function PatientPanoramicControls({
         id={inputId}
         type="file"
         className="hidden"
-        accept="application/pdf"
+        accept="application/pdf,image/jpeg,image/png,image/jpg"
         onChange={handleFileSelect}
         disabled={uploading}
         aria-label="Adjuntar panor\u00e1mica"
