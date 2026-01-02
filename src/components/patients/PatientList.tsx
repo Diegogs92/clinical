@@ -88,7 +88,7 @@ export default function PatientList() {
       }
 
       return {
-        age: `${age} aÃ±os`,
+        age: `${age} a\u00f1os`,
         nextBirthday: format(nextBirthday, 'dd MMM', { locale: es })
       };
     } catch (e) {
@@ -196,13 +196,13 @@ export default function PatientList() {
           <thead>
             <tr>
               <th className="w-20"></th>
+              <th>Adjuntar panor&aacute;mica</th>
               <th>Apellido</th>
               <th>Nombre</th>
               <th>DNI</th>
               <th>Edad</th>
-              <th>CumpleaÃ±os</th>
-              <th>TelÃ©fono</th>
-              <th>Panorámica</th>
+              <th>Cumplea&ntilde;os</th>
+              <th>Tel&eacute;fono</th>
               <th>Turnos</th>
               <th>Pagado</th>
               <th>Deuda</th>
@@ -227,6 +227,14 @@ export default function PatientList() {
                       </button>
                     </div>
                   </td>
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <PatientPanoramicControls
+                      patientId={p.id}
+                      panoramicUrl={p.panoramicUrl}
+                      panoramicName={p.panoramicName}
+                      compact
+                    />
+                  </td>
                   <td className="font-medium" onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>{p.lastName}</td>
                   <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>{p.firstName}</td>
                   <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>{p.dni}</td>
@@ -237,14 +245,6 @@ export default function PatientList() {
                     <span className="text-elegant-700 dark:text-elegant-300">{nextBirthday}</span>
                   </td>
                   <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>{p.phone}</td>
-                  <td onClick={(e) => e.stopPropagation()}>
-                    <PatientPanoramicControls
-                      patientId={p.id}
-                      panoramicUrl={p.panoramicUrl}
-                      panoramicName={p.panoramicName}
-                      compact
-                    />
-                  </td>
                   <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>
                     <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs font-semibold">
                       {patientAppts.length}
@@ -335,7 +335,7 @@ export default function PatientList() {
               </div>
 
               <div className="flex items-center justify-between gap-2 mb-3">
-                <span className="text-xs text-secondary dark:text-gray-400">Panorámica</span>
+                <span className="text-xs text-secondary dark:text-gray-400">Panor&aacute;mica</span>
                 <PatientPanoramicControls
                   patientId={p.id}
                   panoramicUrl={p.panoramicUrl}
@@ -520,4 +520,6 @@ export default function PatientList() {
     </div>
   );
 }
+
+
 

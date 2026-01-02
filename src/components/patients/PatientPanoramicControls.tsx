@@ -77,7 +77,7 @@ export default function PatientPanoramicControls({
         accept="application/pdf"
         onChange={handleFileSelect}
         disabled={uploading}
-        aria-label="Adjunatar panorámica"
+        aria-label="Adjuntar panor\u00e1mica"
       />
       <label
         htmlFor={inputId}
@@ -86,7 +86,7 @@ export default function PatientPanoramicControls({
         }`}
       >
         <Paperclip className="w-4 h-4" />
-        {uploading ? 'Subiendo...' : 'Adjunatar panorámica'}
+        {uploading ? 'Subiendo...' : 'Adjuntar panor\u00e1mica'}
       </label>
       {panoramicUrl && (
         <a
