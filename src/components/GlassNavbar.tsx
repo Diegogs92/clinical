@@ -77,7 +77,7 @@ export default function GlassNavbar({ items }: GlassNavbarProps) {
             }}
             onMouseEnter={() => setHoveredIndex(index)}
             className={`
-              relative z-10 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium
+              relative z-10 flex items-center gap-2 px-4 py-2.5 rounded-full text-[0.95rem] font-semibold
               transition-colors duration-300 ease-out
               ${isHighlighted
                 ? 'text-white'

@@ -65,11 +65,11 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
                 <img src="/logo.svg" alt="DENTIFY Logo" className="w-full h-full object-cover" />
               </div>
               <div className="block">
-                <h1 className="text-base md:text-lg font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+                <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
                   DENTIFY
                 </h1>
                 {user && (
-                  <p className="hidden sm:block text-xs text-elegant-600 dark:text-elegant-400 truncate max-w-[150px] md:max-w-none">
+                  <p className="hidden sm:block text-sm text-elegant-600 dark:text-elegant-400 truncate max-w-[150px] md:max-w-none">
                     {user.displayName || user.email}
                   </p>
                 )}
@@ -129,7 +129,7 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
                     router.push('/dashboard');
                     setMobileMenuOpen(false);
                   }}
-                  className="btn-secondary w-full justify-center text-sm py-2.5"
+                  className="btn-secondary w-full justify-center text-base py-2.5"
                 >
                   Ir al inicio
                 </button>
@@ -138,7 +138,7 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
                     handleLogout();
                     setMobileMenuOpen(false);
                   }}
-                  className="btn-danger w-full justify-center text-sm py-2.5"
+                  className="btn-danger w-full justify-center text-base py-2.5"
                 >
                   Cerrar sesión
                 </button>

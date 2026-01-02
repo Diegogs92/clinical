@@ -18,11 +18,13 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: var(--font-sans, 'Inter'), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: var(--font-sans, 'Source Sans 3'), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+  line-height: 1.55;
   background: radial-gradient(circle at 10% 20%, rgba(14, 165, 233, 0.08), transparent 30%),
               radial-gradient(circle at 90% 10%, rgba(52, 211, 153, 0.08), transparent 25%),
               radial-gradient(circle at 50% 90%, rgba(99, 102, 241, 0.05), transparent 35%);
@@ -113,9 +115,9 @@ input[type="tel"],
     transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  /* Fuente mono para números - Manrope con números tabulares */
+  /* Fuente mono para números - Source Code Pro con números tabulares */
   .font-mono {
-    font-family: var(--font-mono, 'Manrope'), system-ui, sans-serif;
+    font-family: var(--font-mono, 'Source Code Pro'), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em;
     font-weight: 700;
@@ -134,15 +136,15 @@ input[type="tel"],
 
   /* Botones base - unifican foco, hover y estados deshabilitados */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 font-medium rounded-lg
+    @apply inline-flex items-center justify-center gap-2 font-semibold rounded-xl text-base
            transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2
            disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
   }
 
   /* Botones - Smooth y con focus states mejorados */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-1.5 font-medium rounded-lg py-2 px-3
-           text-white shadow-sm text-sm
+    @apply inline-flex items-center justify-center gap-1.5 font-semibold rounded-xl py-2.5 px-4
+           text-white shadow-sm text-base
            transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary/50
            active:scale-[0.98]
@@ -158,8 +160,8 @@ input[type="tel"],
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-1.5 font-medium rounded-lg py-2 px-3
-           shadow-sm text-sm
+    @apply inline-flex items-center justify-center gap-1.5 font-semibold rounded-xl py-2.5 px-4
+           shadow-sm text-base
            transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-elegant-300
            active:scale-[0.98]
@@ -185,8 +187,8 @@ input[type="tel"],
   }
 
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-1.5 font-medium rounded-lg py-2 px-3
-           text-white shadow-sm text-sm
+    @apply inline-flex items-center justify-center gap-1.5 font-semibold rounded-xl py-2.5 px-4
+           text-white shadow-sm text-base
            transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-danger/50
            active:scale-[0.98]
@@ -202,8 +204,8 @@ input[type="tel"],
   }
 
   .btn-success {
-    @apply inline-flex items-center justify-center gap-1.5 font-medium rounded-lg py-2 px-3
-           text-white shadow-sm text-sm
+    @apply inline-flex items-center justify-center gap-1.5 font-semibold rounded-xl py-2.5 px-4
+           text-white shadow-sm text-base
            transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500/50
            active:scale-[0.98]
@@ -220,7 +222,7 @@ input[type="tel"],
 
   /* Cards - Smooth hover con lift effect */
   .card {
-    @apply bg-white dark:bg-elegant-900 rounded-xl shadow-sm p-4
+    @apply bg-white dark:bg-elegant-900 rounded-2xl shadow-sm p-4
            border border-elegant-200/60 dark:border-elegant-800/60
            transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-elegant-300/80 dark:hover:border-elegant-700/80;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -228,8 +230,8 @@ input[type="tel"],
 
   /* Inputs - Con focus mejorado y efecto glow */
   .input-field {
-    @apply w-full px-3 py-2 border border-elegant-300/60 dark:border-elegant-700/60
-           rounded-lg bg-white dark:bg-elegant-900 text-sm
+    @apply w-full px-3.5 py-2.5 border border-elegant-300/60 dark:border-elegant-700/60
+           rounded-xl bg-white dark:bg-elegant-900 text-base
            text-elegant-900 dark:text-white placeholder-elegant-400 dark:placeholder-elegant-500
            focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/60
            transition-all duration-200 hover:border-primary/40 dark:hover:border-primary/40
@@ -248,7 +250,7 @@ input[type="tel"],
 
   /* Icon buttons - Para acciones con iconos + efecto ripple */
   .icon-btn {
-    @apply inline-flex items-center justify-center p-2 rounded-lg text-elegant-600 dark:text-elegant-400
+    @apply inline-flex items-center justify-center p-2.5 rounded-xl text-elegant-600 dark:text-elegant-400
            hover:bg-elegant-100/80 dark:hover:bg-elegant-800/80 hover:text-elegant-900 dark:hover:text-white
            transition-all duration-200 active:scale-95 hover:scale-105
            focus:outline-none focus:ring-2 focus:ring-elegant-300/50 dark:focus:ring-elegant-700/50;
@@ -256,7 +258,7 @@ input[type="tel"],
   }
 
   .icon-btn-danger {
-    @apply inline-flex items-center justify-center p-2 rounded-lg text-danger dark:text-danger-light
+    @apply inline-flex items-center justify-center p-2.5 rounded-xl text-danger dark:text-danger-light
            hover:bg-danger/10 dark:hover:bg-danger/20 hover:text-danger-dark dark:hover:text-danger
            transition-all duration-200 active:scale-95 hover:scale-105
            focus:outline-none focus:ring-2 focus:ring-danger/20 dark:focus:ring-danger/30;
@@ -264,7 +266,7 @@ input[type="tel"],
   }
 
   .icon-btn-primary {
-    @apply inline-flex items-center justify-center p-2 rounded-lg text-primary dark:text-primary-light
+    @apply inline-flex items-center justify-center p-2.5 rounded-xl text-primary dark:text-primary-light
            hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary-dark dark:hover:text-white
            transition-all duration-200 active:scale-95 hover:scale-105
            focus:outline-none focus:ring-2 focus:ring-primary/20 dark:focus:ring-primary/30;
@@ -366,31 +368,31 @@ input[type="tel"],
 
   /* Utilidades tipográficas para títulos y secciones */
   .section-title {
-    @apply text-2xl font-bold text-elegant-900 dark:text-white tracking-tight;
+    @apply text-[1.625rem] font-semibold text-elegant-900 dark:text-white tracking-tight;
   }
 
   .section-subtitle {
-    @apply text-base font-medium text-elegant-600 dark:text-elegant-400;
+    @apply text-[1.0625rem] font-medium text-elegant-600 dark:text-elegant-400;
   }
 
   .card-title {
-    @apply text-lg font-semibold text-elegant-900 dark:text-white tracking-tight;
+    @apply text-[1.125rem] font-semibold text-elegant-900 dark:text-white tracking-tight;
   }
 
   .card-description {
-    @apply text-sm text-elegant-600 dark:text-elegant-400 leading-relaxed;
+    @apply text-[0.9375rem] text-elegant-600 dark:text-elegant-400 leading-relaxed;
   }
 
   .label-text {
-    @apply text-sm font-medium text-elegant-700 dark:text-elegant-300;
+    @apply text-[0.9375rem] font-medium text-elegant-700 dark:text-elegant-300;
   }
 
   .helper-text {
-    @apply text-xs text-elegant-500 dark:text-elegant-400;
+    @apply text-[0.8125rem] text-elegant-500 dark:text-elegant-400;
   }
 
   .error-text {
-    @apply text-xs text-red-600 dark:text-red-400 font-medium;
+    @apply text-[0.8125rem] text-red-600 dark:text-red-400 font-medium;
   }
 }
 
@@ -442,8 +444,8 @@ textarea:focus-visible {
   .input-field,
   select,
   textarea {
-    border-radius: 16px;
-    min-height: 52px; /* Aumentado de 50px */
+    border-radius: 18px;
+    min-height: 52px;
     font-size: 1rem;
   }
 
@@ -451,18 +453,18 @@ textarea:focus-visible {
   .btn-secondary,
   .btn-danger,
   .btn-success {
-    font-size: 0.9375rem;
-    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+    padding: 0.95rem 1.5rem;
     font-weight: 600;
-    min-height: 52px; /* Aumentado de 50px */
+    min-height: 52px;
   }
 
   .input-field,
   select,
   textarea {
     font-size: 1rem;
-    padding: 0.875rem 1.125rem;
-    line-height: 1.5;
+    padding: 0.9rem 1.125rem;
+    line-height: 1.55;
   }
 
   select {
@@ -496,9 +498,9 @@ textarea:focus-visible {
   .icon-btn,
   .icon-btn-primary,
   .icon-btn-danger {
-    min-width: 46px;
-    min-height: 46px;
-    border-radius: 14px;
+    min-width: 48px;
+    min-height: 48px;
+    border-radius: 16px;
   }
 
   .mobile-chip {
@@ -693,7 +695,7 @@ textarea:focus-visible {
 
 /* Agenda calendar - minimal look */
 .agenda-calendar {
-  font-family: var(--font-sans, 'Inter'), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-sans, 'Source Sans 3'), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #0f172a;
 }
 
@@ -1071,7 +1073,7 @@ calendar-date,
 calendar-range,
 calendar-multi {
   display: block;
-  font-family: var(--font-sans, 'Inter'), system-ui, sans-serif;
+  font-family: var(--font-sans, 'Source Sans 3'), system-ui, sans-serif;
   --color-accent: #0EA5E9;
   --color-text-primary: #0f172a;
   --color-text-secondary: #64748b;
