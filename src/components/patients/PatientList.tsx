@@ -18,6 +18,8 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { combineDateAndTime } from '@/lib/dateUtils';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { translateAppointmentStatus } from '@/lib/translations';
+import { format, parseISO, differenceInYears } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 export default function PatientList() {
   const { user } = useAuth();
@@ -67,6 +69,30 @@ export default function PatientList() {
     const paymentsTotal = completed.reduce((sum, p) => sum + p.amount, 0);
     const depositsTotal = patientAppointments.reduce((sum, appt) => sum + (appt.deposit || 0), 0);
     return paymentsTotal + depositsTotal;
+  };
+
+  // Helper function to get formatted birthdate and next birthday
+  const getBirthdateInfo = (birthDate?: string) => {
+    if (!birthDate) return { age: '-', nextBirthday: '-' };
+
+    try {
+      const birth = parseISO(birthDate);
+      const today = new Date();
+      const age = differenceInYears(today, birth);
+
+      // Calculate next birthday
+      const nextBirthday = new Date(today.getFullYear(), birth.getMonth(), birth.getDate());
+      if (nextBirthday < today) {
+        nextBirthday.setFullYear(today.getFullYear() + 1);
+      }
+
+      return {
+        age: `${age} años`,
+        nextBirthday: format(nextBirthday, 'dd MMM', { locale: es })
+      };
+    } catch (e) {
+      return { age: '-', nextBirthday: '-' };
+    }
   };
 
   const loadData = useCallback(async ({ showLoading = false } = {}) => {
@@ -172,7 +198,9 @@ export default function PatientList() {
               <th>Apellido</th>
               <th>Nombre</th>
               <th>DNI</th>
-              <th>Tel?fono</th>
+              <th>Edad</th>
+              <th>Cumpleaños</th>
+              <th>Teléfono</th>
               <th>Turnos</th>
               <th>Pagado</th>
               <th>Deuda</th>
@@ -183,6 +211,7 @@ export default function PatientList() {
               const patientAppts = getPatientAppointments(p.id);
               const totalPaid = getPatientPaid(p.id);
               const debt = getPatientDebt(p.id);
+              const { age, nextBirthday } = getBirthdateInfo(p.birthDate);
 
               return (
                 <tr key={p.id} className="cursor-pointer hover:bg-elegant-50 dark:hover:bg-elegant-800/30 transition-colors">
@@ -199,6 +228,12 @@ export default function PatientList() {
                   <td className="font-medium" onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>{p.lastName}</td>
                   <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>{p.firstName}</td>
                   <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>{p.dni}</td>
+                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>
+                    <span className="text-elegant-700 dark:text-elegant-300">{age}</span>
+                  </td>
+                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>
+                    <span className="text-elegant-700 dark:text-elegant-300">{nextBirthday}</span>
+                  </td>
                   <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>{p.phone}</td>
                   <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>
                     <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs font-semibold">
@@ -228,7 +263,7 @@ export default function PatientList() {
             })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={8} className="p-4 text-center text-black dark:text-white">Sin resultados</td>
+                <td colSpan={10} className="p-4 text-center text-black dark:text-white">Sin resultados</td>
               </tr>
             )}
           </tbody>
