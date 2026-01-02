@@ -77,6 +77,11 @@ export default function AgendaPage() {
     open: false,
     appointment: undefined
   });
+  const [birthdayDialog, setBirthdayDialog] = useState<{ open: boolean; date?: Date; birthdays: any[] }>({
+    open: false,
+    date: undefined,
+    birthdays: [],
+  });
 
   // Cargar franjas bloqueadas al montar el componente
   useEffect(() => {
@@ -802,11 +807,25 @@ export default function AgendaPage() {
                   <div className="mb-3 pb-3 border-b border-elegant-200 dark:border-elegant-700">
                     <div className="relative text-center">
                       {dayBirthdays.length > 0 && (
-                        <div
-                          className="absolute top-0 right-0 text-lg"
-                          title={dayBirthdays.map(p => `${p.firstName} ${p.lastName}`).join(', ')}
-                        >
-                          🎂
+                        <div className="absolute top-0 right-0 text-lg group">
+                          <button
+                            type="button"
+                            className="leading-none"
+                            onClick={() => setBirthdayDialog({ open: true, date: day, birthdays: dayBirthdays })}
+                            aria-label="Ver cumpleaños"
+                          >
+                            🎂
+                          </button>
+                          <div className="absolute right-0 mt-2 w-44 rounded-lg border border-elegant-200 dark:border-elegant-700 bg-white/95 dark:bg-elegant-900/95 p-2 text-xs text-elegant-700 dark:text-elegant-200 shadow-lg opacity-0 translate-y-1 pointer-events-none transition group-hover:opacity-100 group-hover:translate-y-0">
+                            <div className="font-semibold text-elegant-900 dark:text-white mb-1">Cumpleaños</div>
+                            <div className="space-y-1">
+                              {dayBirthdays.map(p => (
+                                <div key={`birthday-tooltip-${p.id}`} className="truncate">
+                                  {p.firstName} {p.lastName}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       )}
                       <div className="text-xs font-medium text-elegant-500 dark:text-elegant-400 uppercase">
@@ -1057,26 +1076,58 @@ export default function AgendaPage() {
           </div>
         )}
 
-        {/* Leyenda de estados */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-medium text-elegant-700 dark:text-elegant-200">
-          <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-elegant-800/50 border border-elegant-200 dark:border-elegant-700">
-            <span className="inline-block w-5 h-5 rounded bg-sky-100 dark:bg-sky-500/30 border border-sky-300 dark:border-sky-400" />
-            Agendado
-          </div>
-          <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-elegant-800/50 border border-elegant-200 dark:border-elegant-700">
-            <span className="inline-block w-5 h-5 rounded bg-emerald-100 dark:bg-emerald-500/30 border border-emerald-300 dark:border-emerald-400" />
-            Confirmado
-          </div>
-          <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-elegant-800/50 border border-elegant-200 dark:border-elegant-700">
-            <span className="inline-block w-5 h-5 rounded bg-blue-100 dark:bg-blue-500/30 border border-blue-300 dark:border-blue-400" />
-            Completado
-          </div>
-          <div className="flex items-center gap-2 p-2 rounded-lg bg-white dark:bg-elegant-800/50 border border-elegant-200 dark:border-elegant-700">
-            <span className="inline-block w-5 h-5 rounded bg-red-100 dark:bg-red-500/30 border border-red-300 dark:border-red-400" />
-            Cancelado
-          </div>
-        </div>
       </div>
+
+      <Modal
+        open={birthdayDialog.open}
+        onClose={() => setBirthdayDialog({ open: false, date: undefined, birthdays: [] })}
+        title={birthdayDialog.date ? `Cumpleaños - ${format(birthdayDialog.date, "d 'de' MMMM", { locale: es })}` : 'Cumpleaños'}
+        maxWidth="max-w-lg"
+      >
+        <div className="space-y-3">
+          {birthdayDialog.birthdays.length === 0 ? (
+            <p className="text-sm text-elegant-600 dark:text-elegant-300">No hay cumpleaños para este día.</p>
+          ) : (
+            birthdayDialog.birthdays.map((patient) => {
+              const birthDate = patient.birthDate ? parseISO(patient.birthDate) : null;
+              const age = birthdayDialog.date && birthDate
+                ? birthdayDialog.date.getFullYear() - birthDate.getFullYear()
+                : null;
+              const phone = patient.phone ? patient.phone.replace(/\D/g, '') : '';
+              const message = `¡Feliz cumpleaños ${patient.firstName}! 🎂🎉`;
+              const whatsappUrl = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}` : '';
+
+              return (
+                <div
+                  key={`birthday-${patient.id}`}
+                  className="flex items-center justify-between gap-3 p-3 rounded-xl border border-elegant-200 dark:border-elegant-800 bg-white/80 dark:bg-elegant-900/70"
+                >
+                  <div className="min-w-0">
+                    <div className="font-semibold text-elegant-900 dark:text-white truncate">
+                      {patient.firstName} {patient.lastName}
+                    </div>
+                    <div className="text-sm text-elegant-600 dark:text-elegant-400">
+                      {age !== null ? `Cumple ${age} años` : 'Cumpleaños'}
+                    </div>
+                  </div>
+                  {whatsappUrl ? (
+                    <a
+                      href={whatsappUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn-primary text-sm px-3 py-2"
+                    >
+                      WhatsApp
+                    </a>
+                  ) : (
+                    <span className="text-xs text-elegant-500 dark:text-elegant-400">Sin WhatsApp</span>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </Modal>
 
       {/* Modal para bloquear franja horaria */}
       {showBlockModal && (
