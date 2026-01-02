@@ -344,15 +344,15 @@ input[type="tel"],
   }
 
   .table-skin thead tr {
-    @apply bg-elegant-50/80 dark:bg-elegant-800/40 text-elegant-700 dark:text-elegant-200;
+    @apply bg-elegant-50/80 dark:bg-elegant-800/40 text-elegant-700 dark:text-elegant-200 font-semibold;
   }
 
   .table-skin th {
-    @apply p-2.5 text-left text-xs font-semibold uppercase tracking-wide;
+    @apply px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-elegant-600 dark:text-elegant-300;
   }
 
   .table-skin td {
-    @apply p-2.5 align-middle text-elegant-800 dark:text-elegant-100 text-sm;
+    @apply px-4 py-3 align-middle text-elegant-800 dark:text-elegant-100 text-sm;
   }
 
   .table-skin tbody tr {
@@ -360,9 +360,38 @@ input[type="tel"],
   }
 
   /* Superficie translucida para secciones */
-.glass-panel {
-  @apply bg-white/85 dark:bg-elegant-900/85 backdrop-blur-xl border border-elegant-200/50 dark:border-elegant-800/50 shadow-md shadow-primary/5 rounded-2xl;
-}
+  .glass-panel {
+    @apply bg-white/85 dark:bg-elegant-900/85 backdrop-blur-xl border border-elegant-200/50 dark:border-elegant-800/50 shadow-md shadow-primary/5 rounded-2xl;
+  }
+
+  /* Utilidades tipográficas para títulos y secciones */
+  .section-title {
+    @apply text-2xl font-bold text-elegant-900 dark:text-white tracking-tight;
+  }
+
+  .section-subtitle {
+    @apply text-base font-medium text-elegant-600 dark:text-elegant-400;
+  }
+
+  .card-title {
+    @apply text-lg font-semibold text-elegant-900 dark:text-white tracking-tight;
+  }
+
+  .card-description {
+    @apply text-sm text-elegant-600 dark:text-elegant-400 leading-relaxed;
+  }
+
+  .label-text {
+    @apply text-sm font-medium text-elegant-700 dark:text-elegant-300;
+  }
+
+  .helper-text {
+    @apply text-xs text-elegant-500 dark:text-elegant-400;
+  }
+
+  .error-text {
+    @apply text-xs text-red-600 dark:text-red-400 font-medium;
+  }
 }
 
 /* Focus visible mejorado para toda la app */

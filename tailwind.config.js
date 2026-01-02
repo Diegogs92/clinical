@@ -8,6 +8,30 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
+      fontSize: {
+        'xs': ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.01em' }],
+        'sm': ['0.875rem', { lineHeight: '1.25rem', letterSpacing: '0' }],
+        'base': ['1rem', { lineHeight: '1.5rem', letterSpacing: '-0.011em' }],
+        'lg': ['1.125rem', { lineHeight: '1.75rem', letterSpacing: '-0.014em' }],
+        'xl': ['1.25rem', { lineHeight: '1.75rem', letterSpacing: '-0.017em' }],
+        '2xl': ['1.5rem', { lineHeight: '2rem', letterSpacing: '-0.019em' }],
+        '3xl': ['1.875rem', { lineHeight: '2.25rem', letterSpacing: '-0.021em' }],
+        '4xl': ['2.25rem', { lineHeight: '2.5rem', letterSpacing: '-0.022em' }],
+      },
+      fontWeight: {
+        normal: '400',
+        medium: '500',
+        semibold: '600',
+        bold: '700',
+      },
+      spacing: {
+        '4.5': '1.125rem',
+        '5.5': '1.375rem',
+        '13': '3.25rem',
+        '15': '3.75rem',
+        '17': '4.25rem',
+        '18': '4.5rem',
+      },
       colors: {
         // Paleta profesional médica - Confianza, Calma y Limpieza
         primary: {
