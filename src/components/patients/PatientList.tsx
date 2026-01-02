@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
@@ -88,7 +88,7 @@ export default function PatientList() {
       }
 
       return {
-        age: `${age} años`,
+        age: `${age} aÃ±os`,
         nextBirthday: format(nextBirthday, 'dd MMM', { locale: es })
       };
     } catch (e) {
@@ -130,7 +130,7 @@ export default function PatientList() {
   const handleDelete = async (id: string) => {
     const ok = await confirm({
       title: 'Eliminar paciente',
-      description: 'Esta acción es irreversible. ¿Deseas continuar?',
+      description: 'Esta acciÃ³n es irreversible. Â¿Deseas continuar?',
       confirmText: 'Eliminar',
       cancelText: 'Cancelar',
       tone: 'danger',
@@ -200,9 +200,9 @@ export default function PatientList() {
               <th>Nombre</th>
               <th>DNI</th>
               <th>Edad</th>
-              <th>Cumpleaños</th>
-              <th>Teléfono</th>
-              <th>Panor�mica</th>
+              <th>CumpleaÃ±os</th>
+              <th>TelÃ©fono</th>
+              <th>Panorámica</th>
               <th>Turnos</th>
               <th>Pagado</th>
               <th>Deuda</th>
@@ -335,7 +335,7 @@ export default function PatientList() {
               </div>
 
               <div className="flex items-center justify-between gap-2 mb-3">
-                <span className="text-xs text-secondary dark:text-gray-400">Panor�mica</span>
+                <span className="text-xs text-secondary dark:text-gray-400">Panorámica</span>
                 <PatientPanoramicControls
                   patientId={p.id}
                   panoramicUrl={p.panoramicUrl}
@@ -415,7 +415,7 @@ export default function PatientList() {
               notes: appt.notes,
             });
 
-            // Si tiene seña, agregarla
+            // Si tiene seÃ±a, agregarla
             if (appt.deposit && appt.deposit > 0) {
               events.push({
                 date: appt.date,
@@ -423,8 +423,8 @@ export default function PatientList() {
                 type: 'payment',
                 icon: DollarSign,
                 color: 'amber',
-                title: 'Seña pagada',
-                description: `Seña del turno del ${new Date(appt.date).toLocaleDateString('es-AR')}`,
+                title: 'SeÃ±a pagada',
+                description: `SeÃ±a del turno del ${new Date(appt.date).toLocaleDateString('es-AR')}`,
                 amount: appt.deposit,
               });
             }
@@ -495,7 +495,7 @@ export default function PatientList() {
                                 )}
                                 <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
                                   {new Date(event.date).toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                                  {event.time && ` • ${event.time}`}
+                                  {event.time && ` â€¢ ${event.time}`}
                                 </p>
                               </div>
                               {event.amount !== undefined && (
@@ -520,3 +520,4 @@ export default function PatientList() {
     </div>
   );
 }
+
