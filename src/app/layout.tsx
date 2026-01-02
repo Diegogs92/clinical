@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Source_Sans_3, Source_Code_Pro } from 'next/font/google';
+import { Manrope, Source_Code_Pro } from 'next/font/google';
 import './globals.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import { ThemeProvider } from '@/contexts/ThemeContext';
@@ -14,7 +14,7 @@ import { CalendarSyncProvider } from '@/contexts/CalendarSyncContext';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import GlobalLoader from '@/components/GlobalLoader';
 
-const sourceSans = Source_Sans_3({
+const sourceSans = Manrope({
   subsets: ['latin'],
   display: 'swap',
   weight: ['400', '500', '600', '700'],
