@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { Patient, Insurance } from '@/types';
 import { useToast } from '@/contexts/ToastContext';
 import PatientFileUpload from './PatientFileUpload';
+import PatientPanoramicControls from './PatientPanoramicControls';
 import { usePatients } from '@/contexts/PatientsContext';
 
 const patientSchema = z.object({
@@ -299,6 +300,26 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
               placeholder="Número"
             />
           </div>
+        </div>
+      )}
+
+      {patientId && initialPatient && (
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-primary-dark dark:text-white">
+            Panorámica
+          </label>
+          <PatientPanoramicControls
+            patientId={patientId}
+            panoramicUrl={initialPatient.panoramicUrl}
+            panoramicName={initialPatient.panoramicName}
+            onUploaded={(url, name, uploadedAt) => {
+              setInitialPatient(prev =>
+                prev
+                  ? { ...prev, panoramicUrl: url, panoramicName: name, panoramicUploadedAt: uploadedAt }
+                  : prev
+              );
+            }}
+          />
         </div>
       )}
 

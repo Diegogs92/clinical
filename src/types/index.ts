@@ -13,6 +13,9 @@ export interface Patient {
   insuranceId?: string; // Obra Social ID (si existe en la base)
   insuranceNumber?: string;
   notes?: string;
+  panoramicUrl?: string;
+  panoramicName?: string;
+  panoramicUploadedAt?: string;
   createdAt: string;
   updatedAt: string;
   userId: string; // Professional ID

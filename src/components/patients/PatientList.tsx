@@ -12,6 +12,7 @@ import { useConfirm } from '@/contexts/ConfirmContext';
 import ECGLoader from '@/components/ui/ECGLoader';
 import Modal from '@/components/ui/Modal';
 import PatientForm from './PatientForm';
+import PatientPanoramicControls from './PatientPanoramicControls';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -201,6 +202,7 @@ export default function PatientList() {
               <th>Edad</th>
               <th>Cumplea√±os</th>
               <th>Tel√©fono</th>
+              <th>Panor·mica</th>
               <th>Turnos</th>
               <th>Pagado</th>
               <th>Deuda</th>
@@ -235,6 +237,14 @@ export default function PatientList() {
                     <span className="text-elegant-700 dark:text-elegant-300">{nextBirthday}</span>
                   </td>
                   <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>{p.phone}</td>
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <PatientPanoramicControls
+                      patientId={p.id}
+                      panoramicUrl={p.panoramicUrl}
+                      panoramicName={p.panoramicName}
+                      compact
+                    />
+                  </td>
                   <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>
                     <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs font-semibold">
                       {patientAppts.length}
@@ -263,7 +273,7 @@ export default function PatientList() {
             })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={10} className="p-4 text-center text-black dark:text-white">Sin resultados</td>
+                <td colSpan={11} className="p-4 text-center text-black dark:text-white">Sin resultados</td>
               </tr>
             )}
           </tbody>
@@ -324,6 +334,15 @@ export default function PatientList() {
                 </div>
               </div>
 
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <span className="text-xs text-secondary dark:text-gray-400">Panor·mica</span>
+                <PatientPanoramicControls
+                  patientId={p.id}
+                  panoramicUrl={p.panoramicUrl}
+                  panoramicName={p.panoramicName}
+                  compact
+                />
+              </div>
               <div className="flex items-center gap-2">
                 <Link
                   href={`/patients/${p.id}`}
