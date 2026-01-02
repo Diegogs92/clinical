@@ -18,7 +18,7 @@ const patientSchema = z.object({
   lastName: z.string().min(1, 'Apellido requerido'),
   dni: z.string().min(6, 'DNI inválido'),
   phone: z.string().min(6, 'Teléfono inválido'),
-  insuranceType: z.enum(['particular', 'obra-social', 'prepaga']).optional(),
+  insuranceType: z.enum(['particular', 'obra-social']).optional(),
   insuranceName: z.string().optional(),
   insuranceId: z.string().optional(),
   insuranceNumber: z.string().optional(),
@@ -38,7 +38,7 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
   const [initialPatient, setInitialPatient] = useState<Patient | null>(null);
   const [insurances, setInsurances] = useState<Insurance[]>([]);
-  const [selectedType, setSelectedType] = useState<'particular' | 'obra-social' | 'prepaga'>('particular');
+  const [selectedType, setSelectedType] = useState<'particular' | 'obra-social'>('particular');
   const [showNewInsuranceInput, setShowNewInsuranceInput] = useState(false);
   const [newInsuranceName, setNewInsuranceName] = useState('');
   const { refreshPatients } = usePatients();
@@ -166,7 +166,7 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
 
       <div>
         <label className="block text-sm font-medium text-primary-dark dark:text-white mb-2">Tipo de Cobertura</label>
-        <div className="grid grid-cols-3 gap-2 md:gap-3">
+        <div className="grid grid-cols-2 gap-2 md:gap-3">
           <label className={`flex items-center justify-center p-3 md:p-3.5 border-2 rounded-xl cursor-pointer transition-all active:scale-95 ${
             insuranceType === 'particular'
               ? 'border-primary bg-primary/10 dark:bg-primary/20'
@@ -198,22 +198,6 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
               Obra Social
             </span>
           </label>
-
-          <label className={`flex items-center justify-center p-3 md:p-3.5 border-2 rounded-xl cursor-pointer transition-all active:scale-95 ${
-            insuranceType === 'prepaga'
-              ? 'border-primary bg-primary/10 dark:bg-primary/20'
-              : 'border-secondary-lighter dark:border-gray-600 hover:border-primary/50'
-          }`}>
-            <input
-              type="radio"
-              value="prepaga"
-              {...register('insuranceType')}
-              className="sr-only"
-            />
-            <span className={`text-sm font-medium ${insuranceType === 'prepaga' ? 'text-primary dark:text-white' : 'text-secondary dark:text-gray-400'}`}>
-              Prepaga
-            </span>
-          </label>
         </div>
       </div>
 
@@ -221,7 +205,7 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">
-              {insuranceType === 'obra-social' ? 'Obra Social' : 'Prepaga'}
+              Obra Social
             </label>
             {!showNewInsuranceInput ? (
               <div className="flex gap-2">
@@ -236,7 +220,7 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
                     }
                   }}
                 >
-                  <option value="">Seleccionar {insuranceType === 'obra-social' ? 'obra social' : 'prepaga'}</option>
+                  <option value="">Seleccionar obra social</option>
                   {insurances
                     .filter(i => i.type === insuranceType)
                     .sort((a, b) => a.name.localeCompare(b.name))
@@ -259,7 +243,7 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
                 <input
                   type="text"
                   className="input-field flex-1"
-                  placeholder={`Nombre de la ${insuranceType === 'obra-social' ? 'obra social' : 'prepaga'}`}
+                  placeholder="Nombre de la obra social"
                   value={newInsuranceName}
                   onChange={(e) => setNewInsuranceName(e.target.value)}
                 />
