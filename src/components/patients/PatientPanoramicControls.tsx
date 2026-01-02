@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Eye, Paperclip, X } from 'lucide-react';
 import { uploadPatientFile, updatePatient } from '@/lib/patients';
+import { mockMode, storage } from '@/lib/firebase';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useToast } from '@/contexts/ToastContext';
 import Modal from '@/components/ui/Modal';
@@ -29,7 +30,9 @@ export default function PatientPanoramicControls({
   const [currentUrl, setCurrentUrl] = useState(panoramicUrl || '');
   const [currentName, setCurrentName] = useState(panoramicName || '');
   const [viewerOpen, setViewerOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const storageReady = !mockMode && !!storage;
 
   useEffect(() => {
     setCurrentUrl(panoramicUrl || '');
@@ -40,16 +43,21 @@ export default function PatientPanoramicControls({
     const files = e.target.files;
     if (!files || files.length === 0) return;
     const file = files[0];
+    setErrorMessage('');
 
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
     if (!allowedTypes.includes(file.type)) {
-      toast.error('Solo se permite PDF o imagen para la panor\u00e1mica.');
+      const message = 'Solo se permite PDF o imagen para la panor\u00e1mica.';
+      toast.error(message);
+      setErrorMessage(message);
       e.target.value = '';
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      toast.error('El archivo no puede ser mayor a 10MB.');
+      const message = 'El archivo no puede ser mayor a 10MB.';
+      toast.error(message);
+      setErrorMessage(message);
       e.target.value = '';
       return;
     }
@@ -76,6 +84,7 @@ export default function PatientPanoramicControls({
       console.error('Panoramic upload error:', error);
       const message = error instanceof Error ? error.message : 'Error al subir la panorámica.';
       toast.error(message);
+      setErrorMessage(message);
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -102,7 +111,7 @@ export default function PatientPanoramicControls({
         className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-elegant-200 dark:border-elegant-700 text-elegant-700 dark:text-elegant-200 hover:border-primary/60 hover:text-primary-dark dark:hover:text-white transition-all ${
           uploading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
         }`}
-        disabled={uploading}
+        disabled={uploading || !storageReady}
       >
         <Paperclip className="w-4 h-4" />
         {uploading ? 'Subiendo...' : 'Adjuntar panor\u00e1mica'}
@@ -120,6 +129,16 @@ export default function PatientPanoramicControls({
       {!currentUrl && currentName && (
         <span className="text-sm text-secondary dark:text-gray-400">
           {currentName}
+        </span>
+      )}
+      {!storageReady && (
+        <span className="text-xs text-red-600 dark:text-red-400">
+          Storage no configurado.
+        </span>
+      )}
+      {errorMessage && (
+        <span className="text-xs text-red-600 dark:text-red-400">
+          {errorMessage}
         </span>
       )}
       <Modal
