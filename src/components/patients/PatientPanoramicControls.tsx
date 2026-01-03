@@ -45,9 +45,9 @@ export default function PatientPanoramicControls({
     const file = files[0];
     setErrorMessage('');
 
-    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+    const allowedTypes = ['application/pdf'];
     if (!allowedTypes.includes(file.type)) {
-      const message = 'Solo se permite PDF o imagen para la panor\u00e1mica.';
+      const message = 'Solo se permite PDF para la panor\u00e1mica.';
       toast.error(message);
       setErrorMessage(message);
       e.target.value = '';
@@ -99,7 +99,7 @@ export default function PatientPanoramicControls({
         id={inputId}
         type="file"
         className="hidden"
-        accept="application/pdf,image/jpeg,image/png,image/jpg"
+        accept="application/pdf"
         onChange={handleFileSelect}
         disabled={uploading}
         ref={inputRef}
@@ -114,7 +114,7 @@ export default function PatientPanoramicControls({
         disabled={uploading || !storageReady}
       >
         <Paperclip className="w-4 h-4" />
-        {uploading ? 'Subiendo...' : 'Adjuntar panor\u00e1mica'}
+        {uploading ? 'Subiendo...' : 'Adjuntar PDF'}
       </button>
       {currentUrl && (
         <button
@@ -123,7 +123,7 @@ export default function PatientPanoramicControls({
           className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-dark underline-offset-4 hover:underline"
         >
           <Eye className="w-4 h-4" />
-          Ver panorámica
+          Ver PDF
         </button>
       )}
       {!currentUrl && currentName && (
@@ -164,11 +164,9 @@ export default function PatientPanoramicControls({
                 className="w-full h-[70vh] rounded-lg border border-elegant-200 dark:border-elegant-700"
               />
             ) : (
-              <img
-                src={currentUrl}
-                alt="Panorámica"
-                className="w-full max-h-[70vh] object-contain rounded-lg border border-elegant-200 dark:border-elegant-700 bg-white"
-              />
+              <div className="text-sm text-elegant-600 dark:text-elegant-300">
+                El archivo adjunto no es un PDF.
+              </div>
             )}
           </div>
         </div>
