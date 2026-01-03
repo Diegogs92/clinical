@@ -6,7 +6,7 @@ import { usePayments } from '@/contexts/PaymentsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
-import { Appointment } from '@/types';
+import { Appointment, Payment } from '@/types';
 import { createPayment } from '@/lib/payments';
 import { useToast } from '@/contexts/ToastContext';
 import { DollarSign } from 'lucide-react';
