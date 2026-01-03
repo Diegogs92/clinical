@@ -45,6 +45,14 @@ export default function PatientPanoramicControls({
     const file = files[0];
     setErrorMessage('');
 
+    if (!storageReady) {
+      const message = 'Storage no configurado.';
+      toast.error(message);
+      setErrorMessage(message);
+      e.target.value = '';
+      return;
+    }
+
     const isPdfFile = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
     if (!isPdfFile) {
       const message = 'Solo se permite PDF para la panor\u00e1mica.';
@@ -68,13 +76,13 @@ export default function PatientPanoramicControls({
       if (!uploadedFile.url) {
         throw new Error('Storage no configurado');
       }
+      setCurrentUrl(uploadedFile.url);
+      setCurrentName(uploadedFile.name);
       await updatePatient(patientId, {
         panoramicUrl: uploadedFile.url,
         panoramicName: uploadedFile.name,
         panoramicUploadedAt: uploadedFile.uploadedAt,
       });
-      setCurrentUrl(uploadedFile.url);
-      setCurrentName(uploadedFile.name);
       if (onUploaded) {
         onUploaded(uploadedFile.url, uploadedFile.name, uploadedFile.uploadedAt);
       }
