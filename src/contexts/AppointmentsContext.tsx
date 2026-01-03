@@ -63,12 +63,22 @@ export const AppointmentsProvider = ({ children }: { children: React.ReactNode }
   // Auto-refresh cuando la ventana vuelve al foco
   useEffect(() => {
     const handleFocus = () => {
+      if ((window as any).__dentifyFilePickerOpen) {
+        console.log('[AppointmentsContext] Focus refresh skipped (file picker open)');
+        (window as any).__dentifyFilePickerOpen = false;
+        return;
+      }
       console.log('[AppointmentsContext] Window focused, refreshing data');
       refreshRef.current?.();
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
+        if ((window as any).__dentifyFilePickerOpen) {
+          console.log('[AppointmentsContext] Visibility refresh skipped (file picker open)');
+          (window as any).__dentifyFilePickerOpen = false;
+          return;
+        }
         console.log('[AppointmentsContext] Tab visible, refreshing data');
         refreshRef.current?.();
       }
