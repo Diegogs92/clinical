@@ -46,11 +46,15 @@ export default function PatientPanoramicControls({
     setCurrentName(panoramicName || '');
   }, [panoramicUrl, panoramicName]);
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
+  const handleFileSelect = async (
+    e: React.ChangeEvent<HTMLInputElement> | React.FormEvent<HTMLInputElement>
+  ) => {
+    const inputEl = e.currentTarget as HTMLInputElement;
+    const files = inputEl.files;
     if (!files || files.length === 0) return;
     const file = files[0];
     setErrorMessage('');
+    console.log('[Panoramic] Input event:', e.type);
     console.log('[Panoramic] Selected file:', {
       name: file.name,
       type: file.type,
@@ -127,6 +131,7 @@ export default function PatientPanoramicControls({
         className="hidden"
         accept="application/pdf,.pdf"
         onChange={handleFileSelect}
+        onInput={handleFileSelect}
         onClick={() => console.log('[Panoramic] File input click')}
         disabled={uploading}
         ref={inputRef}
