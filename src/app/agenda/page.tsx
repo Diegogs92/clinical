@@ -138,6 +138,30 @@ export default function AgendaPage() {
   const monthEnd = endOfMonth(currentDate);
   const monthDays = eachDayOfInterval({ start: startOfWeek(monthStart, { weekStartsOn: 1 }), end: endOfWeek(monthEnd, { weekStartsOn: 1 }) });
 
+  const currentRange = useMemo(() => {
+    if (viewMode === 'day') {
+      return { start: startOfDay(currentDate), end: endOfDay(currentDate) };
+    }
+    if (viewMode === 'month') {
+      return { start: monthStart, end: monthEnd };
+    }
+    return { start: weekStart, end: weekEnd };
+  }, [currentDate, monthEnd, monthStart, viewMode, weekEnd, weekStart]);
+
+  const scheduledPatientsCount = useMemo(() => {
+    const patientKeys = new Set<string>();
+    appointments.forEach((apt) => {
+      if (!apt?.date) return;
+      if (apt.appointmentType === 'personal') return;
+      if (apt.status === 'cancelled') return;
+      const aptDate = parseISO(apt.date);
+      if (!isWithinInterval(aptDate, { start: currentRange.start, end: currentRange.end })) return;
+      const key = apt.patientId || apt.patientName || apt.title || apt.id;
+      if (key) patientKeys.add(key);
+    });
+    return patientKeys.size;
+  }, [appointments, currentRange.end, currentRange.start]);
+
   // Obtener información del paciente
   const getPatientInfo = (patientId: string | undefined) => {
     if (!patientId) return null;
@@ -727,6 +751,11 @@ export default function AgendaPage() {
                     : format(currentDate, "EEEE d 'de' MMMM, yyyy", { locale: es })
                   }
                 </h2>
+                <p className="text-xs text-elegant-600 dark:text-elegant-400 mt-1">
+                  {scheduledPatientsCount === 1
+                    ? '1 paciente agendado'
+                    : `${scheduledPatientsCount} pacientes agendados`}
+                </p>
                 <button onClick={goToToday} className="text-sm text-primary hover:underline">
                   Ir a hoy
                 </button>
