@@ -149,7 +149,7 @@ export default function DashboardLayout({ children, mobileAction, fullWidth = tr
         )}
       </header>
 
-      <main className={`flex-1 w-full ${fullWidth ? 'max-w-full px-3 sm:px-6 lg:px-8' : 'max-w-7xl mx-auto px-3 sm:px-6 lg:px-8'} py-3 md:py-6 pb-32 md:pb-12`}>
+      <main className={`flex-1 w-full ${fullWidth ? 'max-w-full px-3 sm:px-6 lg:px-8' : 'max-w-7xl mx-auto px-3 sm:px-6 lg:px-8'} py-2 md:py-4 pb-28 md:pb-10`}>
         {children}
       </main>
 

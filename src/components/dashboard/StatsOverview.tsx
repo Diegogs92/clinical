@@ -110,20 +110,20 @@ export default function StatsOverview() {
   ];
 
   return (
-    <div className="grid gap-2.5 md:gap-3 grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-2 md:gap-2.5 grid-cols-2 lg:grid-cols-4">
       {stats.map((s, index) => (
         <div
           key={s.label}
-          className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-xl p-3 md:p-4 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 cursor-pointer group backdrop-blur-lg"
+          className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-xl p-2.5 md:p-3 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 cursor-pointer group backdrop-blur-lg"
           style={{ animationDelay: `${index * 0.1}s` }}
         >
           <div className={`absolute inset-0 bg-gradient-to-br ${s.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
 
           <div className="relative z-10">
-            <div className="text-[12px] md:text-[0.875rem] uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">
+            <div className="text-[11px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-0.5 truncate">
               {s.label}
             </div>
-            <div className="text-xl md:text-3xl font-bold tabular-nums text-black dark:text-white mb-0.5 md:mb-1">
+            <div className="text-lg md:text-2xl font-bold tabular-nums text-black dark:text-white mb-0.5">
               {s.numericValue !== undefined
                 ? s.isMonetary
                   ? `$${formatCurrency(s.numericValue)}`
@@ -131,13 +131,13 @@ export default function StatsOverview() {
                 : s.value}
             </div>
             {s.sub && (
-              <div className="text-[12px] md:text-[0.875rem] text-elegant-500 dark:text-elegant-400 font-medium truncate">
+              <div className="text-[11px] md:text-xs text-elegant-500 dark:text-elegant-400 font-medium truncate">
                 {s.sub}
               </div>
             )}
           </div>
 
-          <div className={`absolute -right-4 -bottom-4 w-14 h-14 md:w-20 md:h-20 bg-gradient-to-br ${s.color} rounded-full opacity-0 group-hover:opacity-20 transition-all duration-300 group-hover:scale-125`} />
+          <div className={`absolute -right-4 -bottom-4 w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br ${s.color} rounded-full opacity-0 group-hover:opacity-20 transition-all duration-300 group-hover:scale-125`} />
         </div>
       ))}
     </div>

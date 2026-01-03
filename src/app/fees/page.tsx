@@ -12,7 +12,6 @@ import { useConfirm } from '@/contexts/ConfirmContext';
 import { Edit2, Trash2 } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { combineDateAndTime } from '@/lib/dateUtils';
-import AnimatedCounter from '@/components/ui/AnimatedCounter';
 import { formatCurrency } from '@/lib/formatCurrency';
 export const dynamic = 'force-dynamic';
 
@@ -52,6 +51,7 @@ export default function FeesPage() {
   const pendingSummary = appointments.reduce(
     (acc, appointment) => {
       if (!appointment.fee) return acc;
+      if (appointment.status !== 'completed') return acc;
       const paid = paymentTotalsByAppointment.get(appointment.id) || 0;
       const deposit = appointment.deposit || 0;
       if (appointment.status === 'cancelled' && paid === 0 && deposit === 0) return acc;
@@ -64,6 +64,14 @@ export default function FeesPage() {
     },
     { amount: 0, count: 0 }
   );
+
+  const completedAppointments = new Map(
+    appointments
+      .filter(a => a.status === 'completed')
+      .map(a => [a.id, a])
+  );
+
+  const pendingDisplay = pending.filter(p => p.appointmentId && completedAppointments.has(p.appointmentId));
 
   const handleEdit = (payment: Payment) => {
     setEditingPayment(payment);
@@ -132,48 +140,46 @@ export default function FeesPage() {
             <h1 className="text-xl md:text-2xl font-bold text-navy-darkest dark:text-white">Honorarios</h1>
           </div>
           <div className="grid gap-2.5 md:gap-3 grid-cols-2 lg:grid-cols-4">
-            <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-xl p-3 md:p-4 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 cursor-pointer group backdrop-blur-lg">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-green-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+            <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-xl p-3 md:p-4 border border-elegant-200/80 dark:border-elegant-800/80 backdrop-blur-lg">
               <div className="relative z-10">
                 <div className="text-[12px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">Total Ingresos</div>
                 <div className="text-xl md:text-3xl font-bold tabular-nums text-black dark:text-white mb-0.5 md:mb-1">
-                  <AnimatedCounter end={totalRevenue} prefix="$" duration={1200} />
+                  ${formatCurrency(totalRevenue)}
                 </div>
               </div>
-              <div className="absolute -right-4 -bottom-4 w-14 h-14 md:w-20 md:h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full opacity-0 group-hover:opacity-20 transition-all duration-300 group-hover:scale-125" />
             </div>
 
-            <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-xl p-3 md:p-4 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 cursor-pointer group backdrop-blur-lg" style={{ animationDelay: '0.1s' }}>
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-amber-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+            <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-xl p-3 md:p-4 border border-elegant-200/80 dark:border-elegant-800/80 backdrop-blur-lg">
               <div className="relative z-10">
-                <div className="text-[12px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">Pendientes</div>
+                <div className="text-[12px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">Saldo Pendiente</div>
                 <div className="text-xl md:text-3xl font-bold tabular-nums text-black dark:text-white mb-0.5 md:mb-1">
-                  <AnimatedCounter end={pendingSummary.amount} prefix="$" duration={1200} />
+                  ${formatCurrency(pendingSummary.amount)}
+                </div>
+                <div className="text-xs text-elegant-500 dark:text-elegant-400 truncate">
+                  Atendidos con saldo sin completar
                 </div>
               </div>
-              <div className="absolute -right-4 -bottom-4 w-14 h-14 md:w-20 md:h-20 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full opacity-0 group-hover:opacity-20 transition-all duration-300 group-hover:scale-125" />
             </div>
 
-            <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-xl p-3 md:p-4 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 cursor-pointer group backdrop-blur-lg" style={{ animationDelay: '0.2s' }}>
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+            <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-xl p-3 md:p-4 border border-elegant-200/80 dark:border-elegant-800/80 backdrop-blur-lg">
               <div className="relative z-10">
                 <div className="text-[12px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">Cobros</div>
                 <div className="text-xl md:text-3xl font-bold tabular-nums text-black dark:text-white mb-0.5 md:mb-1">
-                  <AnimatedCounter end={payments.length} duration={1000} />
+                  {payments.length}
                 </div>
               </div>
-              <div className="absolute -right-4 -bottom-4 w-14 h-14 md:w-20 md:h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full opacity-0 group-hover:opacity-20 transition-all duration-300 group-hover:scale-125" />
             </div>
 
-            <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-xl p-3 md:p-4 border border-elegant-200/80 dark:border-elegant-800/80 transition-all duration-200 transition-spring hover:shadow-xl hover:scale-[1.02] hover:-translate-y-0.5 cursor-pointer group backdrop-blur-lg" style={{ animationDelay: '0.3s' }}>
-              <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-red-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+            <div className="relative overflow-hidden bg-white/95 dark:bg-elegant-900/95 rounded-xl p-3 md:p-4 border border-elegant-200/80 dark:border-elegant-800/80 backdrop-blur-lg">
               <div className="relative z-10">
-                <div className="text-[12px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">Pendientes Cobro</div>
+                <div className="text-[12px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">Atendidos con Saldo</div>
                 <div className="text-xl md:text-3xl font-bold tabular-nums text-black dark:text-white mb-0.5 md:mb-1">
-                  <AnimatedCounter end={pendingSummary.count} duration={1000} />
+                  {pendingSummary.count}
+                </div>
+                <div className="text-xs text-elegant-500 dark:text-elegant-400 truncate">
+                  Pacientes atendidos sin pago total
                 </div>
               </div>
-              <div className="absolute -right-4 -bottom-4 w-14 h-14 md:w-20 md:h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full opacity-0 group-hover:opacity-20 transition-all duration-300 group-hover:scale-125" />
             </div>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
@@ -225,22 +231,30 @@ export default function FeesPage() {
               </table>
             </div>
             <div className="card overflow-x-auto">
-              <h2 className="font-semibold text-primary-dark dark:text-white mb-4">Pendientes</h2>
+              <div className="mb-4">
+                <h2 className="font-semibold text-primary-dark dark:text-white">Pendientes de pago</h2>
+                <p className="text-xs text-elegant-500 dark:text-elegant-400">
+                  Pacientes atendidos con saldo sin completar
+                </p>
+              </div>
               <table className="table-skin">
                 <thead>
                   <tr>
                     <th>Paciente</th>
-                    <th>Monto</th>
+                    <th>Saldo pendiente</th>
                     <th>Fecha</th>
                     <th className="text-right">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {pending.slice(0, 10).map(p => (
+                  {pendingDisplay.slice(0, 10).map(p => {
+                    const appointment = p.appointmentId ? completedAppointments.get(p.appointmentId) : undefined;
+                    const displayDate = appointment?.date || p.date;
+                    return (
                     <tr key={p.id}>
                       <td>{p.patientName}</td>
                       <td>${formatCurrency(p.amount)}</td>
-                      <td>{new Date(p.date).toLocaleDateString()}</td>
+                      <td>{new Date(displayDate).toLocaleDateString()}</td>
                       <td className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button
@@ -262,8 +276,9 @@ export default function FeesPage() {
                         </div>
                       </td>
                     </tr>
-                  ))}
-                  {pending.length === 0 && (
+                  );
+                  })}
+                  {pendingDisplay.length === 0 && (
                     <tr>
                       <td colSpan={4} className="p-4 text-center text-black dark:text-white">Sin pendientes</td>
                     </tr>

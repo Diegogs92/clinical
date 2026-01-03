@@ -421,15 +421,15 @@ export default function DashboardPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="space-y-8">
+        <div className="space-y-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
-            <div className="w-full md:w-auto p-3 md:p-0 rounded-2xl border border-elegant-100/80 dark:border-elegant-800/70 bg-white/90 dark:bg-elegant-900/90 backdrop-blur-lg shadow-sm md:shadow-none md:border-0 md:bg-transparent flex items-center gap-2.5 md:gap-3">
-              <div className="w-11 h-11 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 text-primary flex items-center justify-center shrink-0">
-                <Clock className="w-5 h-5 md:w-6 md:h-6" />
+            <div className="w-full md:w-auto p-2 md:p-0 rounded-2xl border border-elegant-100/80 dark:border-elegant-800/70 bg-white/90 dark:bg-elegant-900/90 backdrop-blur-lg shadow-sm md:shadow-none md:border-0 md:bg-transparent flex items-center gap-2 md:gap-3">
+              <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 text-primary flex items-center justify-center shrink-0">
+                <Clock className="w-4 h-4 md:w-5 md:h-5" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[12px] md:text-xs uppercase tracking-[0.1em] md:tracking-[0.15em] text-elegant-500">Inicio</p>
-                <h1 className="text-xl md:text-2xl font-bold text-primary-dark dark:text-white truncate">
+                <h1 className="text-lg md:text-xl font-bold text-primary-dark dark:text-white truncate">
                   {format(now, 'dd/MM/yyyy HH:mm')}
                 </h1>
                 <p className="text-[12px] md:text-xs text-elegant-500 dark:text-elegant-400 truncate">Agenda sincronizada</p>
