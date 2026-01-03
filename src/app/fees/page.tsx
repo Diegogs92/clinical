@@ -4,23 +4,32 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import DashboardLayout from '@/components/DashboardLayout';
 import { usePayments } from '@/contexts/PaymentsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
-import { Payment } from '@/types';
-import { updatePayment, deletePayment } from '@/lib/payments';
+import { Appointment, Payment } from '@/types';
+import { createPayment, updatePayment, deletePayment } from '@/lib/payments';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
-import { Edit2, Trash2 } from 'lucide-react';
+import { DollarSign, Edit2, Trash2 } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { combineDateAndTime } from '@/lib/dateUtils';
 import { formatCurrency } from '@/lib/formatCurrency';
 export const dynamic = 'force-dynamic';
 
 export default function FeesPage() {
+  const { user } = useAuth();
   const { payments, pendingPayments: pending, refreshPayments, refreshPendingPayments } = usePayments();
   const { appointments } = useAppointments();
   const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
   const [editAmount, setEditAmount] = useState('');
   const [loading, setLoading] = useState(false);
+  const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; appointment?: Appointment; mode: 'total' | 'partial'; amount: string }>({
+    open: false,
+    appointment: undefined,
+    mode: 'total',
+    amount: '',
+  });
+  const [submittingPayment, setSubmittingPayment] = useState(false);
   const toast = useToast();
   const confirm = useConfirm();
 
@@ -48,14 +57,18 @@ export default function FeesPage() {
     return acc;
   }, new Map<string, number>());
 
+  const getRemainingForAppointment = (appointment: Appointment) => {
+    const paid = paymentTotalsByAppointment.get(appointment.id) || 0;
+    const deposit = appointment.deposit || 0;
+    return Math.max(0, (appointment.fee || 0) - deposit - paid);
+  };
+
   const pendingAppointments = appointments
     .filter(appointment => appointment.fee && appointment.status === 'completed')
-    .map(appointment => {
-      const paid = paymentTotalsByAppointment.get(appointment.id) || 0;
-      const deposit = appointment.deposit || 0;
-      const remaining = Math.max(0, (appointment.fee || 0) - deposit - paid);
-      return { appointment, remaining };
-    })
+    .map(appointment => ({
+      appointment,
+      remaining: getRemainingForAppointment(appointment)
+    }))
     .filter(({ remaining }) => remaining > 0)
     .sort((a, b) => {
       const aTime = new Date(a.appointment.date).getTime();
@@ -75,6 +88,79 @@ export default function FeesPage() {
   const handleEdit = (payment: Payment) => {
     setEditingPayment(payment);
     setEditAmount(payment.amount.toString());
+  };
+
+  const openPaymentDialog = (appointment: Appointment) => {
+    if (!appointment.fee) {
+      toast.error('Este turno no tiene honorarios asignados');
+      return;
+    }
+    const remainingAmount = getRemainingForAppointment(appointment);
+    if (remainingAmount <= 0) {
+      toast.error('Este turno no tiene saldo pendiente');
+      return;
+    }
+    setPaymentDialog({
+      open: true,
+      appointment,
+      mode: 'total',
+      amount: remainingAmount.toString(),
+    });
+  };
+
+  const submitPayment = async () => {
+    const appt = paymentDialog.appointment;
+    if (!appt) return;
+    if (!user) {
+      toast.error('Debes iniciar sesión para registrar pagos');
+      return;
+    }
+
+    const sanitized = paymentDialog.amount.replace(/\./g, '').replace(',', '.');
+    const amountNum = Number(sanitized);
+    if (!Number.isFinite(amountNum) || amountNum <= 0) {
+      toast.error('Ingresa un monto válido');
+      return;
+    }
+
+    if (appt.appointmentType !== 'patient' || !appt.patientId || !appt.patientName) {
+      toast.error('No se puede registrar pago para este tipo de evento');
+      return;
+    }
+
+    const remainingAmount = getRemainingForAppointment(appt);
+    if (amountNum > remainingAmount) {
+      toast.error(`El monto ingresado ($${formatCurrency(amountNum)}) supera el monto restante ($${formatCurrency(remainingAmount)})`);
+      return;
+    }
+
+    const isTotal = amountNum >= remainingAmount;
+    const status: 'completed' | 'pending' = isTotal ? 'completed' : 'pending';
+
+    try {
+      setSubmittingPayment(true);
+      await createPayment({
+        appointmentId: appt.id,
+        patientId: appt.patientId,
+        patientName: appt.patientName,
+        amount: amountNum,
+        method: 'cash',
+        status,
+        date: new Date().toISOString(),
+        consultationType: appt.type || '',
+        userId: user.uid,
+      });
+
+      await refreshPayments();
+      await refreshPendingPayments();
+      setPaymentDialog({ open: false, appointment: undefined, mode: 'total', amount: '' });
+      toast.success(isTotal ? 'Pago registrado' : 'Pago parcial registrado');
+    } catch (error) {
+      console.error('Error al registrar pago:', error);
+      toast.error('Error al registrar el pago');
+    } finally {
+      setSubmittingPayment(false);
+    }
   };
 
   const handleSaveEdit = async () => {
@@ -253,38 +339,15 @@ export default function FeesPage() {
                       <td>${formatCurrency(remaining)}</td>
                       <td>{new Date(appointment.date).toLocaleDateString()}</td>
                       <td className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => {
-                              const pendingPayment = pending.find(item => item.appointmentId === appointment.id);
-                              if (pendingPayment) {
-                                handleEdit(pendingPayment);
-                              } else {
-                                toast.error('No se encontró un pago pendiente para este turno');
-                              }
-                            }}
-                            className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-                            aria-label="Editar honorario"
-                            title="Editar honorario"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              const pendingPayment = pending.find(item => item.appointmentId === appointment.id);
-                              if (pendingPayment) {
-                                handleDelete(pendingPayment);
-                              } else {
-                                toast.error('No se encontró un pago pendiente para este turno');
-                              }
-                            }}
-                            className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                            aria-label="Eliminar honorario"
-                            title="Eliminar honorario"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => openPaymentDialog(appointment)}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
+                          aria-label="Registrar pago"
+                          title="Registrar pago"
+                        >
+                          <DollarSign className="w-3.5 h-3.5" />
+                          Registrar pago
+                        </button>
                       </td>
                     </tr>
                   );
@@ -299,6 +362,92 @@ export default function FeesPage() {
             </div>
           </div>
         </div>
+
+        <Modal
+          open={paymentDialog.open}
+          onClose={() => setPaymentDialog({ open: false, appointment: undefined, mode: 'total', amount: '' })}
+          title="Registrar pago"
+          maxWidth="max-w-md"
+        >
+          {paymentDialog.appointment && (() => {
+            const appt = paymentDialog.appointment;
+            const remainingAmount = getRemainingForAppointment(appt);
+            const deposit = appt.deposit || 0;
+
+            return (
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <p className="text-sm text-elegant-600 dark:text-elegant-300">
+                    {appt.patientName || appt.title || 'Evento'}
+                  </p>
+                  <p className="text-lg font-semibold text-primary-dark dark:text-white">
+                    Honorarios: ${appt.fee ? formatCurrency(appt.fee) : '0'}
+                  </p>
+                  {deposit > 0 && (
+                    <p className="text-sm text-amber-600 dark:text-amber-400">
+                      Seña pagada: ${formatCurrency(deposit)}
+                    </p>
+                  )}
+                  <p className="text-sm font-semibold text-green-600 dark:text-green-400">
+                    Monto restante: ${formatCurrency(remainingAmount)}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 bg-elegant-100 dark:bg-elegant-800/60 p-2 rounded-full">
+                  <button
+                    type="button"
+                    className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'total' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
+                    onClick={() => setPaymentDialog(p => ({ ...p, mode: 'total', amount: remainingAmount.toString() }))}
+                  >
+                    Pago total
+                  </button>
+                  <button
+                    type="button"
+                    className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'partial' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
+                    onClick={() => setPaymentDialog(p => ({ ...p, mode: 'partial', amount: '' }))}
+                  >
+                    Pago parcial
+                  </button>
+                </div>
+
+                {paymentDialog.mode === 'partial' && (
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-elegant-600 dark:text-elegant-300">
+                      Monto a pagar (máximo: ${formatCurrency(remainingAmount)})
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={remainingAmount}
+                      value={paymentDialog.amount}
+                      onChange={(e) => setPaymentDialog(p => ({ ...p, amount: e.target.value }))}
+                      className="input-field text-sm py-2"
+                      placeholder="Ingresar monto"
+                    />
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    className="btn-secondary text-sm px-4 py-2"
+                    onClick={() => setPaymentDialog({ open: false, appointment: undefined, mode: 'total', amount: '' })}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-primary text-sm px-4 py-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                    onClick={submitPayment}
+                    disabled={submittingPayment}
+                  >
+                    {submittingPayment ? 'Registrando...' : 'Registrar'}
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+        </Modal>
 
         <Modal
           open={!!editingPayment}
