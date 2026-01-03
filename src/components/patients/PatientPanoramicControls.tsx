@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
-import { Eye, Paperclip, X } from 'lucide-react';
-import { uploadPatientFile, updatePatient } from '@/lib/patients';
+import { Eye, Paperclip, Trash2, X } from 'lucide-react';
+import { uploadPatientFile, updatePatient, deletePatientFileByUrl } from '@/lib/patients';
 import { mockMode, storage } from '@/lib/firebase';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useToast } from '@/contexts/ToastContext';
 import Modal from '@/components/ui/Modal';
+import SuccessModal from '@/components/ui/SuccessModal';
+import { useConfirm } from '@/contexts/ConfirmContext';
 
 interface Props {
   patientId: string;
@@ -25,12 +27,19 @@ export default function PatientPanoramicControls({
 }: Props) {
   const inputId = useId();
   const toast = useToast();
+  const confirm = useConfirm();
   const { refreshPatients } = usePatients();
   const [uploading, setUploading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [currentUrl, setCurrentUrl] = useState(panoramicUrl || '');
   const [currentName, setCurrentName] = useState(panoramicName || '');
   const [viewerOpen, setViewerOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [successModal, setSuccessModal] = useState<{ show: boolean; title: string; message?: string }>({
+    show: false,
+    title: '',
+    message: '',
+  });
   const inputRef = useRef<HTMLInputElement | null>(null);
   const storageReady = !mockMode && !!storage;
 
@@ -110,7 +119,11 @@ export default function PatientPanoramicControls({
         onUploaded(uploadedFile.url, uploadedFile.name, uploadedFile.uploadedAt);
       }
       await refreshPatients();
-      toast.success('Panorámica subida correctamente.');
+      setSuccessModal({
+        show: true,
+        title: 'Panorámica subida',
+        message: 'El PDF se adjuntó correctamente.',
+      });
     } catch (error) {
       console.error('[Panoramic] Upload error:', error);
       const message = error instanceof Error ? error.message : 'Error al subir la panorámica.';
@@ -120,6 +133,42 @@ export default function PatientPanoramicControls({
       console.log('[Panoramic] Upload finished');
       setUploading(false);
       inputEl.value = '';
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!currentUrl) return;
+    const confirmed = await confirm({
+      title: 'Eliminar panorámica',
+      description: 'Eliminar el PDF adjunto de este paciente?',
+      confirmText: 'Eliminar',
+      tone: 'danger',
+    });
+    if (!confirmed) return;
+
+    try {
+      setDeleting(true);
+      await deletePatientFileByUrl(currentUrl);
+      await updatePatient(patientId, {
+        panoramicUrl: '',
+        panoramicName: '',
+        panoramicUploadedAt: '',
+      });
+      setCurrentUrl('');
+      setCurrentName('');
+      await refreshPatients();
+      setSuccessModal({
+        show: true,
+        title: 'Panorámica eliminada',
+        message: 'El PDF se eliminó correctamente.',
+      });
+    } catch (error) {
+      console.error('[Panoramic] Delete error:', error);
+      const message = error instanceof Error ? error.message : 'Error al eliminar la panorámica.';
+      toast.error(message);
+      setErrorMessage(message);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -152,20 +201,31 @@ export default function PatientPanoramicControls({
         className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-elegant-200 dark:border-elegant-700 text-elegant-700 dark:text-elegant-200 hover:border-primary/60 hover:text-primary-dark dark:hover:text-white transition-all ${
           uploading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
         }`}
-        aria-disabled={uploading || !storageReady}
+        aria-disabled={uploading || deleting || !storageReady}
       >
         <Paperclip className="w-4 h-4" />
         {uploading ? 'Subiendo...' : 'Adjuntar panor\u00e1mica'}
       </label>
       {currentUrl && (
-        <button
-          type="button"
-          onClick={() => setViewerOpen(true)}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-dark underline-offset-4 hover:underline"
-        >
-          <Eye className="w-4 h-4" />
-          Ver PDF
-        </button>
+        <>
+          <button
+            type="button"
+            onClick={() => setViewerOpen(true)}
+            className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-dark underline-offset-4 hover:underline"
+          >
+            <Eye className="w-4 h-4" />
+            Ver PDF
+          </button>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700 underline-offset-4 hover:underline disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <Trash2 className="w-4 h-4" />
+            Eliminar PDF
+          </button>
+        </>
       )}
       {!currentUrl && currentName && (
         <span className="text-sm text-secondary dark:text-gray-400">
@@ -212,6 +272,12 @@ export default function PatientPanoramicControls({
           </div>
         </div>
       </Modal>
+      <SuccessModal
+        isOpen={successModal.show}
+        onClose={() => setSuccessModal({ show: false, title: '', message: '' })}
+        title={successModal.title}
+        message={successModal.message}
+      />
     </div>
   );
 }

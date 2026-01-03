@@ -1,6 +1,6 @@
 import { db, storage, mockMode } from '@/lib/firebase';
 import { collection, doc, addDoc, updateDoc, deleteDoc, getDoc, getDocs, query, where, Firestore } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, deleteObject, refFromURL } from 'firebase/storage';
 import { Patient, PatientFile } from '@/types';
 import { PatientSchema } from './schemas';
 import { logger } from './logger';
@@ -123,4 +123,11 @@ export async function uploadPatientFile(patientId: string, file: File): Promise<
     size: file.size,
     uploadedAt: new Date().toISOString(),
   };
+}
+
+export async function deletePatientFileByUrl(url: string) {
+  if (!url) return;
+  if (mockMode || !storage) return;
+  const storageRef = refFromURL(url);
+  await deleteObject(storageRef);
 }
