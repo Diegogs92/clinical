@@ -48,29 +48,29 @@ export default function FeesPage() {
     return acc;
   }, new Map<string, number>());
 
-  const pendingSummary = appointments.reduce(
-    (acc, appointment) => {
-      if (!appointment.fee) return acc;
-      if (appointment.status !== 'completed') return acc;
+  const pendingAppointments = appointments
+    .filter(appointment => appointment.fee && appointment.status === 'completed')
+    .map(appointment => {
       const paid = paymentTotalsByAppointment.get(appointment.id) || 0;
       const deposit = appointment.deposit || 0;
-      const remaining = Math.max(0, appointment.fee - deposit - paid);
-      if (remaining > 0) {
-        acc.amount += remaining;
-        acc.count += 1;
-      }
+      const remaining = Math.max(0, (appointment.fee || 0) - deposit - paid);
+      return { appointment, remaining };
+    })
+    .filter(({ remaining }) => remaining > 0)
+    .sort((a, b) => {
+      const aTime = new Date(a.appointment.date).getTime();
+      const bTime = new Date(b.appointment.date).getTime();
+      return bTime - aTime;
+    });
+
+  const pendingSummary = pendingAppointments.reduce(
+    (acc, item) => {
+      acc.amount += item.remaining;
+      acc.count += 1;
       return acc;
     },
     { amount: 0, count: 0 }
   );
-
-  const completedAppointments = new Map(
-    appointments
-      .filter(a => a.status === 'completed')
-      .map(a => [a.id, a])
-  );
-
-  const pendingDisplay = pending.filter(p => p.appointmentId && completedAppointments.has(p.appointmentId));
 
   const handleEdit = (payment: Payment) => {
     setEditingPayment(payment);
@@ -246,18 +246,23 @@ export default function FeesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {pendingDisplay.slice(0, 10).map(p => {
-                    const appointment = p.appointmentId ? completedAppointments.get(p.appointmentId) : undefined;
-                    const displayDate = appointment?.date || p.date;
+                  {pendingAppointments.slice(0, 10).map(({ appointment, remaining }) => {
                     return (
-                    <tr key={p.id}>
-                      <td>{p.patientName}</td>
-                      <td>${formatCurrency(p.amount)}</td>
-                      <td>{new Date(displayDate).toLocaleDateString()}</td>
+                    <tr key={appointment.id}>
+                      <td>{appointment.patientName}</td>
+                      <td>${formatCurrency(remaining)}</td>
+                      <td>{new Date(appointment.date).toLocaleDateString()}</td>
                       <td className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button
-                            onClick={() => handleEdit(p)}
+                            onClick={() => {
+                              const pendingPayment = pending.find(item => item.appointmentId === appointment.id);
+                              if (pendingPayment) {
+                                handleEdit(pendingPayment);
+                              } else {
+                                toast.error('No se encontró un pago pendiente para este turno');
+                              }
+                            }}
                             className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
                             aria-label="Editar honorario"
                             title="Editar honorario"
@@ -265,7 +270,14 @@ export default function FeesPage() {
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleDelete(p)}
+                            onClick={() => {
+                              const pendingPayment = pending.find(item => item.appointmentId === appointment.id);
+                              if (pendingPayment) {
+                                handleDelete(pendingPayment);
+                              } else {
+                                toast.error('No se encontró un pago pendiente para este turno');
+                              }
+                            }}
                             className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                             aria-label="Eliminar honorario"
                             title="Eliminar honorario"
@@ -277,7 +289,7 @@ export default function FeesPage() {
                     </tr>
                   );
                   })}
-                  {pendingDisplay.length === 0 && (
+                  {pendingAppointments.length === 0 && (
                     <tr>
                       <td colSpan={4} className="p-4 text-center text-black dark:text-white">Sin pendientes</td>
                     </tr>
