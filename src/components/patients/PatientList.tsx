@@ -196,7 +196,7 @@ export default function PatientList() {
           <thead>
             <tr>
               <th className="w-20"></th>
-              <th>Adjuntar panor&aacute;mica</th>
+              <th className="w-44">Adjuntar panor&aacute;mica</th>
               <th>Apellido</th>
               <th>Nombre</th>
               <th>DNI</th>
@@ -227,7 +227,7 @@ export default function PatientList() {
                       </button>
                     </div>
                   </td>
-                  <td onClick={(e) => e.stopPropagation()}>
+                  <td className="w-44" onClick={(e) => e.stopPropagation()}>
                     <PatientPanoramicControls
                       patientId={p.id}
                       panoramicUrl={p.panoramicUrl}

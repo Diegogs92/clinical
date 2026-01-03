@@ -175,7 +175,7 @@ export default function PatientPanoramicControls({
   const isPdf = currentName.toLowerCase().endsWith('.pdf') || currentUrl.toLowerCase().includes('.pdf');
 
   return (
-    <div className={compact ? 'flex items-center gap-2' : 'flex flex-wrap items-center gap-3'}>
+    <div className={compact ? 'flex items-center gap-2' : 'flex flex-wrap items-center gap-2'}>
       <input
         id={inputId}
         type="file"
@@ -188,24 +188,26 @@ export default function PatientPanoramicControls({
         ref={inputRef}
         aria-label="Adjuntar panor\u00e1mica"
       />
-      <label
-        onClick={triggerFilePicker}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            triggerFilePicker();
-          }
-        }}
-        role="button"
-        tabIndex={0}
-        className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-elegant-200 dark:border-elegant-700 text-elegant-700 dark:text-elegant-200 hover:border-primary/60 hover:text-primary-dark dark:hover:text-white transition-all ${
-          uploading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
-        }`}
-        aria-disabled={uploading || deleting || !storageReady}
-      >
-        <Paperclip className="w-4 h-4" />
-        {uploading ? 'Subiendo...' : 'Adjuntar panor\u00e1mica'}
-      </label>
+      {!currentUrl && (
+        <label
+          onClick={triggerFilePicker}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              triggerFilePicker();
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-elegant-200 dark:border-elegant-700 text-elegant-700 dark:text-elegant-200 hover:border-primary/60 hover:text-primary-dark dark:hover:text-white transition-all ${
+            uploading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+          }`}
+          aria-disabled={uploading || deleting || !storageReady}
+        >
+          <Paperclip className="w-4 h-4" />
+          {uploading ? 'Subiendo...' : 'Adjuntar panor\u00e1mica'}
+        </label>
+      )}
       {currentUrl && (
         <>
           <button
