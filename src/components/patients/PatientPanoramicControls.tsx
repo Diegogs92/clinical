@@ -45,8 +45,8 @@ export default function PatientPanoramicControls({
     const file = files[0];
     setErrorMessage('');
 
-    const allowedTypes = ['application/pdf'];
-    if (!allowedTypes.includes(file.type)) {
+    const isPdfFile = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    if (!isPdfFile) {
       const message = 'Solo se permite PDF para la panor\u00e1mica.';
       toast.error(message);
       setErrorMessage(message);
@@ -99,7 +99,7 @@ export default function PatientPanoramicControls({
         id={inputId}
         type="file"
         className="hidden"
-        accept="application/pdf"
+        accept="application/pdf,.pdf"
         onChange={handleFileSelect}
         disabled={uploading}
         ref={inputRef}
@@ -114,7 +114,7 @@ export default function PatientPanoramicControls({
         disabled={uploading || !storageReady}
       >
         <Paperclip className="w-4 h-4" />
-        {uploading ? 'Subiendo...' : 'Adjuntar PDF'}
+        {uploading ? 'Subiendo...' : 'Adjuntar panor\u00e1mica'}
       </button>
       {currentUrl && (
         <button
