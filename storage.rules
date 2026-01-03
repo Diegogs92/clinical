@@ -1,0 +1,29 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function getUserRole() {
+      return get(/databases/(default)/documents/userProfiles/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() {
+      return signedIn() && getUserRole() == 'administrador';
+    }
+
+    function isSecretary() {
+      return signedIn() && getUserRole() == 'secretaria';
+    }
+
+    function isOwner(patientId) {
+      return signedIn()
+        && get(/databases/(default)/documents/patients/$(patientId)).data.userId == request.auth.uid;
+    }
+
+    match /patient-files/{patientId}/{fileName} {
+      allow read, write: if signedIn() && (isAdmin() || isSecretary() || isOwner(patientId));
+    }
+  }
+}
