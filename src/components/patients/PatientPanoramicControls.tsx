@@ -34,6 +34,13 @@ export default function PatientPanoramicControls({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const storageReady = !mockMode && !!storage;
 
+  const triggerFilePicker = () => {
+    if (!inputRef.current) return;
+    inputRef.current.value = '';
+    console.log('[Panoramic] Open file picker');
+    inputRef.current.click();
+  };
+
   useEffect(() => {
     setCurrentUrl(panoramicUrl || '');
     setCurrentName(panoramicName || '');
@@ -120,17 +127,17 @@ export default function PatientPanoramicControls({
         className="hidden"
         accept="application/pdf,.pdf"
         onChange={handleFileSelect}
+        onClick={() => console.log('[Panoramic] File input click')}
         disabled={uploading}
         ref={inputRef}
         aria-label="Adjuntar panor\u00e1mica"
       />
       <label
-        htmlFor={inputId}
-        onClick={() => console.log('[Panoramic] Open file picker')}
+        onClick={triggerFilePicker}
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
-            inputRef.current?.click();
+            triggerFilePicker();
           }
         }}
         role="button"
