@@ -50,7 +50,6 @@ export const PatientsProvider = ({ children }: { children: React.ReactNode }) =>
     const handleFocus = () => {
       if ((window as any).__dentifyFilePickerOpen) {
         console.log('[PatientsContext] Focus refresh skipped (file picker open)');
-        (window as any).__dentifyFilePickerOpen = false;
         return;
       }
       console.log('[PatientsContext] Window focused, refreshing data');
@@ -61,7 +60,6 @@ export const PatientsProvider = ({ children }: { children: React.ReactNode }) =>
       if (document.visibilityState === 'visible') {
         if ((window as any).__dentifyFilePickerOpen) {
           console.log('[PatientsContext] Visibility refresh skipped (file picker open)');
-          (window as any).__dentifyFilePickerOpen = false;
           return;
         }
         console.log('[PatientsContext] Tab visible, refreshing data');
