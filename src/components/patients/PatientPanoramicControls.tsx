@@ -67,7 +67,7 @@ export default function PatientPanoramicControls({
       const message = 'Storage no configurado.';
       toast.error(message);
       setErrorMessage(message);
-      e.target.value = '';
+      inputEl.value = '';
       return;
     }
 
@@ -76,7 +76,7 @@ export default function PatientPanoramicControls({
       const message = 'Solo se permite PDF para la panor\u00e1mica.';
       toast.error(message);
       setErrorMessage(message);
-      e.target.value = '';
+      inputEl.value = '';
       return;
     }
 
@@ -84,7 +84,7 @@ export default function PatientPanoramicControls({
       const message = 'El archivo no puede ser mayor a 10MB.';
       toast.error(message);
       setErrorMessage(message);
-      e.target.value = '';
+      inputEl.value = '';
       return;
     }
 
@@ -117,7 +117,7 @@ export default function PatientPanoramicControls({
     } finally {
       console.log('[Panoramic] Upload finished');
       setUploading(false);
-      e.target.value = '';
+      inputEl.value = '';
     }
   };
 
