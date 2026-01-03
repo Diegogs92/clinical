@@ -808,10 +808,10 @@ export default function AgendaPage() {
             <div className="hidden lg:block w-16 flex-shrink-0">
               <div className="sticky top-4">
                 {/* Espacio para header del día - debe coincidir exactamente con el header de las cards */}
-                <div className="h-[88px]"></div>
+                <div className="h-[72px]"></div>
                 <div className="space-y-0">
                   {timeSlots.filter((_, i) => i % 2 === 0).map((slot) => (
-                    <div key={slot} className="h-16 flex items-start text-sm font-semibold text-elegant-600 dark:text-elegant-300 pr-2">
+                    <div key={slot} className="h-12 flex items-start text-xs font-semibold text-elegant-600 dark:text-elegant-300 pr-2">
                       {slot}
                     </div>
                   ))}
@@ -828,7 +828,7 @@ export default function AgendaPage() {
               return (
                 <div
                   key={day.toISOString()}
-                  className={`card min-h-[400px] transition-all ${
+                  className={`card min-h-[320px] transition-all ${
                     isToday ? 'ring-2 ring-primary' : ''
                   }`}
                 >
@@ -899,7 +899,7 @@ export default function AgendaPage() {
                           onDragOver={(e) => handleDragOver(e, day, timeSlot)}
                           onDragLeave={handleDragLeave}
                           onDrop={(e) => handleDrop(e, day, timeSlot)}
-                          className={`h-8 border-t border-elegant-100 dark:border-elegant-800 transition-colors ${
+                          className={`h-6 border-t border-elegant-100 dark:border-elegant-800 transition-colors ${
                             isDragOverSlot ? 'bg-blue-100 dark:bg-blue-900/30 border-l-2 border-l-blue-400' : ''
                           } ${slotBlocked ? 'bg-red-50 dark:bg-red-900/10' : ''}`}
                         >

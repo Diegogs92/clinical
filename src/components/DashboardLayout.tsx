@@ -35,7 +35,7 @@ interface DashboardLayoutProps {
   fullWidth?: boolean;
 }
 
-export default function DashboardLayout({ children, mobileAction, fullWidth = false }: DashboardLayoutProps) {
+export default function DashboardLayout({ children, mobileAction, fullWidth = true }: DashboardLayoutProps) {
   const { user, userProfile, signOut } = useAuth();
   const { patients } = usePatients();
   const router = useRouter();
@@ -59,7 +59,7 @@ export default function DashboardLayout({ children, mobileAction, fullWidth = fa
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-pearl via-white to-secondary-lighter/15 dark:from-elegant-950 dark:via-elegant-900 dark:to-elegant-950">
 
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/90 dark:bg-elegant-900/90 border-b border-elegant-200/80 dark:border-elegant-800/80 shadow-sm">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className={`${fullWidth ? 'max-w-full px-3 sm:px-6 lg:px-8' : 'max-w-7xl mx-auto px-3 sm:px-6 lg:px-8'}`}>
           <div className="flex items-center justify-between h-12 md:h-14">
             <div className="flex items-center gap-2">
               <div className="flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-xl overflow-hidden">
