@@ -362,6 +362,14 @@ input[type="tel"],
     @apply px-4 py-3 align-middle text-elegant-800 dark:text-elegant-100 text-sm;
   }
 
+  .table-compact th {
+    @apply px-3 py-2;
+  }
+
+  .table-compact td {
+    @apply px-3 py-2;
+  }
+
   .table-skin tbody tr {
     @apply border-t border-elegant-100/60 dark:border-elegant-800/40 hover:bg-elegant-50/50 dark:hover:bg-elegant-800/20 transition-colors duration-150;
   }

@@ -192,10 +192,23 @@ export default function PatientList() {
       </Modal>
       {/* Vista Desktop: Tabla */}
       <div className="hidden md:block overflow-x-auto">
-        <table className="table-skin">
+        <table className="table-skin table-compact table-fixed">
+          <colgroup>
+            <col className="w-14" />
+            <col className="w-44" />
+            <col className="w-40" />
+            <col className="w-32" />
+            <col className="w-28" />
+            <col className="w-24" />
+            <col className="w-28" />
+            <col className="w-32" />
+            <col className="w-20" />
+            <col className="w-24" />
+            <col className="w-24" />
+          </colgroup>
           <thead>
             <tr>
-              <th className="w-20"></th>
+              <th className="w-14"></th>
               <th className="w-44">Adjuntar panor&aacute;mica</th>
               <th>Apellido</th>
               <th>Nombre</th>

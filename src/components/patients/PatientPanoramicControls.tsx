@@ -173,6 +173,9 @@ export default function PatientPanoramicControls({
   };
 
   const isPdf = currentName.toLowerCase().endsWith('.pdf') || currentUrl.toLowerCase().includes('.pdf');
+  const compactButtonClass = compact
+    ? 'px-2 py-1.5 text-xs'
+    : 'px-3 py-2 text-sm';
 
   return (
     <div className={compact ? 'flex items-center gap-2' : 'flex flex-wrap items-center gap-2'}>
@@ -199,7 +202,7 @@ export default function PatientPanoramicControls({
           }}
           role="button"
           tabIndex={0}
-          className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-elegant-200 dark:border-elegant-700 text-elegant-700 dark:text-elegant-200 hover:border-primary/60 hover:text-primary-dark dark:hover:text-white transition-all ${
+          className={`inline-flex items-center gap-2 rounded-lg font-medium border border-elegant-200 dark:border-elegant-700 text-elegant-700 dark:text-elegant-200 hover:border-primary/60 hover:text-primary-dark dark:hover:text-white transition-all ${compactButtonClass} ${
             uploading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
           }`}
           aria-disabled={uploading || deleting || !storageReady}
@@ -213,7 +216,7 @@ export default function PatientPanoramicControls({
           <button
             type="button"
             onClick={() => setViewerOpen(true)}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-dark underline-offset-4 hover:underline"
+            className={`inline-flex items-center gap-2 font-semibold text-primary hover:text-primary-dark underline-offset-4 hover:underline ${compact ? 'text-xs' : 'text-sm'}`}
           >
             <Eye className="w-4 h-4" />
             Ver PDF
@@ -222,7 +225,7 @@ export default function PatientPanoramicControls({
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700 underline-offset-4 hover:underline disabled:opacity-60 disabled:cursor-not-allowed"
+            className={`inline-flex items-center gap-1.5 font-semibold text-red-600 hover:text-red-700 underline-offset-4 hover:underline disabled:opacity-60 disabled:cursor-not-allowed ${compact ? 'text-xs' : 'text-sm'}`}
           >
             <Trash2 className="w-4 h-4" />
             Eliminar PDF
