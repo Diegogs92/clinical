@@ -124,17 +124,25 @@ export default function PatientPanoramicControls({
         ref={inputRef}
         aria-label="Adjuntar panor\u00e1mica"
       />
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
+      <label
+        htmlFor={inputId}
+        onClick={() => console.log('[Panoramic] Open file picker')}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
+        role="button"
+        tabIndex={0}
         className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-elegant-200 dark:border-elegant-700 text-elegant-700 dark:text-elegant-200 hover:border-primary/60 hover:text-primary-dark dark:hover:text-white transition-all ${
           uploading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
         }`}
-        disabled={uploading || !storageReady}
+        aria-disabled={uploading || !storageReady}
       >
         <Paperclip className="w-4 h-4" />
         {uploading ? 'Subiendo...' : 'Adjuntar panor\u00e1mica'}
-      </button>
+      </label>
       {currentUrl && (
         <button
           type="button"
