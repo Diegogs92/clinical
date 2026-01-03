@@ -32,9 +32,10 @@ interface DashboardLayoutProps {
     icon: LucideIcon;
     onPress: () => void;
   };
+  fullWidth?: boolean;
 }
 
-export default function DashboardLayout({ children, mobileAction }: DashboardLayoutProps) {
+export default function DashboardLayout({ children, mobileAction, fullWidth = false }: DashboardLayoutProps) {
   const { user, userProfile, signOut } = useAuth();
   const { patients } = usePatients();
   const router = useRouter();
@@ -148,7 +149,7 @@ export default function DashboardLayout({ children, mobileAction }: DashboardLay
         )}
       </header>
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 md:py-6 pb-32 md:pb-12">
+      <main className={`flex-1 w-full ${fullWidth ? 'max-w-full px-3 sm:px-6 lg:px-8' : 'max-w-7xl mx-auto px-3 sm:px-6 lg:px-8'} py-3 md:py-6 pb-32 md:pb-12`}>
         {children}
       </main>
 

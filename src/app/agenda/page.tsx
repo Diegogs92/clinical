@@ -132,7 +132,7 @@ export default function AgendaPage() {
   // Calcular rangos de fechas
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
-  const weekDays = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i)); // Solo lunes a viernes
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -710,7 +710,7 @@ export default function AgendaPage() {
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout fullWidth>
       <div className="space-y-4">
         {/* Header */}
         <div className="flex flex-col gap-3">
@@ -820,7 +820,7 @@ export default function AgendaPage() {
             </div>
 
             {/* Grid de días */}
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-3">
             {weekDays.map((day) => {
               const { dayAppointments, dayBlocked, dayBirthdays } = getEventsForDay(day);
               const isToday = isSameDay(day, new Date());
