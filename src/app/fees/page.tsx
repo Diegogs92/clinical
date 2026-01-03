@@ -54,7 +54,6 @@ export default function FeesPage() {
       if (appointment.status !== 'completed') return acc;
       const paid = paymentTotalsByAppointment.get(appointment.id) || 0;
       const deposit = appointment.deposit || 0;
-      if (appointment.status === 'cancelled' && paid === 0 && deposit === 0) return acc;
       const remaining = Math.max(0, appointment.fee - deposit - paid);
       if (remaining > 0) {
         acc.amount += remaining;
