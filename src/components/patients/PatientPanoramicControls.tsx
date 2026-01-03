@@ -44,6 +44,13 @@ export default function PatientPanoramicControls({
     if (!files || files.length === 0) return;
     const file = files[0];
     setErrorMessage('');
+    console.log('[Panoramic] Selected file:', {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      storageReady,
+      patientId,
+    });
 
     if (!storageReady) {
       const message = 'Storage no configurado.';
@@ -72,12 +79,15 @@ export default function PatientPanoramicControls({
 
     try {
       setUploading(true);
+      console.log('[Panoramic] Upload started');
       const uploadedFile = await uploadPatientFile(patientId, file);
+      console.log('[Panoramic] Upload response:', uploadedFile);
       if (!uploadedFile.url) {
         throw new Error('Storage no configurado');
       }
       setCurrentUrl(uploadedFile.url);
       setCurrentName(uploadedFile.name);
+      console.log('[Panoramic] Updating patient record');
       await updatePatient(patientId, {
         panoramicUrl: uploadedFile.url,
         panoramicName: uploadedFile.name,
@@ -89,11 +99,12 @@ export default function PatientPanoramicControls({
       await refreshPatients();
       toast.success('Panorámica subida correctamente.');
     } catch (error) {
-      console.error('Panoramic upload error:', error);
+      console.error('[Panoramic] Upload error:', error);
       const message = error instanceof Error ? error.message : 'Error al subir la panorámica.';
       toast.error(message);
       setErrorMessage(message);
     } finally {
+      console.log('[Panoramic] Upload finished');
       setUploading(false);
       e.target.value = '';
     }
