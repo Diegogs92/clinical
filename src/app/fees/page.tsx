@@ -6,13 +6,11 @@ import { usePayments } from '@/contexts/PaymentsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
-import { Appointment, Payment } from '@/types';
-import { createPayment, updatePayment, deletePayment } from '@/lib/payments';
+import { Appointment } from '@/types';
+import { createPayment } from '@/lib/payments';
 import { useToast } from '@/contexts/ToastContext';
-import { useConfirm } from '@/contexts/ConfirmContext';
-import { DollarSign, Edit2, Trash2 } from 'lucide-react';
+import { DollarSign } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
-import { combineDateAndTime } from '@/lib/dateUtils';
 import { formatCurrency } from '@/lib/formatCurrency';
 export const dynamic = 'force-dynamic';
 
@@ -20,9 +18,6 @@ export default function FeesPage() {
   const { user } = useAuth();
   const { payments, pendingPayments: pending, refreshPayments, refreshPendingPayments } = usePayments();
   const { appointments } = useAppointments();
-  const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
-  const [editAmount, setEditAmount] = useState('');
-  const [loading, setLoading] = useState(false);
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; appointment?: Appointment; mode: 'total' | 'partial'; amount: string }>({
     open: false,
     appointment: undefined,
@@ -31,7 +26,6 @@ export default function FeesPage() {
   });
   const [submittingPayment, setSubmittingPayment] = useState(false);
   const toast = useToast();
-  const confirm = useConfirm();
 
   // Calcular ingresos totales: pagos + señas
   const paymentsRevenue = payments
@@ -85,10 +79,11 @@ export default function FeesPage() {
     { amount: 0, count: 0 }
   );
 
-  const handleEdit = (payment: Payment) => {
-    setEditingPayment(payment);
-    setEditAmount(payment.amount.toString());
-  };
+  const patientsWithDebt = new Set(
+    pendingAppointments
+      .map(({ appointment }) => appointment.patientId)
+      .filter((id): id is string => Boolean(id))
+  );
 
   const openPaymentDialog = (appointment: Appointment) => {
     if (!appointment.fee) {
@@ -163,60 +158,6 @@ export default function FeesPage() {
     }
   };
 
-  const handleSaveEdit = async () => {
-    if (!editingPayment) return;
-    const sanitized = editAmount.replace(/\./g, '').replace(',', '.');
-    const amountNum = Number(sanitized);
-
-    if (!Number.isFinite(amountNum) || amountNum <= 0) {
-      toast.error('Ingresa un monto válido');
-      return;
-    }
-
-    const confirmed = await confirm({
-      title: 'Confirmar cambios',
-      description: `¿Actualizar el honorario de ${editingPayment.patientName} de $${formatCurrency(editingPayment.amount)} a $${formatCurrency(amountNum)}?`,
-      confirmText: 'Guardar cambios',
-      tone: 'success',
-    });
-    if (!confirmed) return;
-
-    setLoading(true);
-    try {
-      await updatePayment(editingPayment.id, { amount: amountNum });
-      await refreshPayments();
-      await refreshPendingPayments();
-      toast.success('Honorario actualizado correctamente');
-      setEditingPayment(null);
-      setEditAmount('');
-    } catch (error) {
-      console.error('Error al actualizar honorario:', error);
-      toast.error('Error al actualizar honorario');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = async (payment: Payment) => {
-    const confirmed = await confirm({
-      title: 'Eliminar honorario',
-      description: `¿Eliminar el honorario de $${formatCurrency(payment.amount)} de ${payment.patientName}?`,
-      confirmText: 'Eliminar',
-      tone: 'danger',
-    });
-    if (!confirmed) return;
-
-    try {
-      await deletePayment(payment.id);
-      await refreshPayments();
-      await refreshPendingPayments();
-      toast.success('Honorario eliminado correctamente');
-    } catch (error) {
-      console.error('Error al eliminar honorario:', error);
-      toast.error('Error al eliminar honorario');
-    }
-  };
-
   return (
     <ProtectedRoute>
       <DashboardLayout>
@@ -276,7 +217,7 @@ export default function FeesPage() {
                     <th>Paciente</th>
                     <th>Monto</th>
                     <th>Fecha</th>
-                    <th className="text-right">Acciones</th>
+                    <th>Deuda</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -285,25 +226,10 @@ export default function FeesPage() {
                       <td>{p.patientName}</td>
                       <td>${formatCurrency(p.amount)}</td>
                       <td>{new Date(p.date).toLocaleDateString()}</td>
-                      <td className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => handleEdit(p)}
-                            className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-                            aria-label="Editar honorario"
-                            title="Editar honorario"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(p)}
-                            className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                            aria-label="Eliminar honorario"
-                            title="Eliminar honorario"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                      <td>
+                        {p.patientId && patientsWithDebt.has(p.patientId)
+                          ? 'Con deuda'
+                          : 'Sin deuda'}
                       </td>
                     </tr>
                   ))}
@@ -449,54 +375,6 @@ export default function FeesPage() {
           })()}
         </Modal>
 
-        <Modal
-          open={!!editingPayment}
-          onClose={() => { setEditingPayment(null); setEditAmount(''); }}
-          title="Editar honorario"
-          maxWidth="max-w-md"
-        >
-          {editingPayment && (
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <p className="text-sm text-elegant-600 dark:text-elegant-300">{editingPayment.patientName}</p>
-                <p className="text-xs text-elegant-500 dark:text-elegant-400">
-                  Fecha: {new Date(editingPayment.date).toLocaleDateString()}
-                </p>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-elegant-600 dark:text-elegant-300">Monto</label>
-                <input
-                  type="number"
-                  min={0}
-                  value={editAmount}
-                  onChange={(e) => setEditAmount(e.target.value)}
-                  className="input-field text-sm py-2"
-                  placeholder="Ingresar monto"
-                  autoFocus
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  className="btn-secondary text-sm px-4 py-2"
-                  onClick={() => { setEditingPayment(null); setEditAmount(''); }}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  className="btn-primary text-sm px-4 py-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                  onClick={handleSaveEdit}
-                  disabled={loading}
-                >
-                  {loading ? 'Guardando...' : 'Guardar'}
-                </button>
-              </div>
-            </div>
-          )}
-        </Modal>
       </DashboardLayout>
     </ProtectedRoute>
   );
