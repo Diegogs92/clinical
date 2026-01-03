@@ -38,6 +38,7 @@ export default function PatientPanoramicControls({
     if (!inputRef.current) return;
     inputRef.current.value = '';
     console.log('[Panoramic] Open file picker');
+    (window as any).__dentifyFilePickerOpen = true;
     inputRef.current.click();
   };
 
@@ -54,6 +55,7 @@ export default function PatientPanoramicControls({
     if (!files || files.length === 0) return;
     const file = files[0];
     setErrorMessage('');
+    (window as any).__dentifyFilePickerOpen = false;
     console.log('[Panoramic] Input event:', e.type);
     console.log('[Panoramic] Selected file:', {
       name: file.name,
