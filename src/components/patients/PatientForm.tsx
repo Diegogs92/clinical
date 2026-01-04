@@ -10,7 +10,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Patient, Insurance } from '@/types';
 import { useToast } from '@/contexts/ToastContext';
-import PatientFileUpload from './PatientFileUpload';
 import PatientPanoramicControls from './PatientPanoramicControls';
 import { usePatients } from '@/contexts/PatientsContext';
 
@@ -321,15 +320,6 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
             }}
           />
         </div>
-      )}
-
-      {patientId && initialPatient && (
-        <PatientFileUpload
-          patientId={patientId}
-          onUpload={(file) => {
-            toast.success(`Archivo "${file.name}" subido correctamente`);
-          }}
-        />
       )}
 
       <div className="flex justify-end pt-2">

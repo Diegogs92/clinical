@@ -20,22 +20,6 @@ export default function PatientDetailPage() {
             <Link href="/patients" className="text-sm text-primary-dark hover:underline">Volver</Link>
           </div>
           <PatientForm patientId={patientId} />
-          <div className="grid md:grid-cols-2 gap-6 pt-8">
-            <div className="card">
-              <h2 className="font-semibold text-primary-dark mb-3">Archivos</h2>
-              <p className="text-sm text-secondary mb-2">(Funcionalidad de subida pendiente de configuración Firebase Storage)</p>
-              <ul className="text-sm space-y-1 text-secondary">
-                <li>No hay archivos aún.</li>
-              </ul>
-            </div>
-            <div className="card">
-              <h2 className="font-semibold text-primary-dark mb-3">Historial Clínico</h2>
-              <p className="text-sm text-secondary">(Se implementará tras agenda y autorizaciones)</p>
-              <ul className="text-sm space-y-1 text-secondary">
-                <li>Sin consultas registradas.</li>
-              </ul>
-            </div>
-          </div>
         </div>
       </DashboardLayout>
     </ProtectedRoute>

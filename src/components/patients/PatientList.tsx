@@ -1,6 +1,5 @@
 ﻿'use client';
 
-import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { deletePatient } from '@/lib/patients';
@@ -28,6 +27,7 @@ export default function PatientList() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [isNewPatientModalOpen, setIsNewPatientModalOpen] = useState(false);
+  const [editPatientModal, setEditPatientModal] = useState<{ open: boolean; patientId?: string; patientName?: string }>({ open: false });
   const [historyModal, setHistoryModal] = useState<{ open: boolean; patientId?: string; patientName?: string }>({ open: false });
   const { patients, loading: patientsLoading, refreshPatients } = usePatients();
   const { appointments } = useAppointments();
@@ -190,6 +190,23 @@ export default function PatientList() {
           }}
         />
       </Modal>
+      <Modal
+        open={editPatientModal.open}
+        onClose={() => setEditPatientModal({ open: false })}
+        title={`Editar paciente${editPatientModal.patientName ? `: ${editPatientModal.patientName}` : ''}`}
+        maxWidth="max-w-2xl"
+      >
+        {editPatientModal.patientId && (
+          <PatientForm
+            patientId={editPatientModal.patientId}
+            onSuccess={async () => {
+              setEditPatientModal({ open: false });
+              await refreshPatients();
+              loadData();
+            }}
+          />
+        )}
+      </Modal>
       {/* Vista Desktop: Tabla */}
       <div className="hidden md:block overflow-x-auto">
         <table className="table-skin table-compact table-fixed">
@@ -232,9 +249,14 @@ export default function PatientList() {
                 <tr key={p.id} className="cursor-pointer hover:bg-elegant-50 dark:hover:bg-elegant-800/30 transition-colors">
                   <td onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-1">
-                      <Link href={`/patients/${p.id}`} className="icon-btn-primary" aria-label="Editar paciente">
+                      <button
+                        type="button"
+                        onClick={() => setEditPatientModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}
+                        className="icon-btn-primary"
+                        aria-label="Editar paciente"
+                      >
                         <Edit className="w-4 h-4" />
-                      </Link>
+                      </button>
                       <button onClick={() => handleDelete(p.id)} className="icon-btn-danger" aria-label="Eliminar paciente">
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -357,13 +379,14 @@ export default function PatientList() {
                 />
               </div>
               <div className="flex items-center gap-2">
-                <Link
-                  href={`/patients/${p.id}`}
+                <button
+                  type="button"
+                  onClick={() => setEditPatientModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}
                   className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark hover:shadow-lg hover:scale-105 transition-all duration-200 active:scale-[0.98]"
                 >
                   <Edit className="w-4 h-4" />
                   Editar
-                </Link>
+                </button>
                 <button
                   onClick={() => handleDelete(p.id)}
                   className="flex items-center justify-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/30 hover:shadow-lg hover:scale-105 transition-all duration-200 active:scale-[0.98]"
