@@ -306,7 +306,7 @@ export default function FeesPage() {
               <div className="mb-3">
                 <h2 className="font-semibold text-primary-dark dark:text-white">Cobros</h2>
                 <p className="text-xs text-elegant-500 dark:text-elegant-400">
-                  Registro de todos los ingresos recibidos.
+                  Registro de todos los ingresos recibidos
                 </p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
@@ -422,7 +422,7 @@ export default function FeesPage() {
                     <th>Paciente</th>
                     <th>Saldo pendiente</th>
                     <th>Fecha</th>
-                    <th className="text-right">Acciones</th>
+                    <th className="text-center">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -454,7 +454,7 @@ export default function FeesPage() {
                       <td>{appointment.patientName}</td>
                       <td>${formatCurrency(remaining)}</td>
                       <td>{new Date(appointment.date).toLocaleDateString()}</td>
-                      <td className="text-right">
+                      <td className="text-center">
                         <button
                           onClick={() => openPaymentDialog(appointment)}
                           className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
