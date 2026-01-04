@@ -1,7 +1,7 @@
 'use client';
 
 import { CheckCircle2 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface SuccessModalProps {
   isOpen: boolean;
@@ -18,14 +18,20 @@ export default function SuccessModal({
   message,
   duration = 2000
 }: SuccessModalProps) {
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => {
-        onClose();
+        onCloseRef.current();
       }, duration);
       return () => clearTimeout(timer);
     }
-  }, [isOpen, onClose, duration]);
+  }, [isOpen, duration]);
 
   if (!isOpen) return null;
 
