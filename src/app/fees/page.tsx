@@ -303,7 +303,12 @@ export default function FeesPage() {
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             <div className="card overflow-x-auto">
-              <h2 className="font-semibold text-primary-dark dark:text-white mb-3">Cobros</h2>
+              <div className="mb-3">
+                <h2 className="font-semibold text-primary-dark dark:text-white">Cobros</h2>
+                <p className="text-xs text-elegant-500 dark:text-elegant-400">
+                  Registro de todos los ingresos recibidos.
+                </p>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
                 <input
                   type="text"
@@ -376,6 +381,41 @@ export default function FeesPage() {
                   Pacientes atendidos con saldo sin completar
                 </p>
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
+                <input
+                  type="text"
+                  placeholder="Paciente (apellido, nombre o DNI)"
+                  className="input-field text-sm"
+                  value={filters.query}
+                  onChange={(event) => setFilters((prev) => ({ ...prev, query: event.target.value }))}
+                />
+                <select
+                  className="input-field text-sm"
+                  value={filters.professionalId}
+                  onChange={(event) => setFilters((prev) => ({ ...prev, professionalId: event.target.value }))}
+                >
+                  <option value="">Todos los profesionales</option>
+                  {professionals.map((professional) => (
+                    <option key={professional.uid} value={professional.uid}>
+                      {professional.displayName || professional.email || professional.uid}
+                    </option>
+                  ))}
+                </select>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="date"
+                    className="input-field text-sm"
+                    value={filters.startDate}
+                    onChange={(event) => setFilters((prev) => ({ ...prev, startDate: event.target.value }))}
+                  />
+                  <input
+                    type="date"
+                    className="input-field text-sm"
+                    value={filters.endDate}
+                    onChange={(event) => setFilters((prev) => ({ ...prev, endDate: event.target.value }))}
+                  />
+                </div>
+              </div>
               <table className="table-skin">
                 <thead>
                   <tr>
@@ -386,7 +426,29 @@ export default function FeesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {pendingAppointments.slice(0, 10).map(({ appointment, remaining }) => {
+                  {pendingAppointments
+                    .filter(({ appointment }) => {
+                      if (filters.professionalId && appointment.userId !== filters.professionalId) {
+                        return false;
+                      }
+                      if (filters.startDate || filters.endDate) {
+                        const rowDate = new Date(appointment.date);
+                        if (filters.startDate && rowDate < new Date(`${filters.startDate}T00:00:00`)) {
+                          return false;
+                        }
+                        if (filters.endDate && rowDate > new Date(`${filters.endDate}T23:59:59`)) {
+                          return false;
+                        }
+                      }
+                      if (!filters.query.trim()) return true;
+                      const patient = appointment.patientId ? patientsById.get(appointment.patientId) : undefined;
+                      const patientLabel = patient
+                        ? `${patient.lastName} ${patient.firstName} ${patient.dni}`.toLowerCase()
+                        : `${appointment.patientName || ''}`.toLowerCase();
+                      return patientLabel.includes(filters.query.trim().toLowerCase());
+                    })
+                    .slice(0, 10)
+                    .map(({ appointment, remaining }) => {
                     return (
                     <tr key={appointment.id}>
                       <td>{appointment.patientName}</td>
