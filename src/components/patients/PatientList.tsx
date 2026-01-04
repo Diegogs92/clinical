@@ -213,8 +213,7 @@ export default function PatientList() {
           <colgroup>
             <col className="w-14" />
             <col className="w-44" />
-            <col className="w-40" />
-            <col className="w-32" />
+            <col className="w-56" />
             <col className="w-28" />
             <col className="w-24" />
             <col className="w-28" />
@@ -227,8 +226,7 @@ export default function PatientList() {
             <tr>
               <th className="w-14"></th>
               <th className="w-44">Adjuntar panor&aacute;mica</th>
-              <th>Apellido</th>
-              <th>Nombre</th>
+              <th>Paciente</th>
               <th>DNI</th>
               <th>Edad</th>
               <th>Cumplea&ntilde;os</th>
@@ -270,8 +268,9 @@ export default function PatientList() {
                       compact
                     />
                   </td>
-                  <td className="font-medium" onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>{p.lastName}</td>
-                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>{p.firstName}</td>
+                  <td className="font-medium" onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>
+                    {p.lastName} {p.firstName}
+                  </td>
                   <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>{p.dni}</td>
                   <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>
                     <span className="text-elegant-700 dark:text-elegant-300">{age}</span>
@@ -308,7 +307,7 @@ export default function PatientList() {
             })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={11} className="p-4 text-center text-black dark:text-white">Sin resultados</td>
+                <td colSpan={10} className="p-4 text-center text-black dark:text-white">Sin resultados</td>
               </tr>
             )}
           </tbody>
