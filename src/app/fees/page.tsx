@@ -5,19 +5,29 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { usePayments } from '@/contexts/PaymentsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useState } from 'react';
-import { Appointment, Payment } from '@/types';
+import { usePatients } from '@/contexts/PatientsContext';
+import { useEffect, useMemo, useState } from 'react';
+import { Appointment, Payment, UserProfile } from '@/types';
 import { createPayment } from '@/lib/payments';
 import { useToast } from '@/contexts/ToastContext';
 import { DollarSign } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { formatCurrency } from '@/lib/formatCurrency';
+import { listProfessionals } from '@/lib/users';
 export const dynamic = 'force-dynamic';
 
 export default function FeesPage() {
   const { user } = useAuth();
   const { payments, pendingPayments: pending, refreshPayments, refreshPendingPayments } = usePayments();
   const { appointments } = useAppointments();
+  const { patients } = usePatients();
+  const [professionals, setProfessionals] = useState<UserProfile[]>([]);
+  const [filters, setFilters] = useState({
+    query: '',
+    professionalId: '',
+    startDate: '',
+    endDate: '',
+  });
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; appointment?: Appointment; mode: 'total' | 'partial'; amount: string }>({
     open: false,
     appointment: undefined,
@@ -26,6 +36,19 @@ export default function FeesPage() {
   });
   const [submittingPayment, setSubmittingPayment] = useState(false);
   const toast = useToast();
+
+  useEffect(() => {
+    const loadProfessionals = async () => {
+      try {
+        const list = await listProfessionals();
+        setProfessionals(list);
+      } catch (error) {
+        console.error('[Fees] Error loading professionals:', error);
+      }
+    };
+
+    loadProfessionals();
+  }, []);
 
   // Calcular ingresos totales: pagos + señas
   const paymentsRevenue = payments
@@ -56,6 +79,76 @@ export default function FeesPage() {
     const deposit = appointment.deposit || 0;
     return Math.max(0, (appointment.fee || 0) - deposit - paid);
   };
+
+  const patientsById = useMemo(() => {
+    return patients.reduce((acc, patient) => {
+      acc.set(patient.id, patient);
+      return acc;
+    }, new Map<string, (typeof patients)[number]>());
+  }, [patients]);
+
+  const cobros = useMemo(() => {
+    const paymentRows = payments
+      .filter(p => p.status === 'completed' || p.status === 'pending')
+      .map((payment) => {
+        const patient = payment.patientId ? patientsById.get(payment.patientId) : undefined;
+        const patientName = patient ? `${patient.lastName} ${patient.firstName}` : payment.patientName || 'Paciente';
+        return {
+          id: payment.id,
+          type: 'payment' as const,
+          patientId: payment.patientId,
+          patientName,
+          patientDni: patient?.dni || '',
+          amount: payment.amount,
+          date: payment.date,
+          userId: payment.userId,
+        };
+      });
+
+    const depositRows = appointments
+      .filter((appointment) => appointment.appointmentType === 'patient' && appointment.deposit && appointment.deposit > 0)
+      .map((appointment) => {
+        const patient = appointment.patientId ? patientsById.get(appointment.patientId) : undefined;
+        const patientName = appointment.patientName || (patient ? `${patient.lastName} ${patient.firstName}` : 'Paciente');
+        return {
+          id: `deposit-${appointment.id}`,
+          type: 'deposit' as const,
+          patientId: appointment.patientId,
+          patientName,
+          patientDni: patient?.dni || '',
+          amount: appointment.deposit || 0,
+          date: appointment.date,
+          userId: appointment.userId,
+        };
+      });
+
+    return [...paymentRows, ...depositRows];
+  }, [appointments, patientsById, payments]);
+
+  const filteredCobros = useMemo(() => {
+    const query = filters.query.trim().toLowerCase();
+    const start = filters.startDate ? new Date(`${filters.startDate}T00:00:00`) : null;
+    const end = filters.endDate ? new Date(`${filters.endDate}T23:59:59`) : null;
+
+    return cobros
+      .filter((row) => {
+        if (filters.professionalId && row.userId !== filters.professionalId) {
+          return false;
+        }
+        if (start || end) {
+          const rowDate = new Date(row.date);
+          if (start && rowDate < start) return false;
+          if (end && rowDate > end) return false;
+        }
+        if (!query) return true;
+        const patient = row.patientId ? patientsById.get(row.patientId) : undefined;
+        const patientLabel = patient
+          ? `${patient.lastName} ${patient.firstName} ${patient.dni}`.toLowerCase()
+          : `${row.patientName} ${row.patientDni}`.toLowerCase();
+        return patientLabel.includes(query);
+      })
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [cobros, filters, patientsById]);
 
   const pendingAppointments = appointments
     .filter(appointment => appointment.fee && appointment.status === 'completed')
@@ -191,7 +284,7 @@ export default function FeesPage() {
               <div className="relative z-10">
                 <div className="text-[12px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-1 truncate">Cobros</div>
                 <div className="text-xl md:text-3xl font-bold tabular-nums text-black dark:text-white mb-0.5 md:mb-1">
-                  {payments.length}
+                  {cobros.length}
                 </div>
               </div>
             </div>
@@ -210,7 +303,42 @@ export default function FeesPage() {
           </div>
           <div className="grid md:grid-cols-2 gap-4">
             <div className="card overflow-x-auto">
-              <h2 className="font-semibold text-primary-dark dark:text-white mb-3">Últimos Cobros</h2>
+              <h2 className="font-semibold text-primary-dark dark:text-white mb-3">Cobros</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
+                <input
+                  type="text"
+                  placeholder="Paciente (apellido, nombre o DNI)"
+                  className="input-field text-sm"
+                  value={filters.query}
+                  onChange={(event) => setFilters((prev) => ({ ...prev, query: event.target.value }))}
+                />
+                <select
+                  className="input-field text-sm"
+                  value={filters.professionalId}
+                  onChange={(event) => setFilters((prev) => ({ ...prev, professionalId: event.target.value }))}
+                >
+                  <option value="">Todos los profesionales</option>
+                  {professionals.map((professional) => (
+                    <option key={professional.uid} value={professional.uid}>
+                      {professional.displayName || professional.email || professional.uid}
+                    </option>
+                  ))}
+                </select>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="date"
+                    className="input-field text-sm"
+                    value={filters.startDate}
+                    onChange={(event) => setFilters((prev) => ({ ...prev, startDate: event.target.value }))}
+                  />
+                  <input
+                    type="date"
+                    className="input-field text-sm"
+                    value={filters.endDate}
+                    onChange={(event) => setFilters((prev) => ({ ...prev, endDate: event.target.value }))}
+                  />
+                </div>
+              </div>
               <table className="table-skin">
                 <thead>
                   <tr>
@@ -221,19 +349,19 @@ export default function FeesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {payments.slice(0, 10).map(p => (
-                    <tr key={p.id}>
-                      <td>{p.patientName}</td>
-                      <td>${formatCurrency(p.amount)}</td>
-                      <td>{new Date(p.date).toLocaleDateString()}</td>
+                  {filteredCobros.slice(0, 20).map((row) => (
+                    <tr key={row.id}>
+                      <td>{row.patientName}</td>
+                      <td>${formatCurrency(row.amount)}</td>
+                      <td>{new Date(row.date).toLocaleDateString()}</td>
                       <td>
-                        {p.patientId && patientsWithDebt.has(p.patientId)
+                        {row.patientId && patientsWithDebt.has(row.patientId)
                           ? 'Con deuda'
                           : 'Sin deuda'}
                       </td>
                     </tr>
                   ))}
-                  {payments.length === 0 && (
+                  {filteredCobros.length === 0 && (
                     <tr>
                       <td colSpan={4} className="p-4 text-center text-black dark:text-white">Sin registros</td>
                     </tr>
