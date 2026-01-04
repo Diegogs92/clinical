@@ -173,6 +173,7 @@ export default function PatientPanoramicControls({
       });
       setCurrentUrl('');
       setCurrentName('');
+      setViewerOpen(false);
       await refreshPatients();
       setSuccessModal({
         show: true,
