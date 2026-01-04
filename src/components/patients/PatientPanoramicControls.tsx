@@ -146,9 +146,26 @@ export default function PatientPanoramicControls({
     });
     if (!confirmed) return;
 
+    let shouldClear = true;
     try {
       setDeleting(true);
       await deletePatientFileByUrl(currentUrl);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al eliminar la panorámica.';
+      console.error('[Panoramic] Delete error:', error);
+      if (!message.includes('object-not-found')) {
+        toast.error(message);
+        setErrorMessage(message);
+        shouldClear = false;
+      }
+    }
+
+    if (!shouldClear) {
+      setDeleting(false);
+      return;
+    }
+
+    try {
       await updatePatient(patientId, {
         panoramicUrl: '',
         panoramicName: '',
@@ -162,11 +179,6 @@ export default function PatientPanoramicControls({
         title: 'Panorámica eliminada',
         message: 'El PDF se eliminó correctamente.',
       });
-    } catch (error) {
-      console.error('[Panoramic] Delete error:', error);
-      const message = error instanceof Error ? error.message : 'Error al eliminar la panorámica.';
-      toast.error(message);
-      setErrorMessage(message);
     } finally {
       setDeleting(false);
     }
