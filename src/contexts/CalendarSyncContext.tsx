@@ -311,7 +311,12 @@ export function CalendarSyncProvider({ children }: Props) {
     eventId?: string,
     officeColorId?: string
   ): Promise<string | null> => {
-    if (!isConnected || !user) {
+    if (!user) {
+      console.warn('[CalendarSync] No conectado a Google Calendar');
+      return null;
+    }
+    const isTargetCurrentUser = !appointment.userId || appointment.userId === user.uid;
+    if (!isConnected && isTargetCurrentUser) {
       console.warn('[CalendarSync] No conectado a Google Calendar');
       return null;
     }
@@ -336,7 +341,7 @@ export function CalendarSyncProvider({ children }: Props) {
       if (!response.ok) {
         const errorData = await response.json();
         console.error('[CalendarSync] Error del servidor:', errorData);
-        if (response.status === 401) {
+        if (response.status === 401 && isTargetCurrentUser) {
           setIsConnected(false);
           setIsTokenExpired(true);
         }

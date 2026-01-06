@@ -19,8 +19,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       officeColorId?: string;
     };
 
-    const uid = await requireUserId(req);
-    const refreshToken = await getRefreshToken(uid);
+    const requesterUid = await requireUserId(req);
+    const targetUid = appointment?.userId || requesterUid;
+    const refreshToken = await getRefreshToken(targetUid);
     if (!refreshToken) {
       return res.status(401).json({ error: 'Google Calendar no esta conectado', code: 'calendar_not_connected' });
     }
