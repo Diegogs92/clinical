@@ -61,7 +61,7 @@ export default function RootLayout({
                         <CalendarSyncProvider>
                           <GlobalLoader />
                           {children}
-                          <Toaster position="top-center" richColors closeButton />
+                          <Toaster position="top-center" richColors closeButton className="toaster-centered" />
                         </CalendarSyncProvider>
                       </PaymentsProvider>
                     </AppointmentsProvider>

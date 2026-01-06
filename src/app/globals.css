@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+[data-sonner-toaster].toaster-centered {
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translate(-50%, -50%) !important;
+  pointer-events: none;
+}
+
+[data-sonner-toaster].toaster-centered [data-sonner-toast] {
+  pointer-events: auto;
+}
+
 :root {
   --color-primary: #0EA5E9;
   --color-primary-dark: #0284C7;
