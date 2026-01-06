@@ -124,7 +124,7 @@ export default function PatientList() {
   }, [loadData]);
 
   const filtered = patients.filter(p =>
-    `${p.lastName} ${p.firstName}`.toLowerCase().includes(search.toLowerCase()) || p.dni.includes(search)
+    `${p.lastName}, ${p.firstName}`.toLowerCase().includes(search.toLowerCase()) || p.dni.includes(search)
   );
 
   const handleDelete = async (id: string) => {
@@ -249,7 +249,7 @@ export default function PatientList() {
                     <div className="flex items-center gap-1">
                       <button
                         type="button"
-                        onClick={() => setEditPatientModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}
+                        onClick={() => setEditPatientModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` })}
                         className="icon-btn-primary"
                         aria-label="Editar paciente"
                       >
@@ -268,23 +268,23 @@ export default function PatientList() {
                       compact
                     />
                   </td>
-                  <td className="font-medium" onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>
-                    {p.lastName} {p.firstName}
+                  <td className="font-medium" onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` })}>
+                    {p.lastName}, {p.firstName}
                   </td>
-                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>{p.dni}</td>
-                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>
+                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` })}>{p.dni}</td>
+                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` })}>
                     <span className="text-elegant-700 dark:text-elegant-300">{age}</span>
                   </td>
-                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>
+                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` })}>
                     <span className="text-elegant-700 dark:text-elegant-300">{nextBirthday}</span>
                   </td>
-                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>{p.phone}</td>
-                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>
+                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` })}>{p.phone}</td>
+                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` })}>
                     <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs font-semibold">
                       {patientAppts.length}
                     </span>
                   </td>
-                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>
+                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` })}>
                     {totalPaid > 0 ? (
                       <span className="text-green-600 dark:text-green-400 font-semibold">
                         ${formatCurrency(totalPaid)}
@@ -293,7 +293,7 @@ export default function PatientList() {
                       <span className="text-secondary dark:text-gray-500">-</span>
                     )}
                   </td>
-                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}>
+                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` })}>
                     {debt > 0 ? (
                       <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded-full text-xs font-semibold">
                         ${formatCurrency(debt)}
@@ -380,7 +380,7 @@ export default function PatientList() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setEditPatientModal({ open: true, patientId: p.id, patientName: `${p.firstName} ${p.lastName}` })}
+                  onClick={() => setEditPatientModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` })}
                   className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark hover:shadow-lg hover:scale-105 transition-all duration-200 active:scale-[0.98]"
                 >
                   <Edit className="w-4 h-4" />

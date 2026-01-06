@@ -92,7 +92,7 @@ export default function FeesPage() {
       .filter(p => p.status === 'completed' || p.status === 'pending')
       .map((payment) => {
         const patient = payment.patientId ? patientsById.get(payment.patientId) : undefined;
-        const patientName = patient ? `${patient.lastName} ${patient.firstName}` : payment.patientName || 'Paciente';
+        const patientName = patient ? `${patient.lastName}, ${patient.firstName}` : payment.patientName || 'Paciente';
         return {
           id: payment.id,
           type: 'payment' as const,
@@ -109,7 +109,7 @@ export default function FeesPage() {
       .filter((appointment) => appointment.appointmentType === 'patient' && appointment.deposit && appointment.deposit > 0)
       .map((appointment) => {
         const patient = appointment.patientId ? patientsById.get(appointment.patientId) : undefined;
-        const patientName = appointment.patientName || (patient ? `${patient.lastName} ${patient.firstName}` : 'Paciente');
+        const patientName = appointment.patientName || (patient ? `${patient.lastName}, ${patient.firstName}` : 'Paciente');
         return {
           id: `deposit-${appointment.id}`,
           type: 'deposit' as const,
@@ -143,7 +143,7 @@ export default function FeesPage() {
         if (!query) return true;
         const patient = row.patientId ? patientsById.get(row.patientId) : undefined;
         const patientLabel = patient
-          ? `${patient.lastName} ${patient.firstName} ${patient.dni}`.toLowerCase()
+          ? `${patient.lastName}, ${patient.firstName} ${patient.dni}`.toLowerCase()
           : `${row.patientName} ${row.patientDni}`.toLowerCase();
         return patientLabel.includes(query);
       })
@@ -443,7 +443,7 @@ export default function FeesPage() {
                       if (!filters.query.trim()) return true;
                       const patient = appointment.patientId ? patientsById.get(appointment.patientId) : undefined;
                       const patientLabel = patient
-                        ? `${patient.lastName} ${patient.firstName} ${patient.dni}`.toLowerCase()
+                        ? `${patient.lastName}, ${patient.firstName} ${patient.dni}`.toLowerCase()
                         : `${appointment.patientName || ''}`.toLowerCase();
                       return patientLabel.includes(filters.query.trim().toLowerCase());
                     })

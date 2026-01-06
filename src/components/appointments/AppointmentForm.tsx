@@ -266,7 +266,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
 
       const payload = {
         patientId: values.patientId as unknown as string,
-        patientName: selected ? `${selected.lastName} ${selected.firstName}` : (values.patientName || ''),
+        patientName: selected ? `${selected.lastName}, ${selected.firstName}` : (values.patientName || ''),
         date: startDate.toISOString(),
         startTime: values.startTime,
         endTime: `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`,

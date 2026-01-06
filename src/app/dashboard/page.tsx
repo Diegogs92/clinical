@@ -480,7 +480,7 @@ export default function DashboardPage() {
                 >
                   <option value="">Todos los pacientes</option>
                   {patients.map(p => (
-                    <option key={p.id} value={p.id}>{`${p.lastName} ${p.firstName}`}</option>
+                  <option key={p.id} value={p.id}>{`${p.lastName}, ${p.firstName}`}</option>
                   ))}
                 </select>
                 <select

@@ -118,7 +118,7 @@ export default function PatientHistoryPage() {
                 </h1>
                 {patient && (
                   <p className="text-secondary dark:text-gray-400 mt-1">
-                    {patient.firstName} {patient.lastName} - DNI: {patient.dni}
+                    {patient.lastName}, {patient.firstName} - DNI: {patient.dni}
                   </p>
                 )}
               </div>

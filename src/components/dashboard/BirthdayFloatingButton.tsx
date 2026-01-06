@@ -92,7 +92,7 @@ export default function BirthdayFloatingButton({ patients }: BirthdayFloatingBut
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-lg text-elegant-900 dark:text-white truncate">
-                          {patient.firstName} {patient.lastName}
+                          {patient.lastName}, {patient.firstName}
                         </p>
                         <div className="flex items-center gap-2 flex-wrap mt-1">
                           <p className="text-sm font-semibold text-pink-600 dark:text-pink-400">

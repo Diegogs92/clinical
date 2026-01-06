@@ -626,7 +626,7 @@ export default function AgendaPage() {
     const patientName = apt.appointmentType === 'personal'
       ? apt.title || 'Evento personal'
       : patient
-        ? `${patient.lastName} ${patient.firstName}`
+        ? `${patient.lastName}, ${patient.firstName}`
         : apt.patientName || 'Sin nombre';
 
     const professional = professionals.find(p => p.uid === apt.userId);
@@ -871,7 +871,7 @@ export default function AgendaPage() {
                             <div className="space-y-1">
                               {dayBirthdays.map(p => (
                                 <div key={`birthday-tooltip-${p.id}`} className="truncate">
-                                  {p.firstName} {p.lastName}
+                                  {p.lastName}, {p.firstName}
                                 </div>
                               ))}
                             </div>
@@ -1049,7 +1049,7 @@ export default function AgendaPage() {
                             <div className="text-center">
                               <div className="text-4xl mb-2">🎂</div>
                               <div className="font-semibold text-pink-700 dark:text-pink-300">
-                                {patient.firstName} {patient.lastName}
+                                {patient.lastName}, {patient.firstName}
                               </div>
                             </div>
                           </div>
@@ -1154,7 +1154,7 @@ export default function AgendaPage() {
                 >
                   <div className="min-w-0">
                     <div className="font-semibold text-elegant-900 dark:text-white truncate">
-                      {patient.firstName} {patient.lastName}
+                      {patient.lastName}, {patient.firstName}
                     </div>
                     <div className="text-sm text-elegant-600 dark:text-elegant-400">
                       {age !== null ? `Cumple ${age} años` : 'Cumpleaños'}

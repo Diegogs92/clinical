@@ -64,7 +64,7 @@ const PatientSelect = memo(function PatientSelect({
   const options: PatientOption[] = useMemo(() => [
     ...patients.map(p => ({
       value: p.id,
-      label: `${p.lastName} ${p.firstName}`,
+      label: `${p.lastName}, ${p.firstName}`,
       patient: p,
     })),
     {
