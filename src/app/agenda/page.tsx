@@ -8,7 +8,7 @@ import { usePatients } from '@/contexts/PatientsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { canModifyAppointment, getPermissionDeniedMessage } from '@/lib/appointmentPermissions';
 import { useToast } from '@/contexts/ToastContext';
-import { format, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, isWithinInterval, startOfDay, endOfDay, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, isSameMonth } from 'date-fns';
+import { format, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, isWithinInterval, startOfDay, endOfDay, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, isSameMonth, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Calendar, Clock, User, Ban, ChevronLeft, ChevronRight, X, PlusCircle, FileText, GripVertical } from 'lucide-react';
 import { BlockedSlot, SchedulePreference } from '@/types';
@@ -522,6 +522,11 @@ export default function AgendaPage() {
     setDragOverSlot(null);
 
     if (!draggedAppointment) return;
+    const dayOfWeek = getDay(targetDate);
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      toast.error('No se pueden mover turnos a sábado o domingo');
+      return;
+    }
 
     // Calcular la nueva hora de inicio y fin
     const newStartTime = targetTime || draggedAppointment.startTime;
