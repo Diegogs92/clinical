@@ -130,7 +130,7 @@ export default function PatientList() {
   const handleDelete = async (id: string) => {
     const ok = await confirm({
       title: 'Eliminar paciente',
-      description: 'Esta acciÃ³n es irreversible. Â¿Deseas continuar?',
+      description: 'Esta acción es irreversible. ¿Deseas continuar?',
       confirmText: 'Eliminar',
       cancelText: 'Cancelar',
       tone: 'danger',
@@ -450,7 +450,7 @@ export default function PatientList() {
               notes: appt.notes,
             });
 
-            // Si tiene seÃ±a, agregarla
+            // Si tiene seña, agregarla
             if (appt.deposit && appt.deposit > 0) {
               events.push({
                 date: appt.date,
@@ -458,8 +458,8 @@ export default function PatientList() {
                 type: 'payment',
                 icon: DollarSign,
                 color: 'amber',
-                title: 'SeÃ±a pagada',
-                description: `SeÃ±a del turno del ${new Date(appt.date).toLocaleDateString('es-AR')}`,
+                title: 'Seña pagada',
+                description: `Seña del turno del ${new Date(appt.date).toLocaleDateString('es-AR')}`,
                 amount: appt.deposit,
               });
             }
@@ -530,7 +530,7 @@ export default function PatientList() {
                                 )}
                                 <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
                                   {new Date(event.date).toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                                  {event.time && ` â€¢ ${event.time}`}
+                                  {event.time && ` • ${event.time}`}
                                 </p>
                               </div>
                               {event.amount !== undefined && (
