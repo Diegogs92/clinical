@@ -193,9 +193,17 @@ export default function DashboardPage() {
       const completed = payments
         .filter(p => p.appointmentId === appt.id && p.status === 'completed')
         .reduce((sum, p) => sum + p.amount, 0);
-      const pending = [...payments, ...pendingPayments]
-        .filter(p => p.appointmentId === appt.id && p.status === 'pending')
-        .reduce((sum, p) => sum + p.amount, 0);
+      const pending = (() => {
+        const seen = new Set<string>();
+        let sum = 0;
+        for (const payment of [...payments, ...pendingPayments]) {
+          if (payment.appointmentId !== appt.id || payment.status !== 'pending') continue;
+          if (seen.has(payment.id)) continue;
+          seen.add(payment.id);
+          sum += payment.amount;
+        }
+        return sum;
+      })();
       const totalPaid = deposit + completed + pending;
       const remainingAmount = Math.max(0, (appt.fee || 0) - totalPaid);
       const end = combineDateAndTime(appt.date, appt.endTime);

@@ -418,9 +418,17 @@ export default function AgendaPage() {
     const completed = payments
       .filter(p => p.appointmentId === appt.id && p.status === 'completed')
       .reduce((sum, p) => sum + p.amount, 0);
-    const pending = [...payments, ...pendingPayments]
-      .filter(p => p.appointmentId === appt.id && p.status === 'pending')
-      .reduce((sum, p) => sum + p.amount, 0);
+    const pending = (() => {
+      const seen = new Set<string>();
+      let sum = 0;
+      for (const payment of [...payments, ...pendingPayments]) {
+        if (payment.appointmentId !== appt.id || payment.status !== 'pending') continue;
+        if (seen.has(payment.id)) continue;
+        seen.add(payment.id);
+        sum += payment.amount;
+      }
+      return sum;
+    })();
     const totalPaid = deposit + completed + pending;
     const remainingAmount = (appt.fee || 0) - totalPaid;
 
@@ -593,9 +601,17 @@ export default function AgendaPage() {
     const completed = payments
       .filter(p => p.appointmentId === apt.id && p.status === 'completed')
       .reduce((sum, p) => sum + p.amount, 0);
-    const pending = [...payments, ...pendingPayments]
-      .filter(p => p.appointmentId === apt.id && p.status === 'pending')
-      .reduce((sum, p) => sum + p.amount, 0);
+    const pending = (() => {
+      const seen = new Set<string>();
+      let sum = 0;
+      for (const payment of [...payments, ...pendingPayments]) {
+        if (payment.appointmentId !== apt.id || payment.status !== 'pending') continue;
+        if (seen.has(payment.id)) continue;
+        seen.add(payment.id);
+        sum += payment.amount;
+      }
+      return sum;
+    })();
     const totalPaid = deposit + completed + pending;
     return (apt.fee || 0) - totalPaid;
   };
@@ -1414,9 +1430,17 @@ export default function AgendaPage() {
           const completed = payments
             .filter(p => p.appointmentId === appt.id && p.status === 'completed')
             .reduce((sum, p) => sum + p.amount, 0);
-          const pending = [...payments, ...pendingPayments]
-            .filter(p => p.appointmentId === appt.id && p.status === 'pending')
-            .reduce((sum, p) => sum + p.amount, 0);
+          const pending = (() => {
+            const seen = new Set<string>();
+            let sum = 0;
+            for (const payment of [...payments, ...pendingPayments]) {
+              if (payment.appointmentId !== appt.id || payment.status !== 'pending') continue;
+              if (seen.has(payment.id)) continue;
+              seen.add(payment.id);
+              sum += payment.amount;
+            }
+            return sum;
+          })();
           const totalPaid = deposit + completed + pending;
           const remainingAmount = (appt.fee || 0) - totalPaid;
 
