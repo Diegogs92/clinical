@@ -174,7 +174,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
 
       const selected = patients.find(p => p.id === (values.patientId as unknown as string));
       const selectedProfessional = professionals.find(p => p.uid === values.professionalId);
-\n      const payload = {
+      const payload = {
         patientId: values.patientId as unknown as string,
         patientName: selected ? `${selected.lastName}, ${selected.firstName}` : (values.patientName || ''),
         date: startDate.toISOString(),
