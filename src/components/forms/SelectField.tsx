@@ -22,7 +22,7 @@ interface SelectFieldProps {
 const CustomSingleValue = (props: SingleValueProps<SelectOption>) => {
   return (
     <components.SingleValue {...props}>
-      <span className="font-medium">{props.data.label}</span>
+      <span className="font-medium text-elegant-900 dark:text-elegant-50">{props.data.label}</span>
     </components.SingleValue>
   );
 };

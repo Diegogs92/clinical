@@ -35,9 +35,9 @@ const CustomOption = (props: OptionProps<PatientOption>) => {
   return (
     <components.Option {...props}>
       <div>
-        <div className="font-medium">{props.data.label}</div>
+        <div className="font-medium text-elegant-900 dark:text-elegant-50">{props.data.label}</div>
         {props.data.patient && (
-          <div className="text-xs text-gray-500 mt-0.5">
+          <div className="text-xs text-elegant-600 dark:text-elegant-300 mt-0.5">
             DNI: {props.data.patient.dni}
           </div>
         )}
@@ -49,7 +49,7 @@ const CustomOption = (props: OptionProps<PatientOption>) => {
 const CustomSingleValue = (props: SingleValueProps<PatientOption>) => {
   return (
     <components.SingleValue {...props}>
-      <span className="font-medium">{props.data.label}</span>
+      <span className="font-medium text-elegant-900 dark:text-elegant-50">{props.data.label}</span>
     </components.SingleValue>
   );
 };
