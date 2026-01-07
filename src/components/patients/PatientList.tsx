@@ -42,7 +42,9 @@ export default function PatientList() {
 
   // Helper function to calculate patient debt
   const getPatientDebt = (patientId: string) => {
-    const patientAppointments = appointments.filter(a => a.patientId === patientId && a.fee);
+    const patientAppointments = appointments.filter(
+      a => a.patientId === patientId && a.fee && a.status === 'completed'
+    );
     const paymentTotalsByAppointment = payments.reduce((acc, payment) => {
       if (payment.patientId !== patientId) return acc;
       if (!payment.appointmentId) return acc;

@@ -188,7 +188,9 @@ export default function DashboardPage() {
 
   const paymentStateFor = useMemo(() => {
     return (appt: Appointment) => {
-      if (!appt.fee) return { color: 'text-elegant-900 dark:text-white', status: 'none', remainingAmount: 0 };
+      if (!appt.fee) {
+        return { color: 'text-elegant-900 dark:text-white', status: 'none', remainingAmount: 0, isDue: false };
+      }
       const deposit = appt.deposit || 0;
       const completed = payments
         .filter(p => p.appointmentId === appt.id && p.status === 'completed')
@@ -206,19 +208,18 @@ export default function DashboardPage() {
       })();
       const totalPaid = deposit + completed + pending;
       const remainingAmount = Math.max(0, (appt.fee || 0) - totalPaid);
-      const end = combineDateAndTime(appt.date, appt.endTime);
-      const past = end < now;
+      const isAttended = appt.status === 'completed';
 
       if (totalPaid >= (appt.fee || 0)) {
-        return { color: 'text-green-600 dark:text-green-400', status: 'paid', remainingAmount: 0 };
+        return { color: 'text-green-600 dark:text-green-400', status: 'paid', remainingAmount: 0, isDue: false };
+      }
+      if (!isAttended) {
+        return { color: 'text-elegant-900 dark:text-white', status: 'none', remainingAmount, isDue: false };
       }
       if (totalPaid > 0) {
-        return { color: 'text-amber-500', status: 'partial', remainingAmount };
+        return { color: 'text-amber-500', status: 'partial', remainingAmount, isDue: true };
       }
-      if (past) {
-        return { color: 'text-red-500', status: 'unpaid', remainingAmount: appt.fee };
-      }
-      return { color: 'text-elegant-900 dark:text-white', status: 'none', remainingAmount: appt.fee };
+      return { color: 'text-red-500', status: 'unpaid', remainingAmount: appt.fee, isDue: true };
     };
   }, [now, payments, pendingPayments]);
 
@@ -534,18 +535,19 @@ export default function DashboardPage() {
                         const paymentState = paymentStateFor(a);
 
                         // Determinar el label del estado de pago
-                        const getPaymentStatusLabel = () => {
-                          if (!a.fee) return 'Sin honorarios';
-                          const deposit = a.deposit || 0;
-                          if (paymentState.status === 'paid') return 'Pagado';
-                          if (deposit > 0 && paymentState.remainingAmount > 0) {
-                            return `Señado (Falta: $${formatCurrency(paymentState.remainingAmount)})`;
-                          }
-                          if (paymentState.status === 'partial') {
-                            return `Parcial (Falta: $${formatCurrency(paymentState.remainingAmount)})`;
-                          }
-                          return `Pendiente ($${formatCurrency(a.fee)})`;
-                        };
+                          const getPaymentStatusLabel = () => {
+                            if (!a.fee) return 'Sin honorarios';
+                            const deposit = a.deposit || 0;
+                            if (!paymentState.isDue && paymentState.status !== 'paid') return 'Sin deuda';
+                            if (paymentState.status === 'paid') return 'Pagado';
+                            if (deposit > 0 && paymentState.remainingAmount > 0) {
+                              return `Señado (Falta: $${formatCurrency(paymentState.remainingAmount)})`;
+                            }
+                            if (paymentState.status === 'partial') {
+                              return `Parcial (Falta: $${formatCurrency(paymentState.remainingAmount)})`;
+                            }
+                            return `Pendiente ($${formatCurrency(paymentState.remainingAmount)})`;
+                          };
 
                         return (
                           <tr key={a.id}>
@@ -623,26 +625,30 @@ export default function DashboardPage() {
                                   onClick={() => openPaymentDialog(a)}
                                   disabled={paymentState.status === 'paid'}
                                   className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:hover:scale-100 ${
-                                    paymentState.status === 'paid'
-                                      ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200'
-                                      : (a.deposit || 0) > 0 && paymentState.remainingAmount > 0
-                                        ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 hover:bg-amber-200 dark:hover:bg-amber-800/60'
-                                        : paymentState.status === 'partial'
+                                    !paymentState.isDue && paymentState.status !== 'paid'
+                                      ? 'bg-elegant-100/80 text-elegant-700 dark:bg-elegant-800/60 dark:text-elegant-300'
+                                      : paymentState.status === 'paid'
+                                        ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200'
+                                        : (a.deposit || 0) > 0 && paymentState.remainingAmount > 0
                                           ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 hover:bg-amber-200 dark:hover:bg-amber-800/60'
-                                          : 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800/60'
+                                          : paymentState.status === 'partial'
+                                            ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 hover:bg-amber-200 dark:hover:bg-amber-800/60'
+                                            : 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800/60'
                                   }`}
                                 >
                                   {getPaymentStatusLabel()}
                                 </button>
                               ) : a.fee ? (
                                 <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${
-                                  paymentState.status === 'paid'
-                                    ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200'
-                                    : (a.deposit || 0) > 0 && paymentState.remainingAmount > 0
-                                      ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
-                                      : paymentState.status === 'partial'
+                                  !paymentState.isDue && paymentState.status !== 'paid'
+                                    ? 'bg-elegant-100/80 text-elegant-700 dark:bg-elegant-800/60 dark:text-elegant-300'
+                                    : paymentState.status === 'paid'
+                                      ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200'
+                                      : (a.deposit || 0) > 0 && paymentState.remainingAmount > 0
                                         ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
-                                        : 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200'
+                                        : paymentState.status === 'partial'
+                                          ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
+                                          : 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200'
                                 }`}>
                                   {getPaymentStatusLabel()}
                                 </span>
@@ -666,17 +672,21 @@ export default function DashboardPage() {
                     const paymentLabel =
                       paymentState.status === 'paid'
                         ? 'Pagado'
-                        : paymentState.status === 'partial'
-                          ? `$${formatCurrency(paymentState.remainingAmount)}`
-                          : a.fee
-                            ? `$${formatCurrency(paymentState.remainingAmount || a.fee)}`
-                            : 'Sin honorarios';
+                        : !paymentState.isDue
+                          ? 'Sin deuda'
+                          : paymentState.status === 'partial'
+                            ? `$${formatCurrency(paymentState.remainingAmount)}`
+                            : a.fee
+                              ? `$${formatCurrency(paymentState.remainingAmount)}`
+                              : 'Sin honorarios';
                     const paymentTone =
                       paymentState.status === 'paid'
                         ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200'
-                        : paymentState.status === 'partial'
-                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200'
-                          : 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-200';
+                        : !paymentState.isDue
+                          ? 'bg-elegant-100 text-elegant-700 dark:bg-elegant-800/60 dark:text-elegant-300'
+                          : paymentState.status === 'partial'
+                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200'
+                            : 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-200';
                     return (
                       <div
                         key={a.id}
@@ -737,9 +747,11 @@ export default function DashboardPage() {
                                 className={`col-span-2 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all touch-manipulation disabled:opacity-40 ${
                                   paymentState.status === 'paid'
                                     ? 'bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-200'
-                                    : paymentState.status === 'partial'
-                                      ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200'
-                                      : 'bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-200'
+                                    : !paymentState.isDue
+                                      ? 'bg-elegant-100 text-elegant-700 dark:bg-elegant-800/60 dark:text-elegant-300'
+                                      : paymentState.status === 'partial'
+                                        ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200'
+                                        : 'bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-200'
                                 } active:scale-95`}
                               >
                                 <DollarSign className="w-4 h-4" />

@@ -602,6 +602,7 @@ export default function AgendaPage() {
   // Función para renderizar card de turno
   // Calcular monto pendiente de pagar
   const calculatePending = (apt: any) => {
+    if (apt.status !== 'completed') return 0;
     const deposit = apt.deposit || 0;
     const completed = payments
       .filter(p => p.appointmentId === apt.id && p.status === 'completed')
