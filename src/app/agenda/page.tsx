@@ -77,6 +77,15 @@ export default function AgendaPage() {
     open: false,
     appointment: undefined
   });
+  const [reminderDialog, setReminderDialog] = useState<{ open: boolean; appointment?: any }>({
+    open: false,
+    appointment: undefined
+  });
+  const [reminderForm, setReminderForm] = useState<{ value: string; unit: 'days' | 'weeks' | 'months'; reason: string }>({
+    value: '',
+    unit: 'months',
+    reason: ''
+  });
   const [birthdayDialog, setBirthdayDialog] = useState<{ open: boolean; date?: Date; birthdays: any[] }>({
     open: false,
     date: undefined,
@@ -280,17 +289,68 @@ export default function AgendaPage() {
       await updateAppointment(evt.id, { status });
       await refreshAppointments();
       setAttendanceDialog({ open: false, appointment: undefined });
+      if (status === 'completed') {
+        setReminderForm({ value: '', unit: 'months', reason: '' });
+        setReminderDialog({ open: true, appointment: evt });
+        return;
+      }
       setSuccessModal({
         show: true,
-        title: status === 'completed' ? 'Asistencia registrada' : 'Ausencia registrada',
-        message: status === 'completed'
-          ? 'El paciente ha sido marcado como presente'
-          : 'El paciente ha sido marcado como ausente'
+        title: 'Ausencia registrada',
+        message: 'El paciente ha sido marcado como ausente'
       });
     } catch (error) {
       console.error('Error marcando asistencia:', error);
       toast.error('No se pudo registrar la asistencia');
     }
+  };
+
+  const handleSaveReminder = async () => {
+    const evt = reminderDialog.appointment;
+    if (!evt) return;
+    const valueNum = Number(reminderForm.value);
+    if (!Number.isFinite(valueNum) || valueNum <= 0) {
+      toast.error('Ingresa un tiempo de seguimiento válido');
+      return;
+    }
+
+    const baseDate = combineDateAndTime(evt.date, evt.startTime);
+    const reminderDate = new Date(baseDate);
+    if (reminderForm.unit === 'days') {
+      reminderDate.setDate(reminderDate.getDate() + valueNum);
+    } else if (reminderForm.unit === 'weeks') {
+      reminderDate.setDate(reminderDate.getDate() + (valueNum * 7));
+    } else {
+      reminderDate.setMonth(reminderDate.getMonth() + valueNum);
+    }
+
+    try {
+      await updateAppointment(evt.id, {
+        followUpDate: reminderDate.toISOString(),
+        followUpReason: reminderForm.reason.trim(),
+        followUpMonths: reminderForm.unit === 'months' ? valueNum : 0,
+        noReminder: false,
+      });
+      await refreshAppointments();
+      setReminderDialog({ open: false, appointment: undefined });
+      setSuccessModal({
+        show: true,
+        title: 'Asistencia registrada',
+        message: 'El recordatorio de seguimiento se guardó correctamente'
+      });
+    } catch (error) {
+      console.error('Error guardando recordatorio:', error);
+      toast.error('No se pudo guardar el recordatorio');
+    }
+  };
+
+  const handleSkipReminder = () => {
+    setReminderDialog({ open: false, appointment: undefined });
+    setSuccessModal({
+      show: true,
+      title: 'Asistencia registrada',
+      message: 'El paciente ha sido marcado como presente'
+    });
   };
 
   const handleCancelAppointment = async (evt: any) => {
@@ -1562,6 +1622,70 @@ export default function AgendaPage() {
             >
               Cancelar
             </button>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        open={reminderDialog.open}
+        onClose={handleSkipReminder}
+        title="Crear recordatorio"
+        maxWidth="max-w-md"
+      >
+        {reminderDialog.appointment && (
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <p className="text-sm text-elegant-600 dark:text-elegant-300">
+                {reminderDialog.appointment.patientName || reminderDialog.appointment.title || 'Evento'}
+              </p>
+              <p className="text-xs text-elegant-500 dark:text-elegant-400">
+                Agrega un recordatorio de seguimiento para este turno.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+              <div>
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Recordar en</label>
+                <input
+                  type="number"
+                  min="1"
+                  className="input-field"
+                  value={reminderForm.value}
+                  onChange={(event) => setReminderForm(prev => ({ ...prev, value: event.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Unidad</label>
+                <select
+                  className="input-field"
+                  value={reminderForm.unit}
+                  onChange={(event) => setReminderForm(prev => ({ ...prev, unit: event.target.value as 'days' | 'weeks' | 'months' }))}
+                >
+                  <option value="days">Días</option>
+                  <option value="weeks">Semanas</option>
+                  <option value="months">Meses</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Motivo</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Motivo (opcional)"
+                  value={reminderForm.reason}
+                  onChange={(event) => setReminderForm(prev => ({ ...prev, reason: event.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button type="button" className="btn-secondary text-sm px-4 py-2" onClick={handleSkipReminder}>
+                Omitir
+              </button>
+              <button type="button" className="btn-primary text-sm px-4 py-2" onClick={handleSaveReminder}>
+                Guardar
+              </button>
+            </div>
           </div>
         )}
       </Modal>

@@ -9,7 +9,7 @@ import { createAppointment, updateAppointment, getOverlappingAppointments } from
 import { getBlockedSlotsInRange } from '@/lib/blockedSlots';
 import { createPayment } from '@/lib/payments';
 import { useState, useEffect, useCallback, useMemo, memo } from 'react';
-import { Appointment, UserProfile, FollowUpReason } from '@/types';
+import { Appointment, UserProfile } from '@/types';
 import { useToast } from '@/hooks/useToast';
 import Modal from '@/components/ui/Modal';
 import SuccessModal from '@/components/ui/SuccessModal';
@@ -22,7 +22,6 @@ import SelectField, { SelectOption } from '@/components/forms/SelectField';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { listProfessionals } from '@/lib/users';
-import { listFollowUpReasons, createFollowUpReason } from '@/lib/followUpReasons';
 
 const schema = z.object({
   patientId: z.string().min(1, 'Selecciona un paciente'),
@@ -35,18 +34,6 @@ const schema = z.object({
   fee: z.coerce.number().optional(),
   deposit: z.coerce.number().optional(),
   notes: z.string().optional(),
-  followUpMonths: z.coerce.number().optional(),
-  followUpValue: z.preprocess(
-    (val) => {
-      if (val === '' || val === null || val === undefined) return undefined;
-      const num = Number(val);
-      return isNaN(num) ? undefined : num;
-    },
-    z.number().optional()
-  ),
-  followUpUnit: z.enum(['days', 'weeks', 'months']).optional(),
-  followUpReason: z.string().optional(),
-  noReminder: z.boolean().optional(),
 });
 
 export type AppointmentFormValues = z.infer<typeof schema>;
@@ -67,11 +54,6 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
   const [showQuickPatient, setShowQuickPatient] = useState(false);
   const [professionals, setProfessionals] = useState<UserProfile[]>([]);
   const [loadingProfessionals, setLoadingProfessionals] = useState(false);
-  const [followUpReasons, setFollowUpReasons] = useState<FollowUpReason[]>([]);
-  const [loadingFollowUpReasons, setLoadingFollowUpReasons] = useState(false);
-  const [savingFollowUpReason, setSavingFollowUpReason] = useState(false);
-  const [showFollowUpReasonModal, setShowFollowUpReasonModal] = useState(false);
-  const [newFollowUpReason, setNewFollowUpReason] = useState('');
   const [noDeposit, setNoDeposit] = useState(false);
   const [successModal, setSuccessModal] = useState<{ show: boolean; title: string; message?: string }>({
     show: false,
@@ -93,59 +75,9 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
       date: initialData?.date ? initialData.date.split('T')[0] : '',
       startTime: initialData?.startTime || '',
       notes: initialData?.notes || '',
-      followUpMonths: initialData?.followUpMonths || undefined,
-      followUpValue: undefined,
-      followUpUnit: 'months',
-      followUpReason: initialData?.followUpReason || '',
-      noReminder: (initialData as any)?.noReminder || false,
     },
   });
 
-  const normalizeReason = (value: string) => value.trim().toLowerCase();
-
-  const saveFollowUpReason = async (reason: string, reasonUserId: string, showFeedback: boolean) => {
-    const trimmed = reason.trim();
-    if (!trimmed) {
-      if (showFeedback) {
-        toast.error('Ingresa un motivo para guardar');
-      }
-      return false;
-    }
-
-    const alreadyExists = followUpReasons.some(item => normalizeReason(item.label) === normalizeReason(trimmed));
-    if (alreadyExists) {
-      if (showFeedback) {
-        toast.info('El motivo ya existe');
-      }
-      return false;
-    }
-
-    try {
-      if (showFeedback) {
-        setSavingFollowUpReason(true);
-      }
-      const id = await createFollowUpReason(reasonUserId, trimmed);
-      const now = new Date().toISOString();
-      setFollowUpReasons(prev => (
-        [...prev, { id, label: trimmed, userId: reasonUserId, createdAt: now, updatedAt: now }]
-          .sort((a, b) => a.label.localeCompare(b.label))
-      ));
-      if (showFeedback) {
-        toast.success('Motivo guardado');
-      }
-      return true;
-    } catch (error) {
-      console.error('[AppointmentForm] Error saving follow-up reason:', error);
-      if (showFeedback) {
-        toast.error('No se pudo guardar el motivo');
-      }
-      return false;
-    } finally {
-      if (showFeedback) {
-        setSavingFollowUpReason(false);
-      }
-    }
-  };
 
   const onSubmit = async (values: AppointmentFormValues) => {
     console.log('[AppointmentForm] onSubmit ejecutado con valores:', values);
@@ -242,29 +174,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
 
       const selected = patients.find(p => p.id === (values.patientId as unknown as string));
       const selectedProfessional = professionals.find(p => p.uid === values.professionalId);
-
-      // Calcular fecha de seguimiento si se especificó
-      let followUpDate: string | undefined = undefined;
-      // Mantener compatibilidad con el campo antiguo followUpMonths
-      if (values.followUpMonths && values.followUpMonths > 0) {
-        const appointmentDate = new Date(startDate);
-        appointmentDate.setMonth(appointmentDate.getMonth() + values.followUpMonths);
-        followUpDate = appointmentDate.toISOString();
-      }
-      // Nuevo sistema con unidades
-      if (values.followUpValue && values.followUpValue > 0 && values.followUpUnit) {
-        const appointmentDate = new Date(startDate);
-        if (values.followUpUnit === 'days') {
-          appointmentDate.setDate(appointmentDate.getDate() + values.followUpValue);
-        } else if (values.followUpUnit === 'weeks') {
-          appointmentDate.setDate(appointmentDate.getDate() + (values.followUpValue * 7));
-        } else if (values.followUpUnit === 'months') {
-          appointmentDate.setMonth(appointmentDate.getMonth() + values.followUpValue);
-        }
-        followUpDate = appointmentDate.toISOString();
-      }
-
-      const payload = {
+\n      const payload = {
         patientId: values.patientId as unknown as string,
         patientName: selected ? `${selected.lastName}, ${selected.firstName}` : (values.patientName || ''),
         date: startDate.toISOString(),
@@ -276,23 +186,16 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         fee: values.fee ?? 0,
         deposit: values.deposit ?? 0,
         notes: values.notes || '',
-        followUpMonths: values.followUpMonths ?? 0,
-        followUpReason: values.followUpReason || '',
-        followUpDate: followUpDate,
         userId: values.professionalId,
         professionalName: selectedProfessional?.displayName || '',
         appointmentType: 'patient', // Siempre es tipo paciente en este formulario
         createdAt: initialData?.createdAt || '',
         updatedAt: '',
-        noReminder: values.noReminder || false,
       } as any;
 
       // Remover campos undefined para evitar errores en Firestore
       if (payload.officeId === undefined) {
         delete payload.officeId;
-      }
-      if (payload.followUpDate === undefined) {
-        delete payload.followUpDate;
       }
 
       console.log('[AppointmentForm] Payload a enviar:', payload);
@@ -313,7 +216,6 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
 
         console.log('[AppointmentForm] Turno actualizado exitosamente');
         await refreshAppointments();
-        await saveFollowUpReason(values.followUpReason || '', values.professionalId, false);
         reset();
 
         if (onSuccess) {
@@ -341,7 +243,6 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
 
         console.log('[AppointmentForm] Turno creado exitosamente con ID:', id);
         await refreshAppointments();
-        await saveFollowUpReason(values.followUpReason || '', values.professionalId, false);
         reset();
 
         if (onSuccess) {
@@ -421,14 +322,6 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
     { value: 'armonizacion', label: 'Armonización' },
   ], []);
 
-  const followUpReasonOptions = useMemo((): SelectOption[] =>
-    followUpReasons.map(reason => ({
-      value: reason.label,
-      label: reason.label
-    })),
-    [followUpReasons]
-  );
-
   useEffect(() => {
     const load = async () => {
       try {
@@ -459,60 +352,6 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
       setNoDeposit(true);
     }
   }, [initialData]);
-
-  useEffect(() => {
-    const reasonUserId = user?.uid;
-    if (!reasonUserId) return;
-    let active = true;
-
-    const loadReasons = async () => {
-      try {
-        setLoadingFollowUpReasons(true);
-        const list = await listFollowUpReasons(reasonUserId);
-        if (active) {
-          setFollowUpReasons(list);
-        }
-      } catch (error) {
-        console.error('[AppointmentForm] Error loading follow-up reasons:', error);
-        toast.error('No se pudieron cargar los motivos de seguimiento');
-      } finally {
-        if (active) {
-          setLoadingFollowUpReasons(false);
-        }
-      }
-    };
-
-    loadReasons();
-    return () => {
-      active = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid]);
-
-  const handleAddFollowUpReason = async () => {
-    const reasonUserId = user?.uid;
-    if (!reasonUserId) return;
-    const trimmed = newFollowUpReason.trim();
-    if (!trimmed) {
-      toast.error('Ingresa un motivo para agregar');
-      return;
-    }
-
-    const existing = followUpReasons.find(item => normalizeReason(item.label) === normalizeReason(trimmed));
-    if (existing) {
-      setValue('followUpReason', existing.label);
-      setNewFollowUpReason('');
-      toast.info('El motivo ya existe, se selecciono en la lista');
-      return;
-    }
-
-    const saved = await saveFollowUpReason(trimmed, reasonUserId, true);
-    if (saved) {
-      setValue('followUpReason', trimmed);
-      setNewFollowUpReason('');
-      setShowFollowUpReasonModal(false);
-    }
-  };
 
   return (
     <>
@@ -675,90 +514,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
           <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Notas</label>
           <textarea className="input-field resize-none h-16" placeholder="Indicaciones o comentarios adicionales..." {...register('notes')} />
         </div>
-
-        {/* Sin recordatorio */}
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="noReminder"
-            className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-            {...register('noReminder')}
-          />
-          <label htmlFor="noReminder" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
-            Sin recordatorio
-          </label>
-        </div>
-
-        {/* Seguimiento */}
-        <div className={`border-t border-elegant-200 dark:border-gray-700 pt-2.5 ${watch('noReminder') ? 'opacity-50 pointer-events-none' : ''}`}>
-          <h4 className="text-sm font-medium text-primary-dark dark:text-white mb-1.5">Recordatorio de Seguimiento</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
-            <div>
-              <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Recordar en</label>
-              <input
-                type="number"
-                className="input-field"
-                placeholder="0"
-                min="0"
-                disabled={watch('noReminder')}
-                {...register('followUpValue', { valueAsNumber: true })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Unidad</label>
-              <Controller
-                name="followUpUnit"
-                control={control}
-                render={({ field }) => (
-                  <SelectField
-                    options={[
-                      { value: 'days', label: 'Días' },
-                      { value: 'weeks', label: 'Semanas' },
-                      { value: 'months', label: 'Meses' },
-                    ]}
-                    value={field.value || 'months'}
-                    onChange={field.onChange}
-                    placeholder="Selecciona unidad"
-                    disabled={watch('noReminder')}
-                  />
-                )}
-              />
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">Motivo</label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNewFollowUpReason('');
-                    setShowFollowUpReasonModal(true);
-                  }}
-                  disabled={watch('noReminder')}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-dark dark:text-primary-light transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Nuevo
-                </button>
-              </div>
-              <Controller
-                name="followUpReason"
-                control={control}
-                render={({ field }) => (
-                  <SelectField
-                    options={followUpReasonOptions}
-                    value={field.value || ''}
-                    onChange={field.onChange}
-                    placeholder="Selecciona un motivo"
-                    isLoading={loadingFollowUpReasons}
-                    noOptionsMessage="No hay motivos guardados"
-                    disabled={watch('noReminder')}
-                  />
-                )}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Botones */}
+\n        {/* Botones */}
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-elegant-200 dark:border-gray-700">
           <button type="button" onClick={onCancel} className="btn-secondary">Cancelar</button>
           <button type="submit" disabled={loading} className="btn-primary disabled:opacity-50">
@@ -782,41 +538,6 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         />
       </Modal>
 
-      <Modal
-        open={showFollowUpReasonModal}
-        onClose={() => setShowFollowUpReasonModal(false)}
-        title="Agregar motivo de seguimiento"
-        maxWidth="max-w-lg"
-      >
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            handleAddFollowUpReason();
-          }}
-          className="space-y-3"
-        >
-          <div>
-            <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Motivo</label>
-            <input
-              type="text"
-              className="input-field"
-              placeholder="Ej: Control de ortodoncia, Limpieza, etc."
-              value={newFollowUpReason}
-              onChange={(event) => setNewFollowUpReason(event.target.value)}
-              autoFocus
-            />
-          </div>
-          <div className="flex items-center justify-end gap-2">
-            <button type="button" onClick={() => setShowFollowUpReasonModal(false)} className="btn-secondary">
-              Cancelar
-            </button>
-            <button type="submit" className="btn-primary" disabled={savingFollowUpReason}>
-              {savingFollowUpReason ? 'Guardando...' : 'Guardar'}
-            </button>
-          </div>
-        </form>
-      </Modal>
-
       <SuccessModal
         isOpen={successModal.show}
         onClose={() => setSuccessModal({ show: false, title: '', message: '' })}
@@ -828,3 +549,4 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
 });
 
 export default AppointmentForm;
+
