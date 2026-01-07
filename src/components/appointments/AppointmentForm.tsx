@@ -514,7 +514,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
           <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Notas</label>
           <textarea className="input-field resize-none h-16" placeholder="Indicaciones o comentarios adicionales..." {...register('notes')} />
         </div>
-\n        {/* Botones */}
+        {/* Botones */}
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-elegant-200 dark:border-gray-700">
           <button type="button" onClick={onCancel} className="btn-secondary">Cancelar</button>
           <button type="submit" disabled={loading} className="btn-primary disabled:opacity-50">
