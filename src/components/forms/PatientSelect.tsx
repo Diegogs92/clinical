@@ -105,11 +105,11 @@ const PatientSelect = memo(function PatientSelect({
           option: (state) =>
             `!cursor-pointer ${
               state.isFocused
-                ? '!bg-primary-50 dark:!bg-primary-900/20 !text-elegant-900 dark:!text-white'
-                : '!bg-transparent !text-elegant-900 dark:!text-white'
+                ? '!bg-primary-50 dark:!bg-elegant-100/90 !text-elegant-900 dark:!text-elegant-900'
+                : '!bg-transparent !text-elegant-900 dark:!text-elegant-50'
             } ${
               state.isSelected
-                ? '!bg-primary-100 dark:!bg-primary-900/40 !text-elegant-900 dark:!text-white'
+                ? '!bg-primary-100 dark:!bg-elegant-200/90 !text-elegant-900 dark:!text-elegant-900'
                 : ''
             }`,
           placeholder: () => '!text-gray-400 dark:!text-gray-500',
