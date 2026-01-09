@@ -1535,7 +1535,7 @@ export default function AgendaPage() {
             <button
               onClick={() => handleReschedule(selectedEvent)}
               disabled={!canEditSelected || selectedEvent.status === 'cancelled'}
-              className="group relative overflow-hidden w-full bg-gradient-to-br from-purple-500 via-fuchsia-600 to-indigo-600 hover:from-purple-600 hover:via-fuchsia-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg p-3.5 transition-all duration-200 hover:shadow-lg hover:scale-[1.02] disabled:hover:scale-100 disabled:cursor-not-allowed"
+              className="group relative overflow-hidden w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded-lg p-3.5 transition-all duration-200 hover:shadow-lg hover:scale-[1.02] disabled:hover:scale-100 disabled:cursor-not-allowed"
             >
               <div className="flex items-center justify-center gap-2">
                 <Calendar className="w-5 h-5" />
