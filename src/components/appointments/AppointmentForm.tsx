@@ -60,6 +60,11 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
     title: '',
     message: ''
   });
+  const [validationModal, setValidationModal] = useState<{ open: boolean; title: string; message: string }>({
+    open: false,
+    title: '',
+    message: ''
+  });
   const toast = useToast();
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch, control } = useForm<AppointmentFormValues>({
     resolver: zodResolver(schema),
@@ -77,6 +82,14 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
       notes: initialData?.notes || '',
     },
   });
+
+  useEffect(() => {
+    if (!validationModal.open) return;
+    const timer = setTimeout(() => {
+      setValidationModal({ open: false, title: '', message: '' });
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [validationModal.open]);
 
 
   const onSubmit = async (values: AppointmentFormValues) => {
@@ -133,10 +146,11 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
 
         console.log('Bloqueando creacion de turno:', blockDetails);
 
-        toast.error(
-          `No se puede agendar el turno porque se solapa con franjas bloqueadas:\n\n${blockDetails}`,
-          { duration: 8000 }
-        );
+        setValidationModal({
+          open: true,
+          title: 'No se puede agendar el turno',
+          message: `Se solapa con franjas bloqueadas:\n\n${blockDetails}`
+        });
         setLoading(false);
         return;
       }
@@ -162,10 +176,11 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
 
         console.log('Bloqueando creacion de turno por solapamiento:', overlapDetails);
 
-        toast.error(
-          `No se puede agendar el turno porque se solapa con otros turnos:\n\n${overlapDetails}`,
-          { duration: 8000 }
-        );
+        setValidationModal({
+          open: true,
+          title: 'No se puede agendar el turno',
+          message: `Se solapa con otros turnos:\n\n${overlapDetails}`
+        });
         setLoading(false);
         return;
       }
@@ -536,6 +551,28 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
             toast.success('Paciente creado correctamente. Selecciónalo de la lista.');
           }}
         />
+      </Modal>
+
+      <Modal
+        open={validationModal.open}
+        onClose={() => setValidationModal({ open: false, title: '', message: '' })}
+        title={validationModal.title}
+        maxWidth="max-w-md"
+      >
+        <div className="space-y-6">
+          <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">
+            {validationModal.message}
+          </p>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setValidationModal({ open: false, title: '', message: '' })}
+              className="btn-primary"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
       </Modal>
 
       <SuccessModal

@@ -20,13 +20,14 @@
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   --border-radius: 16px;
+  --width: min(560px, calc(100vw - 32px));
 }
 
 [data-sonner-toast][data-styled='true'] {
-  font-size: 15px;
-  line-height: 1.5;
-  gap: 10px;
-  padding: 14px 16px;
+  font-size: 16px;
+  line-height: 1.55;
+  gap: 12px;
+  padding: 16px 20px;
   border-color: rgba(148, 163, 184, 0.35);
   box-shadow: 0 18px 40px -28px rgba(15, 23, 42, 0.45),
               0 8px 18px -14px rgba(15, 23, 42, 0.2);
@@ -34,6 +35,11 @@
 
 [data-sonner-toast][data-styled='true'] [data-title] {
   font-weight: 600;
+}
+
+[data-sonner-toast][data-styled='true'] [data-icon] {
+  height: 18px;
+  width: 18px;
 }
 
 [data-sonner-toast][data-styled='true'] [data-description] {
