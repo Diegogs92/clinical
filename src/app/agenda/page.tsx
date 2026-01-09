@@ -34,6 +34,7 @@ import { useConfirm } from '@/contexts/ConfirmContext';
 import { usePayments } from '@/contexts/PaymentsContext';
 import { useCalendarSync } from '@/contexts/CalendarSyncContext';
 import { formatCurrency } from '@/lib/formatCurrency';
+import AppointmentForm from '@/components/appointments/AppointmentForm';
 
 export default function AgendaPage() {
   const { user, userProfile } = useAuth();
@@ -57,6 +58,8 @@ export default function AgendaPage() {
   const [professionals, setProfessionals] = useState<UserProfile[]>([]);
   const [schedulePreferences, setSchedulePreferences] = useState<SchedulePreference[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editingAppointment, setEditingAppointment] = useState<any | null>(null);
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; appointment?: any; mode: 'total' | 'partial'; amount: string }>({
     open: false,
     appointment: undefined,
@@ -272,6 +275,21 @@ export default function AgendaPage() {
   const selectedProfessionalName = selectedEvent
     ? professionals.find(p => p.uid === selectedEvent.userId)?.displayName || ''
     : '';
+  const canEditSelected = selectedEvent ? canModifyAppointment(selectedEvent, user, userProfile) : false;
+
+  const handleReschedule = (evt: any) => {
+    if (!canModifyAppointment(evt, user, userProfile)) {
+      toast.error(getPermissionDeniedMessage());
+      return;
+    }
+    if (evt.appointmentType === 'personal') {
+      toast.error('Este evento personal no se puede reprogramar desde esta vista');
+      return;
+    }
+    setEditingAppointment(evt);
+    setShowForm(true);
+    setSelectedEvent(null);
+  };
 
   const handleAttendance = (evt: any) => {
     if (!canModifyAppointment(evt, user, userProfile)) {
@@ -1456,6 +1474,17 @@ export default function AgendaPage() {
               </button>
             </div>
 
+            <button
+              onClick={() => handleReschedule(selectedEvent)}
+              disabled={!canEditSelected || selectedEvent.status === 'cancelled'}
+              className="group relative overflow-hidden w-full bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-600 hover:via-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg p-3.5 transition-all duration-200 hover:shadow-lg hover:scale-[1.02] disabled:hover:scale-100 disabled:cursor-not-allowed"
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Calendar className="w-5 h-5" />
+                <span className="text-sm font-bold">Reprogramar turno</span>
+              </div>
+            </button>
+
             {/* Acciones secundarias */}
             <div className="flex gap-3">
               <button
@@ -1483,6 +1512,32 @@ export default function AgendaPage() {
           </div>
         </Modal>
       )}
+
+      <Modal
+        open={showForm}
+        onClose={() => {
+          setShowForm(false);
+          setEditingAppointment(null);
+        }}
+        title={editingAppointment ? 'Reprogramar turno' : 'Nuevo turno'}
+        maxWidth="max-w-2xl"
+      >
+        <AppointmentForm
+          initialData={editingAppointment || undefined}
+          onCreated={() => {
+            setShowForm(false);
+            setEditingAppointment(null);
+            refreshAppointments();
+          }}
+          onCancel={() => {
+            setShowForm(false);
+            setEditingAppointment(null);
+          }}
+          onSuccess={(title: string, message: string) => {
+            setSuccessModal({ show: true, title, message });
+          }}
+        />
+      </Modal>
 
       <Modal
         open={paymentDialog.open}
