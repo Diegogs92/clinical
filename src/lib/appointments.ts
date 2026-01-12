@@ -115,7 +115,7 @@ export async function getAllAppointments(): Promise<Appointment[]> {
 }
 
 /**
- * Verifica si un turno se solapa con otros turnos existentes (sin importar profesional)
+ * Verifica si un turno se solapa con otros turnos existentes del profesional
  * @param professionalId ID del profesional (solo informativo)
  * @param date Fecha del turno en formato YYYY-MM-DD
  * @param startTime Hora de inicio en formato HH:mm
@@ -138,13 +138,14 @@ export async function getOverlappingAppointments(
     excludeAppointmentId,
   });
 
-  // Obtener todos los turnos (sin filtrar por profesional)
+  // Obtener turnos del profesional seleccionado para evitar errores de permisos
   let appointments: Appointment[];
   if (mockMode || !db) {
-    appointments = mockAppointments;
+    appointments = mockAppointments.filter(a => a.userId === professionalId);
   } else {
     const colRef = collection(db as Firestore, APPOINTMENTS_COLLECTION);
-    const snap = await getDocs(colRef);
+    const q = query(colRef, where('userId', '==', professionalId));
+    const snap = await getDocs(q);
     appointments = snap.docs.map(d => ({ ...d.data() as Appointment, id: d.id }));
   }
 
