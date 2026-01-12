@@ -40,15 +40,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Convert appointment to calendar event
-    // El appointment.date siempre viene como ISO string UTC (ej: "2026-01-12T18:00:00.000Z")
-    // que ya representa correctamente la hora local convertida a UTC
-    const start = new Date(appointment.date);
-    if (!Number.isFinite(start.getTime())) {
+    // El appointment.date viene como ISO string UTC (ej: "2026-01-30T13:00:00.000Z")
+    // que representa 10:00 AM Argentina convertido a UTC
+    const startUtc = new Date(appointment.date);
+    if (!Number.isFinite(startUtc.getTime())) {
       throw new Error('Invalid appointment date');
     }
 
+    // Para Google Calendar, debemos enviar la hora en formato ISO pero con la hora local
+    // de Argentina, no UTC. Extraemos los componentes de la hora original.
+    const dateStr = typeof appointment.date === 'string'
+      ? appointment.date.split('T')[0]
+      : appointment.date;
+
+    // Usar startTime y endTime que ya están en hora local
+    const startDateTime = `${dateStr}T${appointment.startTime}:00`;
+    const endDateTime = `${dateStr}T${appointment.endTime}:00`;
+
+    const start = new Date(startDateTime);
+    const end = new Date(endDateTime);
     const durationMinutes = Number(appointment.duration || 0);
-    const end = new Date(start.getTime() + durationMinutes * 60000);
 
     // Diferenciar entre eventos personales y turnos de pacientes
     const isPersonalEvent = appointment.appointmentType === 'personal';
@@ -130,12 +141,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       },
       start: {
-        dateTime: start.toISOString(),
-        timeZone: 'UTC',
+        dateTime: startDateTime,
+        timeZone: 'America/Argentina/Buenos_Aires',
       },
       end: {
-        dateTime: end.toISOString(),
-        timeZone: 'UTC',
+        dateTime: endDateTime,
+        timeZone: 'America/Argentina/Buenos_Aires',
       },
     };
 
