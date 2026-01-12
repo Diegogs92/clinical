@@ -12,17 +12,17 @@ export function canModifyAppointment(
   currentUser: { uid: string } | null,
   userProfile: UserProfile | null
 ): boolean {
-  if (!currentUser || !userProfile) {
+  if (!currentUser) {
     return false;
-  }
-
-  // Los administradores pueden editar/eliminar cualquier turno
-  if (userProfile.role === 'administrador') {
-    return true;
   }
 
   // El creador del turno puede editar/eliminar su propio turno
   if (appointment.userId === currentUser.uid) {
+    return true;
+  }
+
+  // Los administradores pueden editar/eliminar cualquier turno
+  if (userProfile?.role === 'administrador') {
     return true;
   }
 

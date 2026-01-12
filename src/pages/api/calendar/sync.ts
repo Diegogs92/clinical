@@ -30,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     oauth2Client.setCredentials({ refresh_token: refreshToken });
 
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-    const calendarId = process.env.GOOGLE_CALENDAR_ID || 'primary';
+    const calendarId = 'primary';
 
     if (action === 'delete' && appointment.googleCalendarEventId) {
       await calendar.events.delete({
