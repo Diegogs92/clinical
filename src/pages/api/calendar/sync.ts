@@ -40,25 +40,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Convert appointment to calendar event
-    // Extraer la fecha base (YYYY-MM-DD) del campo date
-    const dateStr = typeof appointment.date === 'string'
-      ? appointment.date.split('T')[0]
-      : appointment.date;
+    // El appointment.date siempre viene como ISO string UTC (ej: "2026-01-12T18:00:00.000Z")
+    // que ya representa correctamente la hora local convertida a UTC
+    const start = new Date(appointment.date);
+    if (!Number.isFinite(start.getTime())) {
+      throw new Error('Invalid appointment date');
+    }
 
-    const buildUtcEventTimes = () => {
-      if (typeof appointment.date !== 'string' || !appointment.date.includes('T')) {
-        return null;
-      }
-      const start = new Date(appointment.date);
-      if (!Number.isFinite(start.getTime())) {
-        return null;
-      }
-      const durationMinutes = Number(appointment.duration || 0);
-      const end = new Date(start.getTime() + durationMinutes * 60000);
-      return { start, end };
-    };
-
-    const utcTimes = buildUtcEventTimes();
+    const durationMinutes = Number(appointment.duration || 0);
+    const end = new Date(start.getTime() + durationMinutes * 60000);
 
     // Diferenciar entre eventos personales y turnos de pacientes
     const isPersonalEvent = appointment.appointmentType === 'personal';
@@ -139,12 +129,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           patientName: appointment.patientName || '',
         },
       },
-      start: utcTimes
-        ? { dateTime: utcTimes.start.toISOString(), timeZone: 'UTC' }
-        : { dateTime: `${dateStr}T${appointment.startTime}:00`, timeZone: 'America/Argentina/Buenos_Aires' },
-      end: utcTimes
-        ? { dateTime: utcTimes.end.toISOString(), timeZone: 'UTC' }
-        : { dateTime: `${dateStr}T${appointment.endTime}:00`, timeZone: 'America/Argentina/Buenos_Aires' },
+      start: {
+        dateTime: start.toISOString(),
+        timeZone: 'UTC',
+      },
+      end: {
+        dateTime: end.toISOString(),
+        timeZone: 'UTC',
+      },
     };
 
     // Agregar color si se especificó el consultorio
