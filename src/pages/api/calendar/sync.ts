@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { google } from 'googleapis';
 import { Appointment } from '@/types';
-import { combineDateAndTime } from '@/lib/dateUtils';
 import { requireUserId } from '@/lib/serverAuth';
 import { getOAuthClient, getRefreshToken } from '@/lib/googleCalendarAuth';
 import { listPaymentsByAppointment } from '@/lib/payments';
@@ -46,20 +45,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ? appointment.date.split('T')[0]
       : appointment.date;
 
-    // Combinar fecha con startTime y endTime usando la utilidad correcta
-    const startDateTime = combineDateAndTime(dateStr, appointment.startTime);
-    const endDateTime = combineDateAndTime(dateStr, appointment.endTime);
-
-    // Crear strings ISO en hora local (sin conversión UTC)
+    // Construir strings dateTime sin conversiones de zona horaria
     // Formato: YYYY-MM-DDTHH:mm:ss
-    const formatDateTimeForCalendar = (date: Date): string => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      const seconds = String(date.getSeconds()).padStart(2, '0');
-      return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+    const formatDateTimeForCalendar = (date: string, time: string): string => {
+      return `${date}T${time}:00`;
     };
 
     // Diferenciar entre eventos personales y turnos de pacientes
@@ -142,11 +131,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       },
       start: {
-        dateTime: formatDateTimeForCalendar(startDateTime),
+        dateTime: formatDateTimeForCalendar(dateStr, appointment.startTime),
         timeZone: 'America/Argentina/Buenos_Aires',
       },
       end: {
-        dateTime: formatDateTimeForCalendar(endDateTime),
+        dateTime: formatDateTimeForCalendar(dateStr, appointment.endTime),
         timeZone: 'America/Argentina/Buenos_Aires',
       },
     };
