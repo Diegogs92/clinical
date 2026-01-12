@@ -45,11 +45,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ? appointment.date.split('T')[0]
       : appointment.date;
 
-    // Construir strings dateTime sin conversiones de zona horaria
-    // Formato: YYYY-MM-DDTHH:mm:ss
+    // Construir strings dateTime con offset fijo para evitar desfases
+    // Formato: YYYY-MM-DDTHH:mm:ss-03:00
     const formatDateTimeForCalendar = (date: string, time: string): string => {
-      return `${date}T${time}:00`;
+      return `${date}T${time}:00-03:00`;
     };
+    const calendarTimeZone = 'America/Argentina/Buenos_Aires';
 
     // Diferenciar entre eventos personales y turnos de pacientes
     const isPersonalEvent = appointment.appointmentType === 'personal';
@@ -132,11 +133,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
       start: {
         dateTime: formatDateTimeForCalendar(dateStr, appointment.startTime),
-        timeZone: 'America/Argentina/Buenos_Aires',
+        timeZone: calendarTimeZone,
       },
       end: {
         dateTime: formatDateTimeForCalendar(dateStr, appointment.endTime),
-        timeZone: 'America/Argentina/Buenos_Aires',
+        timeZone: calendarTimeZone,
       },
     };
 
