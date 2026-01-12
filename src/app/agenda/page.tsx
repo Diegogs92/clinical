@@ -1592,6 +1592,10 @@ export default function AgendaPage() {
             setEditingAppointment(null);
           }}
           onSuccess={(title: string, message: string) => {
+            // Cerrar el modal del formulario inmediatamente
+            setShowForm(false);
+            setEditingAppointment(null);
+            // Mostrar el modal de éxito
             setSuccessModal({ show: true, title, message });
           }}
         />
