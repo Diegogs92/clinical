@@ -47,18 +47,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error('Invalid appointment date');
     }
 
-    // Para Google Calendar, debemos enviar la hora en formato ISO pero con la hora local
-    // de Argentina, no UTC. Extraemos los componentes de la hora original.
+    // Para Google Calendar, debemos enviar la hora local de Argentina
+    // Extraer la fecha del appointment.date
     const dateStr = typeof appointment.date === 'string'
       ? appointment.date.split('T')[0]
       : appointment.date;
 
-    // Usar startTime y endTime que ya están en hora local
-    const startDateTime = `${dateStr}T${appointment.startTime}:00`;
-    const endDateTime = `${dateStr}T${appointment.endTime}:00`;
+    // Construir fechas/horas en formato RFC3339 para la zona horaria de Argentina
+    // Formato: YYYY-MM-DDTHH:MM:SS-03:00
+    const argTimezone = '-03:00'; // Argentina (UTC-3)
+    const startDateTime = `${dateStr}T${appointment.startTime}:00${argTimezone}`;
+    const endDateTime = `${dateStr}T${appointment.endTime}:00${argTimezone}`;
 
-    const start = new Date(startDateTime);
-    const end = new Date(endDateTime);
     const durationMinutes = Number(appointment.duration || 0);
 
     // Diferenciar entre eventos personales y turnos de pacientes
@@ -142,11 +142,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
       start: {
         dateTime: startDateTime,
-        timeZone: 'America/Argentina/Buenos_Aires',
       },
       end: {
         dateTime: endDateTime,
-        timeZone: 'America/Argentina/Buenos_Aires',
       },
     };
 
