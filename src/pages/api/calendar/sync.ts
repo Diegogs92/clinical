@@ -45,10 +45,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ? appointment.date.split('T')[0]
       : appointment.date;
 
-    const calendarTimeZone = 'America/Argentina/Buenos_Aires';
-    const formatDateTimeForCalendar = (date: string, time: string): string => {
-      return `${date}T${time}:00`;
+    const buildUtcEventTimes = () => {
+      if (typeof appointment.date !== 'string' || !appointment.date.includes('T')) {
+        return null;
+      }
+      const start = new Date(appointment.date);
+      if (!Number.isFinite(start.getTime())) {
+        return null;
+      }
+      const durationMinutes = Number(appointment.duration || 0);
+      const end = new Date(start.getTime() + durationMinutes * 60000);
+      return { start, end };
     };
+
+    const utcTimes = buildUtcEventTimes();
 
     // Diferenciar entre eventos personales y turnos de pacientes
     const isPersonalEvent = appointment.appointmentType === 'personal';
@@ -129,14 +139,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           patientName: appointment.patientName || '',
         },
       },
-      start: {
-        dateTime: formatDateTimeForCalendar(dateStr, appointment.startTime),
-        timeZone: calendarTimeZone,
-      },
-      end: {
-        dateTime: formatDateTimeForCalendar(dateStr, appointment.endTime),
-        timeZone: calendarTimeZone,
-      },
+      start: utcTimes
+        ? { dateTime: utcTimes.start.toISOString(), timeZone: 'UTC' }
+        : { dateTime: `${dateStr}T${appointment.startTime}:00`, timeZone: 'America/Argentina/Buenos_Aires' },
+      end: utcTimes
+        ? { dateTime: utcTimes.end.toISOString(), timeZone: 'UTC' }
+        : { dateTime: `${dateStr}T${appointment.endTime}:00`, timeZone: 'America/Argentina/Buenos_Aires' },
     };
 
     // Agregar color si se especificó el consultorio

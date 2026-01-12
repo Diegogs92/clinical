@@ -17,7 +17,7 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return signedIn() && getUserRole() == 'administrador';
+      return signedIn() && (getUserRole() == 'administrador' || getUserRole() == 'adminsitrador');
     }
 
     function isSecretary() {

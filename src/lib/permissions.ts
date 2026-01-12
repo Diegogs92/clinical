@@ -59,100 +59,104 @@ export const PERMISSIONS = {
   },
 } as const;
 
+function normalizeRole(userRole: UserRole | string): UserRole | 'adminsitrador' {
+  return userRole === 'adminsitrador' ? 'administrador' : userRole;
+}
+
 /**
  * Verifica si un rol tiene un permiso específico
  */
-export function hasPermission(userRole: UserRole, permission: UserRole[]): boolean {
-  return permission.includes(userRole);
+export function hasPermission(userRole: UserRole | string, permission: UserRole[]): boolean {
+  return permission.includes(normalizeRole(userRole) as UserRole);
 }
 
 /**
  * Verifica si el usuario puede ver todos los turnos
  */
-export function canViewAllAppointments(userRole: UserRole): boolean {
+export function canViewAllAppointments(userRole: UserRole | string): boolean {
   return hasPermission(userRole, PERMISSIONS.appointments.viewAll);
 }
 
 /**
  * Verifica si el usuario puede crear turnos para otros profesionales
  */
-export function canCreateAppointmentsForOthers(userRole: UserRole): boolean {
+export function canCreateAppointmentsForOthers(userRole: UserRole | string): boolean {
   return hasPermission(userRole, PERMISSIONS.appointments.createForOthers);
 }
 
 /**
  * Verifica si el usuario puede editar turnos de otros profesionales
  */
-export function canEditAppointmentsForOthers(userRole: UserRole): boolean {
+export function canEditAppointmentsForOthers(userRole: UserRole | string): boolean {
   return hasPermission(userRole, PERMISSIONS.appointments.editForOthers);
 }
 
 /**
  * Verifica si el usuario puede eliminar turnos de otros profesionales
  */
-export function canDeleteAppointmentsForOthers(userRole: UserRole): boolean {
+export function canDeleteAppointmentsForOthers(userRole: UserRole | string): boolean {
   return hasPermission(userRole, PERMISSIONS.appointments.deleteForOthers);
 }
 
 /**
  * Verifica si el usuario puede crear eventos personales
  */
-export function canCreatePersonalEvents(userRole: UserRole): boolean {
+export function canCreatePersonalEvents(userRole: UserRole | string): boolean {
   return hasPermission(userRole, PERMISSIONS.personalEvents.create);
 }
 
 /**
  * Verifica si el usuario puede marcar asistencias
  */
-export function canMarkAttendance(userRole: UserRole): boolean {
+export function canMarkAttendance(userRole: UserRole | string): boolean {
   return hasPermission(userRole, PERMISSIONS.attendance.mark);
 }
 
 /**
  * Verifica si el usuario puede registrar pagos
  */
-export function canRegisterPayments(userRole: UserRole): boolean {
+export function canRegisterPayments(userRole: UserRole | string): boolean {
   return hasPermission(userRole, PERMISSIONS.payments.register);
 }
 
 /**
  * Verifica si el usuario puede ver todos los pagos
  */
-export function canViewAllPayments(userRole: UserRole): boolean {
+export function canViewAllPayments(userRole: UserRole | string): boolean {
   return hasPermission(userRole, PERMISSIONS.payments.viewAll);
 }
 
 /**
  * Verifica si el usuario puede ver todos los pacientes
  */
-export function canViewAllPatients(userRole: UserRole): boolean {
+export function canViewAllPatients(userRole: UserRole | string): boolean {
   return hasPermission(userRole, PERMISSIONS.patients.viewAll);
 }
 
 /**
  * Verifica si el usuario puede gestionar otros usuarios
  */
-export function canManageUsers(userRole: UserRole): boolean {
+export function canManageUsers(userRole: UserRole | string): boolean {
   return hasPermission(userRole, PERMISSIONS.settings.manageUsers);
 }
 
 /**
  * Verifica si el usuario es administrador
  */
-export function isAdministrator(userRole: UserRole): boolean {
-  return userRole === 'administrador';
+export function isAdministrator(userRole: UserRole | string): boolean {
+  return normalizeRole(userRole) === 'administrador';
 }
 
 /**
  * Verifica si el usuario es profesional
  */
-export function isProfessional(userRole: UserRole): boolean {
-  return userRole === 'profesional';
+export function isProfessional(userRole: UserRole | string): boolean {
+  return normalizeRole(userRole) === 'profesional';
 }
 
 /**
  * Verifica si el usuario es secretaria
  */
-export function isSecretary(userRole: UserRole): boolean {
-  return userRole === 'secretaria';
+export function isSecretary(userRole: UserRole | string): boolean {
+  return normalizeRole(userRole) === 'secretaria';
 }
