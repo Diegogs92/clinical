@@ -45,14 +45,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ? appointment.date.split('T')[0]
       : appointment.date;
 
-    const buildDateTimeFromAppointment = (baseIso: string) => {
-      const start = new Date(baseIso);
-      if (!Number.isFinite(start.getTime())) {
-        return null;
-      }
-      const durationMinutes = Number(appointment.duration || 0);
-      const end = new Date(start.getTime() + durationMinutes * 60000);
-      return { start, end };
+    const calendarTimeZone = 'America/Argentina/Buenos_Aires';
+    const formatDateTimeForCalendar = (date: string, time: string): string => {
+      return `${date}T${time}:00`;
     };
 
     // Diferenciar entre eventos personales y turnos de pacientes
@@ -122,9 +117,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return parts.join('\n');
     };
 
-    const fromAppointment = typeof appointment.date === 'string' && appointment.date.includes('T')
-      ? buildDateTimeFromAppointment(appointment.date)
-      : null;
     const event: any = {
       summary: eventSummary,
       description: await buildDescription(),
@@ -137,12 +129,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           patientName: appointment.patientName || '',
         },
       },
-      start: fromAppointment
-        ? { dateTime: fromAppointment.start.toISOString() }
-        : { dateTime: `${dateStr}T${appointment.startTime}:00-03:00`, timeZone: 'America/Argentina/Buenos_Aires' },
-      end: fromAppointment
-        ? { dateTime: fromAppointment.end.toISOString() }
-        : { dateTime: `${dateStr}T${appointment.endTime}:00-03:00`, timeZone: 'America/Argentina/Buenos_Aires' },
+      start: {
+        dateTime: formatDateTimeForCalendar(dateStr, appointment.startTime),
+        timeZone: calendarTimeZone,
+      },
+      end: {
+        dateTime: formatDateTimeForCalendar(dateStr, appointment.endTime),
+        timeZone: calendarTimeZone,
+      },
     };
 
     // Agregar color si se especificó el consultorio
