@@ -45,12 +45,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ? appointment.date.split('T')[0]
       : appointment.date;
 
-    // Construir strings dateTime con offset fijo para evitar desfases
-    // Formato: YYYY-MM-DDTHH:mm:ss-03:00
-    const formatDateTimeForCalendar = (date: string, time: string): string => {
-      return `${date}T${time}:00-03:00`;
+    const buildDateTimeFromAppointment = (baseIso: string) => {
+      const start = new Date(baseIso);
+      if (!Number.isFinite(start.getTime())) {
+        return null;
+      }
+      const durationMinutes = Number(appointment.duration || 0);
+      const end = new Date(start.getTime() + durationMinutes * 60000);
+      return { start, end };
     };
-    const calendarTimeZone = 'America/Argentina/Buenos_Aires';
 
     // Diferenciar entre eventos personales y turnos de pacientes
     const isPersonalEvent = appointment.appointmentType === 'personal';
@@ -119,6 +122,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return parts.join('\n');
     };
 
+    const fromAppointment = typeof appointment.date === 'string' && appointment.date.includes('T')
+      ? buildDateTimeFromAppointment(appointment.date)
+      : null;
     const event: any = {
       summary: eventSummary,
       description: await buildDescription(),
@@ -131,14 +137,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           patientName: appointment.patientName || '',
         },
       },
-      start: {
-        dateTime: formatDateTimeForCalendar(dateStr, appointment.startTime),
-        timeZone: calendarTimeZone,
-      },
-      end: {
-        dateTime: formatDateTimeForCalendar(dateStr, appointment.endTime),
-        timeZone: calendarTimeZone,
-      },
+      start: fromAppointment
+        ? { dateTime: fromAppointment.start.toISOString() }
+        : { dateTime: `${dateStr}T${appointment.startTime}:00-03:00`, timeZone: 'America/Argentina/Buenos_Aires' },
+      end: fromAppointment
+        ? { dateTime: fromAppointment.end.toISOString() }
+        : { dateTime: `${dateStr}T${appointment.endTime}:00-03:00`, timeZone: 'America/Argentina/Buenos_Aires' },
     };
 
     // Agregar color si se especificó el consultorio
