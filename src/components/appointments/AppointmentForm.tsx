@@ -290,13 +290,28 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
       console.error('[AppointmentForm] Error code:', e?.code);
       console.error('[AppointmentForm] Error message:', e?.message);
 
-      // Mensajes de error más específicos
+      // Mensajes de error mas especificos
+      const errorTitle = initialData ? 'No se pudo actualizar el turno' : 'No se pudo crear el turno';
       if (e?.code === 'permission-denied') {
-        toast.error('No tienes permisos para crear este turno. Verifica las reglas de Firestore.');
+        setValidationModal({
+          open: true,
+          title: errorTitle,
+          message: 'No tienes permisos para crear este turno. Verifica las reglas de Firestore.'
+        });
       } else if (e?.message?.includes('index')) {
-        toast.error('Se necesita crear un índice en Firestore. Revisa la consola del navegador.');
+        setValidationModal({
+          open: true,
+          title: errorTitle,
+          message: 'Se necesita crear un indice en Firestore. Revisa la consola del navegador.'
+        });
       } else {
-        toast.error(initialData ? `Error al actualizar turno: ${e?.message || 'Error desconocido'}` : `Error al crear turno: ${e?.message || 'Error desconocido'}`);
+        setValidationModal({
+          open: true,
+          title: errorTitle,
+          message: initialData
+            ? `Error al actualizar turno: ${e?.message || 'Error desconocido'}`
+            : `Error al crear turno: ${e?.message || 'Error desconocido'}`
+        });
       }
     } finally {
       setLoading(false);

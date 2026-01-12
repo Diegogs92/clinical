@@ -59,8 +59,8 @@ service cloud.firestore {
         // Admin y secretaria crean turnos para cualquiera
         isAdmin() ||
         isSecretary() ||
-        // Profesionales crean turnos solo para sí mismos
-        (isProfessional() && request.resource.data.userId == request.auth.uid)
+        // Creacion de turnos propios aunque falte perfil/rol
+        (request.resource.data.userId == request.auth.uid)
       );
       allow update: if signedIn() && (
         isAdmin() ||
