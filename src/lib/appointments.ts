@@ -55,9 +55,9 @@ export async function updateAppointment(id: string, data: Partial<Appointment>) 
   await updateDoc(docRef, { ...data, updatedAt: new Date().toISOString() });
 }
 
-export async function deleteAppointment(id: string) {
+export async function deleteAppointment(id: string, ownerId?: string) {
   // Primero eliminar los pagos asociados al turno
-  const payments = await listPaymentsByAppointment(id);
+  const payments = await listPaymentsByAppointment(id, ownerId);
   await Promise.all(payments.map(p => deletePayment(p.id)));
 
   // Luego eliminar el turno

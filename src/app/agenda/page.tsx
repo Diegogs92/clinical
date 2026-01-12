@@ -447,7 +447,7 @@ export default function AgendaPage() {
         await syncAppointment(evt, 'delete', evt.googleCalendarEventId);
       }
 
-      await deleteAppointment(evt.id);
+      await deleteAppointment(evt.id, evt.userId);
       await refreshAppointments();
       await refreshPayments();
       await refreshPendingPayments();

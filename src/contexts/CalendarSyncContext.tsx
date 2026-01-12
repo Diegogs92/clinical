@@ -183,7 +183,7 @@ export function CalendarSyncProvider({ children }: Props) {
         if (event.status === 'cancelled') {
           if (target) {
             console.log(`[CalendarSync] Eliminando turno cancelado: ${target.id}`);
-            await deleteAppointment(target.id);
+            await deleteAppointment(target.id, target.userId);
           }
           continue;
         }

@@ -80,7 +80,7 @@ service cloud.firestore {
         && (isAdmin() || isSecretary() || isOwner(request.resource.data.userId))
         && request.resource.data.keys().hasAll(['patientId', 'patientName', 'amount', 'method', 'status', 'date', 'consultationType', 'userId', 'createdAt', 'updatedAt']);
       allow update: if signedIn() && (isAdmin() || isSecretary() || isOwner(resource.data.userId));
-      allow delete: if isAdmin();
+      allow delete: if signedIn() && (isAdmin() || isOwner(resource.data.userId));
     }
 
     // Insurances
