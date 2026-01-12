@@ -59,8 +59,12 @@ export const PERMISSIONS = {
   },
 } as const;
 
-function normalizeRole(userRole: UserRole | string): UserRole | 'adminsitrador' {
-  return userRole === 'adminsitrador' ? 'administrador' : userRole;
+function normalizeRole(userRole: UserRole | string): UserRole {
+  if (userRole === 'adminsitrador') return 'administrador';
+  if (userRole === 'administrador' || userRole === 'profesional' || userRole === 'secretaria') {
+    return userRole;
+  }
+  return 'profesional';
 }
 
 /**
