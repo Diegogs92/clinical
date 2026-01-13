@@ -11,12 +11,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  console.log('[Calendar Sync] Handler called with action:', req.body?.action);
+
   try {
     const { appointment, action, officeColorId } = req.body as {
       appointment: Appointment;
       action: 'create' | 'update' | 'delete';
       officeColorId?: string;
     };
+
+    console.log('[Calendar Sync] Processing appointment:', {
+      id: appointment?.id,
+      patientName: appointment?.patientName,
+      date: appointment?.date,
+      startTime: appointment?.startTime,
+      userId: appointment?.userId
+    });
 
     const requesterUid = await requireUserId(req);
     const targetUid = appointment?.userId || requesterUid;
