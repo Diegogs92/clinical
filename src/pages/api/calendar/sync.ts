@@ -47,18 +47,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error('Invalid appointment date');
     }
 
-    // Para Google Calendar, debemos enviar la hora local de Argentina
-    // Extraer la fecha del appointment.date
-    const dateStr = typeof appointment.date === 'string'
-      ? appointment.date.split('T')[0]
-      : appointment.date;
-
-    // Usar startTime y endTime directamente (ya están en hora local)
-    const startDateTime = `${dateStr}T${appointment.startTime}:00`;
-    const endDateTime = `${dateStr}T${appointment.endTime}:00`;
-    const timeZone = 'America/Argentina/Buenos_Aires';
-
     const durationMinutes = Number(appointment.duration || 0);
+    const endUtc = new Date(startUtc.getTime() + durationMinutes * 60000);
+
+    // Convertir de UTC a hora local de Argentina para Google Calendar
+    // Argentina es UTC-3, necesitamos formatear la fecha/hora en esa zona
+    const formatInArgentina = (date: Date) => {
+      // Obtener componentes en UTC
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(date.getUTCDate()).padStart(2, '0');
+      const hours = date.getUTCHours();
+      const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+      const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+
+      // Ajustar por el offset de Argentina (UTC-3 = -180 minutos)
+      const argDate = new Date(date.getTime() - 3 * 60 * 60 * 1000);
+      const argHours = String(argDate.getUTCHours()).padStart(2, '0');
+      const argMinutes = String(argDate.getUTCMinutes()).padStart(2, '0');
+      const argDay = String(argDate.getUTCDate()).padStart(2, '0');
+      const argMonth = String(argDate.getUTCMonth() + 1).padStart(2, '0');
+      const argYear = argDate.getUTCFullYear();
+
+      return `${argYear}-${argMonth}-${argDay}T${argHours}:${argMinutes}:00`;
+    };
+
+    const startDateTime = formatInArgentina(startUtc);
+    const endDateTime = formatInArgentina(endUtc);
+    const timeZone = 'America/Argentina/Buenos_Aires';
 
     // Diferenciar entre eventos personales y turnos de pacientes
     const isPersonalEvent = appointment.appointmentType === 'personal';
