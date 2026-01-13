@@ -40,41 +40,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Convert appointment to calendar event
-    // El appointment.date viene como ISO string UTC (ej: "2026-01-30T13:00:00.000Z")
-    // que representa 10:00 AM Argentina convertido a UTC
-    const startUtc = new Date(appointment.date);
-    if (!Number.isFinite(startUtc.getTime())) {
-      throw new Error('Invalid appointment date');
+    // Usamos los campos startTime y endTime que ya están en hora local de Argentina
+    // y la fecha del campo date (que aunque está en UTC, la fecha suele ser la misma)
+
+    // Extraer solo la fecha (YYYY-MM-DD) del appointment.date
+    let dateOnly: string;
+    if (typeof appointment.date === 'string') {
+      // Si es ISO string, extraer fecha
+      if (appointment.date.includes('T')) {
+        // Convertir UTC a fecha local Argentina
+        const utcDate = new Date(appointment.date);
+        // Restar 3 horas para obtener fecha en Argentina
+        const argDate = new Date(utcDate.getTime() - 3 * 60 * 60 * 1000);
+        const year = argDate.getUTCFullYear();
+        const month = String(argDate.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(argDate.getUTCDate()).padStart(2, '0');
+        dateOnly = `${year}-${month}-${day}`;
+      } else {
+        dateOnly = appointment.date;
+      }
+    } else {
+      dateOnly = appointment.date;
     }
 
-    const durationMinutes = Number(appointment.duration || 0);
-    const endUtc = new Date(startUtc.getTime() + durationMinutes * 60000);
-
-    // Convertir de UTC a hora local de Argentina para Google Calendar
-    // Argentina es UTC-3, necesitamos formatear la fecha/hora en esa zona
-    const formatInArgentina = (date: Date) => {
-      // Obtener componentes en UTC
-      const year = date.getUTCFullYear();
-      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-      const day = String(date.getUTCDate()).padStart(2, '0');
-      const hours = date.getUTCHours();
-      const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-      const seconds = String(date.getUTCSeconds()).padStart(2, '0');
-
-      // Ajustar por el offset de Argentina (UTC-3 = -180 minutos)
-      const argDate = new Date(date.getTime() - 3 * 60 * 60 * 1000);
-      const argHours = String(argDate.getUTCHours()).padStart(2, '0');
-      const argMinutes = String(argDate.getUTCMinutes()).padStart(2, '0');
-      const argDay = String(argDate.getUTCDate()).padStart(2, '0');
-      const argMonth = String(argDate.getUTCMonth() + 1).padStart(2, '0');
-      const argYear = argDate.getUTCFullYear();
-
-      return `${argYear}-${argMonth}-${argDay}T${argHours}:${argMinutes}:00`;
-    };
-
-    const startDateTime = formatInArgentina(startUtc);
-    const endDateTime = formatInArgentina(endUtc);
+    // Construir datetime usando la fecha local y las horas locales (startTime/endTime)
+    // que ya están guardadas en el appointment
+    const startDateTime = `${dateOnly}T${appointment.startTime}:00`;
+    const endDateTime = `${dateOnly}T${appointment.endTime}:00`;
     const timeZone = 'America/Argentina/Buenos_Aires';
+
+    const durationMinutes = Number(appointment.duration || 0);
 
     // Diferenciar entre eventos personales y turnos de pacientes
     const isPersonalEvent = appointment.appointmentType === 'personal';
