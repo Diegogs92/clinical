@@ -72,11 +72,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       dateOnly = appointment.date;
     }
 
-    // Construir datetime en formato RFC3339 con offset de Argentina (-03:00)
-    // Esto le dice explícitamente a Google: "esta hora es en timezone UTC-3"
-    const argOffset = '-03:00';
-    const startDateTime = `${dateOnly}T${appointment.startTime}:00${argOffset}`;
-    const endDateTime = `${dateOnly}T${appointment.endTime}:00${argOffset}`;
+    // Construir datetime SIN offset (solo fecha y hora local)
+    // y especificar timezone por separado para que Google lo interprete correctamente
+    const startDateTime = `${dateOnly}T${appointment.startTime}:00`;
+    const endDateTime = `${dateOnly}T${appointment.endTime}:00`;
+    const timeZone = 'America/Argentina/Buenos_Aires';
 
     const durationMinutes = Number(appointment.duration || 0);
 
@@ -89,6 +89,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       extractedDate: dateOnly,
       formattedStart: startDateTime,
       formattedEnd: endDateTime,
+      timeZone: timeZone,
       patientName: appointment.patientName
     });
 
@@ -173,9 +174,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
       start: {
         dateTime: startDateTime,
+        timeZone: timeZone,
       },
       end: {
         dateTime: endDateTime,
+        timeZone: timeZone,
       },
     };
 
