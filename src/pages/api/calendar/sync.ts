@@ -40,13 +40,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Convert appointment to calendar event
-    // Usamos los campos startTime y endTime que ya están en hora local de Argentina
-    // y la fecha del campo date (que aunque está en UTC, la fecha suele ser la misma)
+    // El appointment.date está en UTC, pero startTime/endTime están en hora local Argentina
+    // Necesitamos enviar a Google Calendar con formato RFC3339 incluyendo offset
 
     // Extraer solo la fecha (YYYY-MM-DD) del appointment.date
     let dateOnly: string;
     if (typeof appointment.date === 'string') {
-      // Si es ISO string, extraer fecha
       if (appointment.date.includes('T')) {
         // Convertir UTC a fecha local Argentina
         const utcDate = new Date(appointment.date);
@@ -63,11 +62,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       dateOnly = appointment.date;
     }
 
-    // Construir datetime usando la fecha local y las horas locales (startTime/endTime)
-    // que ya están guardadas en el appointment
-    const startDateTime = `${dateOnly}T${appointment.startTime}:00`;
-    const endDateTime = `${dateOnly}T${appointment.endTime}:00`;
-    const timeZone = 'America/Argentina/Buenos_Aires';
+    // Construir datetime en formato RFC3339 con offset de Argentina (-03:00)
+    // Esto le dice explícitamente a Google: "esta hora es en timezone UTC-3"
+    const argOffset = '-03:00';
+    const startDateTime = `${dateOnly}T${appointment.startTime}:00${argOffset}`;
+    const endDateTime = `${dateOnly}T${appointment.endTime}:00${argOffset}`;
 
     const durationMinutes = Number(appointment.duration || 0);
 
@@ -152,11 +151,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
       start: {
         dateTime: startDateTime,
-        timeZone: timeZone,
       },
       end: {
         dateTime: endDateTime,
-        timeZone: timeZone,
       },
     };
 
