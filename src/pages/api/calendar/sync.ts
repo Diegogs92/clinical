@@ -70,6 +70,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const durationMinutes = Number(appointment.duration || 0);
 
+    // Debug logging
+    console.log('[Calendar Sync] Appointment data:', {
+      appointmentId: appointment.id,
+      dateFromDB: appointment.date,
+      startTimeFromDB: appointment.startTime,
+      endTimeFromDB: appointment.endTime,
+      extractedDate: dateOnly,
+      formattedStart: startDateTime,
+      formattedEnd: endDateTime,
+      patientName: appointment.patientName
+    });
+
     // Diferenciar entre eventos personales y turnos de pacientes
     const isPersonalEvent = appointment.appointmentType === 'personal';
     const eventSummary = isPersonalEvent
@@ -161,6 +173,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (officeColorId) {
       event.colorId = officeColorId;
     }
+
+    console.log('[Calendar Sync] Sending to Google Calendar:', {
+      action,
+      eventId: appointment.googleCalendarEventId,
+      start: event.start,
+      end: event.end,
+      summary: event.summary
+    });
 
     if (action === 'update' && appointment.googleCalendarEventId) {
       const response = await calendar.events.update({
