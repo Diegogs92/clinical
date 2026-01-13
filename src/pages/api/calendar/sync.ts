@@ -72,13 +72,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       dateOnly = appointment.date;
     }
 
-    // Construir datetime SIN offset (solo fecha y hora local)
-    // y especificar timezone por separado para que Google lo interprete correctamente
-    const startDateTime = `${dateOnly}T${appointment.startTime}:00`;
-    const endDateTime = `${dateOnly}T${appointment.endTime}:00`;
-    const timeZone = 'America/Argentina/Buenos_Aires';
-
+    // Usar directamente el UTC del appointment.date
+    // Este es el formato más confiable y universal
+    const startUtc = new Date(appointment.date);
     const durationMinutes = Number(appointment.duration || 0);
+    const endUtc = new Date(startUtc.getTime() + durationMinutes * 60000);
+
+    const startDateTime = startUtc.toISOString();
+    const endDateTime = endUtc.toISOString();
 
     // Debug logging
     console.log('[Calendar Sync] Appointment data:', {
@@ -87,9 +88,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       startTimeFromDB: appointment.startTime,
       endTimeFromDB: appointment.endTime,
       extractedDate: dateOnly,
-      formattedStart: startDateTime,
-      formattedEnd: endDateTime,
-      timeZone: timeZone,
+      startUTC: startDateTime,
+      endUTC: endDateTime,
       patientName: appointment.patientName
     });
 
@@ -174,11 +174,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
       start: {
         dateTime: startDateTime,
-        timeZone: timeZone,
       },
       end: {
         dateTime: endDateTime,
-        timeZone: timeZone,
       },
     };
 
