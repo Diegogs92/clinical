@@ -11,22 +11,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  console.log('[Calendar Sync] Handler called with action:', req.body?.action);
-
   try {
     const { appointment, action, officeColorId } = req.body as {
       appointment: Appointment;
       action: 'create' | 'update' | 'delete';
       officeColorId?: string;
     };
-
-    console.log('[Calendar Sync] Processing appointment:', {
-      id: appointment?.id,
-      patientName: appointment?.patientName,
-      date: appointment?.date,
-      startTime: appointment?.startTime,
-      userId: appointment?.userId
-    });
 
     const requesterUid = await requireUserId(req);
     const targetUid = appointment?.userId || requesterUid;
@@ -80,18 +70,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const startDateTime = startUtc.toISOString();
     const endDateTime = endUtc.toISOString();
-
-    // Debug logging
-    console.log('[Calendar Sync] Appointment data:', {
-      appointmentId: appointment.id,
-      dateFromDB: appointment.date,
-      startTimeFromDB: appointment.startTime,
-      endTimeFromDB: appointment.endTime,
-      extractedDate: dateOnly,
-      startUTC: startDateTime,
-      endUTC: endDateTime,
-      patientName: appointment.patientName
-    });
 
     // Diferenciar entre eventos personales y turnos de pacientes
     const isPersonalEvent = appointment.appointmentType === 'personal';
@@ -184,14 +162,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (officeColorId) {
       event.colorId = officeColorId;
     }
-
-    console.log('[Calendar Sync] Sending to Google Calendar:', {
-      action,
-      eventId: appointment.googleCalendarEventId,
-      start: event.start,
-      end: event.end,
-      summary: event.summary
-    });
 
     if (action === 'update' && appointment.googleCalendarEventId) {
       const response = await calendar.events.update({
