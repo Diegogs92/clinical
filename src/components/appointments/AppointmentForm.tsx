@@ -9,6 +9,7 @@ import { createAppointment, updateAppointment, getOverlappingAppointments } from
 import { getBlockedSlotsInRange } from '@/lib/blockedSlots';
 import { createPayment } from '@/lib/payments';
 import { useState, useEffect, useCallback, useMemo, memo } from 'react';
+import { format } from 'date-fns';
 import { Appointment, UserProfile } from '@/types';
 import { useToast } from '@/hooks/useToast';
 import Modal from '@/components/ui/Modal';
@@ -82,6 +83,18 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
       notes: initialData?.notes || '',
     },
   });
+  const parseLocalDate = (value: string): Date | null => {
+    if (!value) return null;
+    if (value.includes('T')) {
+      const parsed = new Date(value);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+    const parts = value.split('-').map(Number);
+    if (parts.length !== 3) return null;
+    const [year, month, day] = parts;
+    if (!year || !month || !day) return null;
+    return new Date(year, month - 1, day, 0, 0, 0, 0);
+  };
 
   useEffect(() => {
     if (!validationModal.open) return;
@@ -434,10 +447,10 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
               control={control}
               render={({ field }) => (
                 <DateTimePicker
-                  selected={field.value ? new Date(field.value) : null}
+                  selected={field.value ? parseLocalDate(field.value) : null}
                   onChange={(date) => {
                     if (date) {
-                      const formatted = date.toISOString().split('T')[0];
+                      const formatted = format(date, 'yyyy-MM-dd');
                       field.onChange(formatted);
                     }
                   }}
