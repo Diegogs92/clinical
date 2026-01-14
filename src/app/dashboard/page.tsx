@@ -5,9 +5,9 @@ export const dynamic = 'force-dynamic';
 import DashboardLayout from '@/components/DashboardLayout';
 import StatsOverview from '@/components/dashboard/StatsOverview';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { updateAppointment, deleteAppointment } from '@/lib/appointments';
+import { getAllAppointments, updateAppointment, deleteAppointment } from '@/lib/appointments';
 import { Appointment, UserProfile } from '@/types';
 import { canModifyAppointment, getPermissionDeniedMessage } from '@/lib/appointmentPermissions';
 import { usePatients } from '@/contexts/PatientsContext';
@@ -42,7 +42,7 @@ const statusOptions = [
 export default function DashboardPage() {
   const { user, userProfile } = useAuth();
   const { patients } = usePatients();
-  const { appointments, loading: appointmentsLoading, refreshAppointments } = useAppointments();
+  const { appointments: baseAppointments, loading: baseLoading, refreshAppointments } = useAppointments();
   const { payments, pendingPayments, refreshPayments, refreshPendingPayments } = usePayments();
   const confirm = useConfirm();
   const { syncAppointment } = useCalendarSync();
@@ -68,12 +68,42 @@ export default function DashboardPage() {
     title: '',
     message: ''
   });
+  const [dashboardAppointments, setDashboardAppointments] = useState<Appointment[]>([]);
+  const [dashboardLoading, setDashboardLoading] = useState(false);
+  const defaultFilterSet = useRef(false);
+  const isProfessionalRole = userProfile?.role === 'profesional';
+  const appointments = isProfessionalRole ? dashboardAppointments : baseAppointments;
+  const appointmentsLoading = isProfessionalRole ? dashboardLoading : baseLoading;
 
   const toast = useToast();
   const openNewAppointment = () => {
     setEditingAppointment(null);
     setShowForm(true);
   };
+
+  const refreshDashboardAppointments = useCallback(async () => {
+    if (!user || !userProfile) {
+      setDashboardAppointments([]);
+      setDashboardLoading(false);
+      return [];
+    }
+    if (!isProfessionalRole) {
+      const list = await refreshAppointments();
+      setDashboardAppointments(list);
+      return list;
+    }
+    setDashboardLoading(true);
+    try {
+      const list = await getAllAppointments();
+      setDashboardAppointments(list);
+      return list;
+    } catch (error) {
+      console.error('[Dashboard] Error fetching all appointments', error);
+      return [];
+    } finally {
+      setDashboardLoading(false);
+    }
+  }, [isProfessionalRole, refreshAppointments, user, userProfile]);
 
   // Reloj en vivo
   useEffect(() => {
@@ -97,10 +127,25 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
+    if (!isProfessionalRole) {
+      setDashboardAppointments(baseAppointments);
+      return;
+    }
+    refreshDashboardAppointments();
+  }, [baseAppointments, isProfessionalRole, refreshDashboardAppointments]);
+
+  useEffect(() => {
+    if (!user || !isProfessionalRole || defaultFilterSet.current) return;
+    setFilterPatient('mine');
+    defaultFilterSet.current = true;
+  }, [isProfessionalRole, user]);
+
+  useEffect(() => {
     const processStatuses = async () => {
       const current = new Date();
       const toUpdate = appointments.filter(a => {
         if (['cancelled', 'no-show', 'completed'].includes(a.status)) return false;
+        if (!canModifyAppointment(a, user, userProfile)) return false;
         const end = combineDateAndTime(a.date, a.endTime);
         return end < current;
       });
@@ -109,14 +154,14 @@ export default function DashboardPage() {
 
       try {
         await Promise.all(toUpdate.map(a => updateAppointment(a.id, { status: 'completed' })));
-        await refreshAppointments();
+        await refreshDashboardAppointments();
       } catch (error) {
         console.error('Error auto-actualizando estados:', error);
       }
     };
 
     processStatuses();
-  }, [appointments, refreshAppointments]);
+  }, [appointments, refreshDashboardAppointments, user, userProfile]);
 
   const windowRange = useMemo(() => {
     const startBase = new Date(now);
@@ -165,12 +210,19 @@ export default function DashboardPage() {
       .filter(a => {
         const d = new Date(a.date);
         const inDateRange = d >= windowRange.start && d < windowRange.end;
-        const matchesPatient = !filterPatient || a.patientId === filterPatient;
+        const patient = patients.find(p => p.id === a.patientId);
+        const matchesPatient = (() => {
+          if (!filterPatient) return true;
+          if (filterPatient === 'mine') {
+            if (a.userId === user?.uid) return true;
+            return patient?.userId === user?.uid;
+          }
+          return a.patientId === filterPatient;
+        })();
         const matchesStatus = !filterStatus || a.status === filterStatus;
 
         // Búsqueda mejorada: incluye nombre, DNI y obra social
         if (query) {
-          const patient = patients.find(p => p.id === a.patientId);
           const professionalName = getProfessionalName(a.userId) || '';
           const patientDNI = patient?.dni || '';
           const patientInsurance = patient?.insuranceName || '';
@@ -184,7 +236,7 @@ export default function DashboardPage() {
         return inDateRange && matchesPatient && matchesStatus;
       })
       .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
-  }, [appointments, filterPatient, filterStatus, search, windowRange.end, windowRange.start, professionals, patients]);
+  }, [appointments, filterPatient, filterStatus, search, windowRange.end, windowRange.start, professionals, patients, user?.uid]);
 
   const paymentStateFor = useMemo(() => {
     return (appt: Appointment) => {
@@ -222,6 +274,12 @@ export default function DashboardPage() {
       return { color: 'text-red-500', status: 'unpaid', remainingAmount: appt.fee, isDue: true };
     };
   }, [now, payments, pendingPayments]);
+
+  const canViewFees = (appt: Appointment) => {
+    if (!user || !userProfile) return false;
+    if (userProfile.role === 'administrador' || userProfile.role === 'secretaria') return true;
+    return appt.userId === user.uid;
+  };
 
   const handleEdit = (appt: Appointment) => {
     // Verificar permisos: solo admin puede editar turnos de otros
@@ -281,7 +339,7 @@ export default function DashboardPage() {
         });
       }
 
-      await refreshAppointments();
+      await refreshDashboardAppointments();
       await refreshPayments();
       await refreshPendingPayments();
       setSuccessModal({ show: true, title: 'Turno cancelado', message: 'El turno se ha cancelado correctamente' });
@@ -316,7 +374,7 @@ export default function DashboardPage() {
       }
 
       await deleteAppointment(appt.id, appt.userId);
-      await refreshAppointments();
+      await refreshDashboardAppointments();
       await refreshPayments();
       await refreshPendingPayments();
       setSuccessModal({ show: true, title: 'Turno eliminado', message: 'El turno se ha eliminado correctamente' });
@@ -327,6 +385,10 @@ export default function DashboardPage() {
   };
 
   const openPaymentDialog = (appt: Appointment) => {
+    if (!canViewFees(appt)) {
+      toast.error('No tienes permisos para ver honorarios de este turno');
+      return;
+    }
     if (!appt.fee) {
       toast.error('Este turno no tiene honorarios asignados');
       return;
@@ -404,9 +466,9 @@ export default function DashboardPage() {
       if (isTotal && appt.status !== 'completed') {
         console.log('[submitPayment] Actualizando estado del turno...');
         await updateAppointment(appt.id, { status: 'completed' });
-        await refreshAppointments();
+        await refreshDashboardAppointments();
       } else {
-        await refreshAppointments();
+        await refreshDashboardAppointments();
       }
 
       console.log('[submitPayment] Refrescando pagos...');
@@ -479,9 +541,10 @@ export default function DashboardPage() {
                   onChange={e => setFilterPatient(e.target.value)}
                   className="input-field"
                 >
+                  {isProfessionalRole && <option value="mine">Mis pacientes</option>}
                   <option value="">Todos los pacientes</option>
                   {patients.map(p => (
-                  <option key={p.id} value={p.id}>{`${p.lastName}, ${p.firstName}`}</option>
+                    <option key={p.id} value={p.id}>{`${p.lastName}, ${p.firstName}`}</option>
                   ))}
                 </select>
                 <select
@@ -533,6 +596,7 @@ export default function DashboardPage() {
                         const fecha = d.toLocaleDateString();
                         const professional = professionals.find(p => p.uid === a.userId);
                         const paymentState = paymentStateFor(a);
+                        const canSeeFees = canViewFees(a);
 
                         // Determinar el label del estado de pago
                           const getPaymentStatusLabel = () => {
@@ -586,7 +650,7 @@ export default function DashboardPage() {
                               )}
                             </td>
                             <td>
-                              {a.fee ? (
+                              {canSeeFees && a.fee ? (
                                 <span className="font-semibold text-elegant-900 dark:text-white">
                                   ${formatCurrency(a.fee)}
                                 </span>
@@ -620,7 +684,7 @@ export default function DashboardPage() {
                               )}
                             </td>
                             <td>
-                              {a.fee && permissions.canRegisterPayments ? (
+                              {canSeeFees && a.fee && permissions.canRegisterPayments ? (
                                 <button
                                   onClick={() => openPaymentDialog(a)}
                                   disabled={paymentState.status === 'paid'}
@@ -638,7 +702,7 @@ export default function DashboardPage() {
                                 >
                                   {getPaymentStatusLabel()}
                                 </button>
-                              ) : a.fee ? (
+                              ) : canSeeFees && a.fee ? (
                                 <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${
                                   !paymentState.isDue && paymentState.status !== 'paid'
                                     ? 'bg-elegant-100/80 text-elegant-700 dark:bg-elegant-800/60 dark:text-elegant-300'
@@ -668,6 +732,7 @@ export default function DashboardPage() {
                     const d = new Date(a.date);
                     const fecha = d.toLocaleDateString();
                     const paymentState = paymentStateFor(a);
+                    const canSeeFees = canViewFees(a);
                     const professional = professionals.find(p => p.uid === a.userId);
                     const paymentLabel =
                       paymentState.status === 'paid'
@@ -722,7 +787,7 @@ export default function DashboardPage() {
                           </div>
 
                           <div className="flex items-center gap-2">
-                            {a.fee ? (
+                            {canSeeFees && a.fee ? (
                               <span className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold flex-1 ${paymentTone}`}>
                                 <DollarSign className="w-3.5 h-3.5" />
                                 {paymentLabel}
@@ -740,7 +805,7 @@ export default function DashboardPage() {
                           </div>
 
                           <div className="grid grid-cols-4 gap-1.5 pt-2.5 border-t border-elegant-200 dark:border-elegant-700">
-                            {permissions.canRegisterPayments && (
+                            {canSeeFees && permissions.canRegisterPayments && (
                               <button
                                 onClick={() => openPaymentDialog(a)}
                                 disabled={!a.fee}
@@ -792,7 +857,7 @@ export default function DashboardPage() {
               onCreated={(appt: Appointment) => {
                 setShowForm(false);
                 setEditingAppointment(null);
-                refreshAppointments();
+                refreshDashboardAppointments();
               }}
               onCancel={()=>{setShowForm(false); setEditingAppointment(null);}}
               onSuccess={(title: string, message: string) => {
@@ -808,18 +873,37 @@ export default function DashboardPage() {
         maxWidth="max-w-md"
       >
         {paymentDialog.appointment && (() => {
-          const paymentState = paymentStateFor(paymentDialog.appointment);
+          const appt = paymentDialog.appointment;
+          if (!canViewFees(appt)) {
+            return (
+              <div className="space-y-4">
+                <p className="text-sm text-elegant-600 dark:text-elegant-300">
+                  No tienes permisos para ver honorarios de este turno.
+                </p>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    className="btn-secondary text-sm px-4 py-2"
+                    onClick={() => setPaymentDialog({ open: false, appointment: undefined, mode: 'total', amount: '' })}
+                  >
+                    Cerrar
+                  </button>
+                </div>
+              </div>
+            );
+          }
+          const paymentState = paymentStateFor(appt);
           const remainingAmount = paymentState.remainingAmount;
-          const deposit = paymentDialog.appointment.deposit || 0;
+          const deposit = appt.deposit || 0;
 
           return (
             <div className="space-y-4">
               <div className="space-y-1">
                 <p className="text-sm text-elegant-600 dark:text-elegant-300">
-                  {paymentDialog.appointment.patientName || paymentDialog.appointment.title || 'Evento'}
+                  {appt.patientName || appt.title || 'Evento'}
                 </p>
                 <p className="text-lg font-semibold text-primary-dark dark:text-white">
-                  Honorarios: ${paymentDialog.appointment.fee ? formatCurrency(paymentDialog.appointment.fee) : '0'}
+                  Honorarios: ${appt.fee ? formatCurrency(appt.fee) : '0'}
                 </p>
                 {deposit > 0 && (
                   <p className="text-sm text-amber-600 dark:text-amber-400">
