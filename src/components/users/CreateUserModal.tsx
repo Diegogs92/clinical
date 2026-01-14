@@ -40,7 +40,7 @@ export default function CreateUserModal({ onClose, onCreate }: CreateUserModalPr
       case 'secretaria':
         return 'Puede ver todo y marcar asistencias/pagos (sin crear/editar turnos).';
       case 'profesional':
-        return 'Solo ve y gestiona sus propios turnos y pacientes.';
+        return 'Ve todos los pacientes y gestiona sus propios turnos.';
     }
   }, [formData.role]);
 

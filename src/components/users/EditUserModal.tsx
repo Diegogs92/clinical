@@ -63,7 +63,7 @@ export default function EditUserModal({ user, onClose, onSave, allowEmailEdit, a
       case 'secretaria':
         return 'Puede ver todos los turnos y marcar asistencias/pagos (sin crear/editar turnos)';
       case 'profesional':
-        return 'Solo puede ver y gestionar sus propios turnos y pacientes';
+        return 'Ve todos los pacientes y gestiona sus propios turnos';
       default:
         return '';
     }

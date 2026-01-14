@@ -43,7 +43,7 @@ export const PERMISSIONS = {
 
   // Permisos de pacientes
   patients: {
-    viewAll: ['administrador', 'secretaria'] as UserRole[],
+    viewAll: ['administrador', 'secretaria', 'profesional'] as UserRole[],
     viewOwn: ['profesional'] as UserRole[],
     create: ['administrador', 'profesional'] as UserRole[],
     edit: ['administrador', 'profesional'] as UserRole[],
