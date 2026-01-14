@@ -75,8 +75,25 @@ export default function PatientList() {
   };
 
   const getPatientPending = (patientId: string) => {
-    const pending = payments.filter(p => p.patientId === patientId && p.status === 'pending');
-    return pending.reduce((sum, p) => sum + p.amount, 0);
+    const patientAppointments = appointments.filter(
+      a => a.patientId === patientId && a.fee && (a.status === 'scheduled' || a.status === 'confirmed')
+    );
+    if (!patientAppointments.length) return 0;
+
+    const completedPayments = payments
+      .filter(p => p.patientId === patientId && p.status === 'completed' && p.appointmentId)
+      .reduce((acc, payment) => {
+        const prev = acc.get(payment.appointmentId as string) || 0;
+        acc.set(payment.appointmentId as string, prev + payment.amount);
+        return acc;
+      }, new Map<string, number>());
+
+    return patientAppointments.reduce((sum, appt) => {
+      const paid = completedPayments.get(appt.id) || 0;
+      const deposit = appt.deposit || 0;
+      const remaining = Math.max(0, (appt.fee || 0) - deposit - paid);
+      return sum + remaining;
+    }, 0);
   };
 
   // Helper function to get formatted birthdate and next birthday
