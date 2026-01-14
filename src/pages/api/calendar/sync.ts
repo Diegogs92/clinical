@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+﻿import { NextApiRequest, NextApiResponse } from 'next';
 import { google } from 'googleapis';
 import { Appointment } from '@/types';
 import { combineDateAndTime } from '@/lib/dateUtils';
@@ -41,7 +41,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Convert appointment to calendar event
-    // Enviar fecha+hora local con zona horaria expl�cita para evitar corrimientos.
+    // Send local date+time with an explicit time zone to avoid offsets.
     const dateOnly = appointment.date.includes('T')
       ? appointment.date.split('T')[0]
       : appointment.date;
@@ -70,10 +70,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Diferenciar entre eventos personales y turnos de pacientes
     const isPersonalEvent = appointment.appointmentType === 'personal';
     const eventSummary = isPersonalEvent
-      ? `🔒 ${appointment.title || 'Evento Personal'}`
-      : `👤 Turno: ${appointment.patientName || 'Sin nombre'}`;
+      ? `Evento: ${appointment.title || 'Evento Personal'}`
+      : `Turno: ${appointment.patientName || 'Sin nombre'}`;
 
-    // Construir descripción con información de pago y tratamiento
+    // Construir descripcion con informacion de pago y tratamiento
     const buildDescription = async () => {
       if (isPersonalEvent) {
         return appointment.notes || '';
@@ -84,10 +84,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Agregar tratamiento
       if (appointment.type) {
         const treatmentNames: { [key: string]: string } = {
-          'odontologia-general': 'Odontología General',
+          'odontologia-general': 'Odontologia General',
           'ortodoncia': 'Ortodoncia',
           'endodoncia': 'Endodoncia',
-          'armonizacion': 'Armonización'
+          'armonizacion': 'Armonizacion'
         };
         const treatmentName = treatmentNames[appointment.type] || appointment.type;
         parts.push(`Tratamiento: ${treatmentName}`);
@@ -114,7 +114,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (fee > 0) {
         parts.push(`Honorarios: $${formatCurrency(fee)}`);
         if (deposit > 0) {
-          parts.push(`Seña: $${formatCurrency(deposit)}`);
+          parts.push(`Sena: $${formatCurrency(deposit)}`);
         }
         if (paymentsTotal > 0) {
           parts.push(`Pagos: $${formatCurrency(paymentsTotal)}`);
@@ -122,7 +122,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (pending > 0) {
           parts.push(`Pendiente: $${formatCurrency(pending)}`);
         } else if (totalPaid >= fee) {
-          parts.push('Estado: Pagado ✓');
+          parts.push('Estado: Pagado');
         }
       }
 
@@ -156,7 +156,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     };
 
-    // Agregar color si se especificó el consultorio
+    // Agregar color si se especifico el consultorio
     if (officeColorId) {
       event.colorId = officeColorId;
     }
@@ -180,7 +180,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } catch (error: any) {
     console.error('Calendar sync error:', error);
 
-    // Manejo específico de errores de Google Calendar
+    // Manejo especifico de errores de Google Calendar
     if (error.code === 401 || error.message?.includes('invalid_grant')) {
       return res.status(401).json({
         error: 'Conexion con Google Calendar expirada. Reconecta tu cuenta.',
@@ -200,5 +200,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 }
-
-
