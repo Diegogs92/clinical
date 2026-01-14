@@ -68,10 +68,15 @@ export default function PatientList() {
   const getPatientPaid = (patientId: string) => {
     const patientAppointments = appointments.filter(a => a.patientId === patientId && a.fee);
     const patientPayments = payments.filter(p => p.patientId === patientId);
-    const completed = patientPayments.filter(p => p.status === 'completed' || p.status === 'pending');
+    const completed = patientPayments.filter(p => p.status === 'completed');
     const paymentsTotal = completed.reduce((sum, p) => sum + p.amount, 0);
     const depositsTotal = patientAppointments.reduce((sum, appt) => sum + (appt.deposit || 0), 0);
     return paymentsTotal + depositsTotal;
+  };
+
+  const getPatientPending = (patientId: string) => {
+    const pending = payments.filter(p => p.patientId === patientId && p.status === 'pending');
+    return pending.reduce((sum, p) => sum + p.amount, 0);
   };
 
   // Helper function to get formatted birthdate and next birthday
@@ -215,12 +220,13 @@ export default function PatientList() {
           <colgroup>
             <col className="w-14" />
             <col className="w-44" />
-            <col className="w-56" />
-            <col className="w-28" />
+            <col className="w-48" />
+            <col className="w-24" />
             <col className="w-24" />
             <col className="w-28" />
             <col className="w-32" />
             <col className="w-20" />
+            <col className="w-24" />
             <col className="w-24" />
             <col className="w-24" />
           </colgroup>
@@ -235,6 +241,7 @@ export default function PatientList() {
               <th>Tel&eacute;fono</th>
               <th>Turnos</th>
               <th>Pagado</th>
+              <th>Pendiente</th>
               <th>Deuda</th>
             </tr>
           </thead>
@@ -242,6 +249,7 @@ export default function PatientList() {
             {filtered.map(p => {
               const patientAppts = getPatientAppointments(p.id);
               const totalPaid = getPatientPaid(p.id);
+              const pendingAmount = getPatientPending(p.id);
               const debt = getPatientDebt(p.id);
               const { age, nextBirthday } = getBirthdateInfo(p.birthDate);
 
@@ -296,6 +304,15 @@ export default function PatientList() {
                     )}
                   </td>
                   <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` })}>
+                    {pendingAmount > 0 ? (
+                      <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                        ${formatCurrency(pendingAmount)}
+                      </span>
+                    ) : (
+                      <span className="text-secondary dark:text-gray-500">-</span>
+                    )}
+                  </td>
+                  <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` })}>
                     {debt > 0 ? (
                       <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded-full text-xs font-semibold">
                         ${formatCurrency(debt)}
@@ -309,7 +326,7 @@ export default function PatientList() {
             })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={10} className="p-4 text-center text-black dark:text-white">Sin resultados</td>
+                <td colSpan={11} className="p-4 text-center text-black dark:text-white">Sin resultados</td>
               </tr>
             )}
           </tbody>
@@ -320,6 +337,7 @@ export default function PatientList() {
         {filtered.map(p => {
           const patientAppts = getPatientAppointments(p.id);
           const totalPaid = getPatientPaid(p.id);
+          const pendingAmount = getPatientPending(p.id);
           const debt = getPatientDebt(p.id);
 
           return (
@@ -341,7 +359,7 @@ export default function PatientList() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 mb-3 py-3 border-y border-secondary-lighter dark:border-gray-700">
+              <div className="grid grid-cols-4 gap-2 mb-3 py-3 border-y border-secondary-lighter dark:border-gray-700">
                 <div className="text-center">
                   <div className="text-xs text-secondary dark:text-gray-400 mb-1">Turnos</div>
                   <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs font-semibold">
@@ -353,6 +371,16 @@ export default function PatientList() {
                   {totalPaid > 0 ? (
                     <span className="text-green-600 dark:text-green-400 font-semibold text-sm">
                       ${formatCurrency(totalPaid)}
+                    </span>
+                  ) : (
+                    <span className="text-secondary dark:text-gray-500">-</span>
+                  )}
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-secondary dark:text-gray-400 mb-1">Pendiente</div>
+                  {pendingAmount > 0 ? (
+                    <span className="text-amber-600 dark:text-amber-400 font-semibold text-sm">
+                      ${formatCurrency(pendingAmount)}
                     </span>
                   ) : (
                     <span className="text-secondary dark:text-gray-500">-</span>
