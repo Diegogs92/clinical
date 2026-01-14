@@ -318,6 +318,11 @@ export default function AgendaPage() {
     if (userProfile.role === 'administrador' || userProfile.role === 'secretaria') return true;
     return appt.userId === user.uid;
   };
+  const canOpenDetails = (appt: any) => {
+    if (!user || !userProfile) return false;
+    if (userProfile.role === 'administrador' || userProfile.role === 'secretaria') return true;
+    return appt.userId === user.uid;
+  };
 
   const handleReschedule = (evt: any) => {
     if (!canModifyAppointment(evt, user, userProfile)) {
@@ -802,6 +807,8 @@ export default function AgendaPage() {
     const professional = professionals.find(p => p.uid === apt.userId);
     const professionalColor = professional?.color || '#38bdf8';
     const pendingAmount = calculatePending(apt);
+    const canSeeFees = canViewFees(apt);
+    const canOpen = canOpenDetails(apt);
 
     let statusColor = 'bg-sky-100 border-sky-300 dark:bg-sky-900/30 dark:border-sky-700';
     let statusText = 'text-sky-700 dark:text-sky-300';
@@ -832,10 +839,14 @@ export default function AgendaPage() {
           key={apt.id}
           draggable={canDrag}
           onDragStart={(e) => handleDragStart(e, apt)}
-          onClick={() => setSelectedEvent(apt)}
-          className={`${statusColor} border-l-2 rounded p-1.5 cursor-pointer hover:shadow-sm transition-all text-xs ${
+          onClick={() => {
+            if (canOpen) {
+              setSelectedEvent(apt);
+            }
+          }}
+          className={`${statusColor} border-l-2 rounded p-1.5 transition-all text-xs ${
             isDragging ? 'opacity-50' : ''
-          } ${canDrag ? 'cursor-move' : 'cursor-pointer'}`}
+          } ${canDrag ? 'cursor-move' : canOpen ? 'cursor-pointer hover:shadow-sm' : 'cursor-default'}`}
           style={{ borderLeftColor: professionalColor }}
         >
           <div className="flex items-center gap-1">
@@ -854,10 +865,14 @@ export default function AgendaPage() {
         key={apt.id}
         draggable={canDrag}
         onDragStart={(e) => handleDragStart(e, apt)}
-        onClick={() => setSelectedEvent(apt)}
-        className={`${statusColor} border-l-4 rounded-lg p-3 cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02] ${
+        onClick={() => {
+          if (canOpen) {
+            setSelectedEvent(apt);
+          }
+        }}
+        className={`${statusColor} border-l-4 rounded-lg p-3 transition-all duration-200 ${
           isDragging ? 'opacity-50' : ''
-        } ${canDrag ? 'cursor-move' : 'cursor-pointer'}`}
+        } ${canDrag ? 'cursor-move hover:shadow-md hover:scale-[1.02]' : canOpen ? 'cursor-pointer hover:shadow-md hover:scale-[1.02]' : 'cursor-default'}`}
         style={{ borderLeftColor: professionalColor }}
       >
         <div className="flex items-start gap-2">
@@ -888,7 +903,7 @@ export default function AgendaPage() {
             )}
 
             {/* Monto pendiente */}
-            {pendingAmount > 0 && (
+            {canSeeFees && pendingAmount > 0 && (
               <div className="flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400">
                 <DollarSign className="w-3.5 h-3.5 flex-shrink-0" />
                 <span>Pendiente: ${formatCurrency(pendingAmount)}</span>
