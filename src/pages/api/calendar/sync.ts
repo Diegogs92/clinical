@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { google } from 'googleapis';
 import { Appointment } from '@/types';
+import { combineDateAndTime } from '@/lib/dateUtils';
 import { requireUserId } from '@/lib/serverAuth';
 import { getOAuthClient, getRefreshToken } from '@/lib/googleCalendarAuth';
 import { listPaymentsByAppointment } from '@/lib/payments';
@@ -40,36 +41,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Convert appointment to calendar event
-    // El appointment.date está en UTC, pero startTime/endTime están en hora local Argentina
-    // Necesitamos enviar a Google Calendar con formato RFC3339 incluyendo offset
-
-    // Extraer solo la fecha (YYYY-MM-DD) del appointment.date
-    let dateOnly: string;
-    if (typeof appointment.date === 'string') {
-      if (appointment.date.includes('T')) {
-        // Convertir UTC a fecha local Argentina
-        const utcDate = new Date(appointment.date);
-        // Restar 3 horas para obtener fecha en Argentina
-        const argDate = new Date(utcDate.getTime() - 3 * 60 * 60 * 1000);
-        const year = argDate.getUTCFullYear();
-        const month = String(argDate.getUTCMonth() + 1).padStart(2, '0');
-        const day = String(argDate.getUTCDate()).padStart(2, '0');
-        dateOnly = `${year}-${month}-${day}`;
-      } else {
-        dateOnly = appointment.date;
-      }
-    } else {
-      dateOnly = appointment.date;
-    }
-
-    // Usar directamente el UTC del appointment.date
-    // Este es el formato más confiable y universal
-    const startUtc = new Date(appointment.date);
+    // Enviar fecha+hora local con zona horaria expl�cita para evitar corrimientos.
+    const dateOnly = appointment.date.includes('T')
+      ? appointment.date.split('T')[0]
+      : appointment.date;
+    const safeStartTime = appointment.startTime || '00:00';
+    const safeEndTime = appointment.endTime || '';
     const durationMinutes = Number(appointment.duration || 0);
-    const endUtc = new Date(startUtc.getTime() + durationMinutes * 60000);
 
-    const startDateTime = startUtc.toISOString();
-    const endDateTime = endUtc.toISOString();
+    const startLocal = combineDateAndTime(dateOnly, safeStartTime);
+    const endLocal = safeEndTime
+      ? combineDateAndTime(dateOnly, safeEndTime)
+      : new Date(startLocal.getTime() + durationMinutes * 60000);
+
+    const formatLocalDateTime = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+    };
+
+    const startDateTime = formatLocalDateTime(startLocal);
+    const endDateTime = formatLocalDateTime(endLocal);
 
     // Diferenciar entre eventos personales y turnos de pacientes
     const isPersonalEvent = appointment.appointmentType === 'personal';
@@ -152,9 +148,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
       start: {
         dateTime: startDateTime,
+        timeZone: 'America/Argentina/Buenos_Aires',
       },
       end: {
         dateTime: endDateTime,
+        timeZone: 'America/Argentina/Buenos_Aires',
       },
     };
 
@@ -202,3 +200,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 }
+
+

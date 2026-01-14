@@ -43,7 +43,7 @@ service cloud.firestore {
 
     // Patients
     match /patients/{patientId} {
-      allow read: if signedIn() && (isAdmin() || isSecretary() || isOwner(resource.data.userId));
+      allow read: if signedIn();
       allow create: if signedIn() && (
         isAdmin() ||
         (isProfessional() && request.resource.data.userId == request.auth.uid)
