@@ -906,7 +906,7 @@ export default function AgendaPage() {
             {canSeeFees && pendingAmount > 0 && (
               <div className="flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400">
                 <DollarSign className="w-3.5 h-3.5 flex-shrink-0" />
-                <span>Pendiente: ${formatCurrency(pendingAmount)}</span>
+                <span>{apt.status === 'completed' ? 'Deuda' : 'Pendiente'}: ${formatCurrency(pendingAmount)}</span>
               </div>
             )}
           </div>
