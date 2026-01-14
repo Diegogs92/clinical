@@ -17,7 +17,7 @@ import { CalendarDays, PlusCircle, Edit, DollarSign, Search, Clock, Ban, Trash2,
 import Modal from '@/components/ui/Modal';
 import SuccessModal from '@/components/ui/SuccessModal';
 import { useToast } from '@/contexts/ToastContext';
-import { translateAppointmentStatus } from '@/lib/translations';
+import { translateAppointmentStatus, translateAppointmentType } from '@/lib/translations';
 import ECGLoader from '@/components/ui/ECGLoader';
 import GlassViewSelector from '@/components/GlassViewSelector';
 import { createPayment } from '@/lib/payments';
@@ -214,8 +214,11 @@ export default function DashboardPage() {
         const matchesPatient = (() => {
           if (!filterPatient) return true;
           if (filterPatient === 'mine') {
-            if (a.userId === user?.uid) return true;
             return patient?.userId === user?.uid;
+          }
+          if (filterPatient.startsWith('pro:')) {
+            const targetId = filterPatient.slice(4);
+            return patient?.userId === targetId;
           }
           return a.patientId === filterPatient;
         })();
@@ -543,8 +546,10 @@ export default function DashboardPage() {
                 >
                   {isProfessionalRole && <option value="mine">Mis pacientes</option>}
                   <option value="">Todos los pacientes</option>
-                  {patients.map(p => (
-                    <option key={p.id} value={p.id}>{`${p.lastName}, ${p.firstName}`}</option>
+                  {professionals.map(pro => (
+                    <option key={pro.uid} value={`pro:${pro.uid}`}>
+                      {`Pacientes de ${pro.displayName || pro.email}`}
+                    </option>
                   ))}
                 </select>
                 <select
@@ -799,7 +804,7 @@ export default function DashboardPage() {
                             )}
                             {a.type && (
                               <span className="inline-flex items-center px-2.5 py-1.5 rounded-xl bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light text-[12px] font-bold">
-                                {a.type}
+                                {translateAppointmentType(a.type)}
                               </span>
                             )}
                           </div>

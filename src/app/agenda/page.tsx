@@ -28,7 +28,7 @@ import Modal from '@/components/ui/Modal';
 import SuccessModal from '@/components/ui/SuccessModal';
 import { createPayment } from '@/lib/payments';
 import { deleteAppointment } from '@/lib/appointments';
-import { translateAppointmentStatus } from '@/lib/translations';
+import { translateAppointmentStatus, translateAppointmentType } from '@/lib/translations';
 import { DollarSign, CheckCircle2, Ban as BanIcon, Trash2 } from 'lucide-react';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import { usePayments } from '@/contexts/PaymentsContext';
@@ -894,11 +894,7 @@ export default function AgendaPage() {
             {/* Tipo de tratamiento */}
             {apt.type && (
               <div className="text-xs text-elegant-600 dark:text-elegant-300">
-                {apt.type === 'odontologia-general' ? 'Odontología General' :
-                 apt.type === 'ortodoncia' ? 'Ortodoncia' :
-                 apt.type === 'endodoncia' ? 'Endodoncia' :
-                 apt.type === 'armonizacion' ? 'Armonización' :
-                 apt.type}
+                {translateAppointmentType(apt.type)}
               </div>
             )}
 

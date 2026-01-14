@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { deletePatient } from '@/lib/patients';
 import { listPayments } from '@/lib/payments';
 import { Payment } from '@/types';
-import { Trash2, Edit, Search, Calendar, DollarSign, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Trash2, Edit, Search, Calendar, DollarSign, CheckCircle, XCircle, Clock, FileText } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import ECGLoader from '@/components/ui/ECGLoader';
@@ -17,7 +17,7 @@ import { useAppointments } from '@/contexts/AppointmentsContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { combineDateAndTime } from '@/lib/dateUtils';
 import { formatCurrency } from '@/lib/formatCurrency';
-import { translateAppointmentStatus } from '@/lib/translations';
+import { translateAppointmentStatus, translateAppointmentType } from '@/lib/translations';
 import { format, parseISO, differenceInYears } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -458,6 +458,7 @@ export default function PatientList() {
         maxWidth="max-w-4xl"
       >
         {historyModal.patientId && (() => {
+          const patient = patients.find(p => p.id === historyModal.patientId);
           const patientAppts = appointments
             .filter(a => a.patientId === historyModal.patientId)
             .sort((a, b) => {
@@ -483,25 +484,103 @@ export default function PatientList() {
             notes?: string;
           }> = [];
 
+          const getEventDateTime = (value?: string, fallbackDate?: string, fallbackTime?: string) => {
+            if (value) {
+              const parsed = new Date(value);
+              if (!Number.isNaN(parsed.getTime())) {
+                return {
+                  date: parsed.toISOString().split('T')[0],
+                  time: parsed.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
+                };
+              }
+            }
+            return { date: fallbackDate || '', time: fallbackTime };
+          };
+
           // Agregar turnos
           patientAppts.forEach(appt => {
+            const typeLabel = translateAppointmentType(appt.type) || 'Consulta';
+            const createdEventTime = getEventDateTime(appt.createdAt, appt.date, appt.startTime);
             events.push({
-              date: appt.date,
-              time: appt.startTime,
+              date: createdEventTime.date,
+              time: createdEventTime.time,
               type: 'appointment',
               icon: Calendar,
               color: 'blue',
-              title: `Turno ${translateAppointmentStatus(appt.status)}`,
-              description: `${appt.type || 'Consulta'} - ${appt.startTime} a ${appt.endTime}`,
+              title: 'Turno creado',
+              description: `${typeLabel} - ${appt.startTime} a ${appt.endTime}`,
               amount: appt.fee,
               notes: appt.notes,
             });
 
+            if (appt.updatedAt && appt.updatedAt !== appt.createdAt) {
+              const updatedEventTime = getEventDateTime(appt.updatedAt, appt.date, appt.endTime);
+              events.push({
+                date: updatedEventTime.date,
+                time: updatedEventTime.time,
+                type: 'status_change',
+                icon: Edit,
+                color: 'amber',
+                title: 'Turno actualizado',
+                description: `${typeLabel} - ${appt.startTime} a ${appt.endTime}`,
+              });
+            }
+
+            if (appt.status === 'completed') {
+              const statusEventTime = getEventDateTime(appt.updatedAt, appt.date, appt.endTime);
+              events.push({
+                date: statusEventTime.date,
+                time: statusEventTime.time,
+                type: 'status_change',
+                icon: CheckCircle,
+                color: 'green',
+                title: 'Asistencia registrada',
+                description: 'Paciente presente',
+              });
+            } else if (appt.status === 'no-show') {
+              const statusEventTime = getEventDateTime(appt.updatedAt, appt.date, appt.endTime);
+              events.push({
+                date: statusEventTime.date,
+                time: statusEventTime.time,
+                type: 'status_change',
+                icon: XCircle,
+                color: 'red',
+                title: 'Asistencia registrada',
+                description: 'Paciente ausente',
+              });
+            } else if (appt.status === 'cancelled') {
+              const statusEventTime = getEventDateTime(appt.updatedAt, appt.date, appt.endTime);
+              events.push({
+                date: statusEventTime.date,
+                time: statusEventTime.time,
+                type: 'status_change',
+                icon: XCircle,
+                color: 'red',
+                title: 'Turno cancelado',
+                description: `${typeLabel} - ${appt.startTime} a ${appt.endTime}`,
+              });
+            }
+
+            if (appt.followUpDate) {
+              const reminderEventTime = getEventDateTime(appt.followUpDate);
+              const reason = appt.followUpReason ? `Motivo: ${appt.followUpReason}` : 'Recordatorio de seguimiento';
+              events.push({
+                date: reminderEventTime.date,
+                time: reminderEventTime.time,
+                type: 'status_change',
+                icon: Clock,
+                color: 'purple',
+                title: 'Recordatorio programado',
+                description: reason,
+              });
+            }
+
             // Si tiene seña, agregarla
             if (appt.deposit && appt.deposit > 0) {
+              const depositEventTime = getEventDateTime(appt.date, appt.date, appt.startTime);
               events.push({
-                date: appt.date,
-                time: appt.startTime,
+                date: depositEventTime.date,
+                time: depositEventTime.time,
                 type: 'payment',
                 icon: DollarSign,
                 color: 'amber',
@@ -511,6 +590,19 @@ export default function PatientList() {
               });
             }
           });
+
+          if (patient?.panoramicUploadedAt) {
+            const panoramicEventTime = getEventDateTime(patient.panoramicUploadedAt);
+            events.push({
+              date: panoramicEventTime.date,
+              time: panoramicEventTime.time,
+              type: 'status_change',
+              icon: FileText,
+              color: 'amber',
+              title: 'Panoramica cargada',
+              description: patient.panoramicName || 'Archivo cargado',
+            });
+          }
 
           // Agregar pagos
           patientPayments.forEach(payment => {
@@ -546,7 +638,7 @@ export default function PatientList() {
 
                   {/* Events */}
                   <div className="space-y-6">
-                    {events.map((event, index) => {
+                  {events.map((event, index) => {
                       const Icon = event.icon;
                       const colorClasses = {
                         blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
@@ -554,6 +646,7 @@ export default function PatientList() {
                         amber: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
                         yellow: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400',
                         red: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
+                        purple: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
                       };
 
                       return (
