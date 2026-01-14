@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAppointments } from '@/contexts/AppointmentsContext';
@@ -11,7 +11,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { format, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, isWithinInterval, startOfDay, endOfDay, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, isSameMonth, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Calendar, Clock, User, Ban, ChevronLeft, ChevronRight, X, PlusCircle, FileText, GripVertical } from 'lucide-react';
-import { BlockedSlot, SchedulePreference } from '@/types';
+import { Appointment, BlockedSlot, SchedulePreference } from '@/types';
 import {
   getBlockedSlotsByUser,
   createBlockedSlot,
@@ -20,7 +20,7 @@ import {
 import {
   getAllSchedulePreferences,
 } from '@/lib/schedulePreferences';
-import { updateAppointment } from '@/lib/appointments';
+import { getAllAppointments, updateAppointment } from '@/lib/appointments';
 import { combineDateAndTime } from '@/lib/dateUtils';
 import { listProfessionals } from '@/lib/users';
 import { UserProfile } from '@/types';
@@ -39,7 +39,7 @@ import AppointmentForm from '@/components/appointments/AppointmentForm';
 export default function AgendaPage() {
   const { user, userProfile } = useAuth();
   const toast = useToast();
-  const { appointments, loading, refreshAppointments } = useAppointments();
+  const { appointments: baseAppointments, loading: baseLoading, refreshAppointments } = useAppointments();
   const { patients } = usePatients();
   const router = useRouter();
   const confirm = useConfirm();
@@ -47,6 +47,8 @@ export default function AgendaPage() {
   const { syncAppointment } = useCalendarSync();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showBlockModal, setShowBlockModal] = useState(false);
+  const [agendaAppointments, setAgendaAppointments] = useState<Appointment[]>([]);
+  const [agendaLoading, setAgendaLoading] = useState(false);
   const [blockedSlots, setBlockedSlots] = useState<BlockedSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [blockForm, setBlockForm] = useState({
@@ -94,6 +96,33 @@ export default function AgendaPage() {
     date: undefined,
     birthdays: [],
   });
+  const isProfessionalRole = userProfile?.role === 'profesional';
+  const appointments = isProfessionalRole ? agendaAppointments : baseAppointments;
+  const loading = isProfessionalRole ? agendaLoading : baseLoading;
+
+  const refreshAgendaAppointments = useCallback(async () => {
+    if (!user || !userProfile) {
+      setAgendaAppointments([]);
+      setAgendaLoading(false);
+      return [];
+    }
+    if (!isProfessionalRole) {
+      const list = await refreshAppointments();
+      setAgendaAppointments(list);
+      return list;
+    }
+    setAgendaLoading(true);
+    try {
+      const list = await getAllAppointments();
+      setAgendaAppointments(list);
+      return list;
+    } catch (error) {
+      console.error('[Agenda] Error fetching all appointments', error);
+      return [];
+    } finally {
+      setAgendaLoading(false);
+    }
+  }, [isProfessionalRole, refreshAppointments, user, userProfile]);
 
   // Cargar franjas bloqueadas al montar el componente
   useEffect(() => {
@@ -116,6 +145,14 @@ export default function AgendaPage() {
 
     loadBlockedSlots();
   }, [user]);
+
+  useEffect(() => {
+    if (!isProfessionalRole) {
+      setAgendaAppointments(baseAppointments);
+      return;
+    }
+    refreshAgendaAppointments();
+  }, [baseAppointments, isProfessionalRole, refreshAgendaAppointments]);
 
   // Cargar profesionales (para colores) y preferencias de horarios
   useEffect(() => {
@@ -276,6 +313,11 @@ export default function AgendaPage() {
     ? professionals.find(p => p.uid === selectedEvent.userId)?.displayName || ''
     : '';
   const canEditSelected = selectedEvent ? canModifyAppointment(selectedEvent, user, userProfile) : false;
+  const canViewFees = (appt: any) => {
+    if (!user || !userProfile) return false;
+    if (userProfile.role === 'administrador' || userProfile.role === 'secretaria') return true;
+    return appt.userId === user.uid;
+  };
 
   const handleReschedule = (evt: any) => {
     if (!canModifyAppointment(evt, user, userProfile)) {
@@ -305,7 +347,7 @@ export default function AgendaPage() {
 
     try {
       await updateAppointment(evt.id, { status });
-      await refreshAppointments();
+      await refreshAgendaAppointments();
       setAttendanceDialog({ open: false, appointment: undefined });
       if (status === 'completed') {
         setReminderForm({ value: '', unit: 'months', reason: '' });
@@ -349,7 +391,7 @@ export default function AgendaPage() {
         followUpMonths: reminderForm.unit === 'months' ? valueNum : 0,
         noReminder: false,
       });
-      await refreshAppointments();
+      await refreshAgendaAppointments();
       setReminderDialog({ open: false, appointment: undefined });
       setSuccessModal({
         show: true,
@@ -417,7 +459,7 @@ export default function AgendaPage() {
         });
       }
 
-      await refreshAppointments();
+      await refreshAgendaAppointments();
       await refreshPayments();
       await refreshPendingPayments();
       setSuccessModal({ show: true, title: 'Turno cancelado', message: 'El turno se ha cancelado correctamente' });
@@ -448,7 +490,7 @@ export default function AgendaPage() {
       }
 
       await deleteAppointment(evt.id, evt.userId);
-      await refreshAppointments();
+      await refreshAgendaAppointments();
       await refreshPayments();
       await refreshPendingPayments();
       setSelectedEvent(null);
@@ -460,6 +502,10 @@ export default function AgendaPage() {
   };
 
   const openPaymentDialog = (appt: any) => {
+    if (!canViewFees(appt)) {
+      toast.error('No tienes permisos para ver honorarios de este turno');
+      return;
+    }
     if (!appt.fee) {
       toast.error('Este turno no tiene honorarios asignados');
       return;
@@ -536,7 +582,7 @@ export default function AgendaPage() {
         await updateAppointment(appt.id, { status: 'completed' });
       }
 
-      await refreshAppointments();
+      await refreshAgendaAppointments();
       await refreshPayments();
       await refreshPendingPayments();
 
@@ -667,7 +713,7 @@ export default function AgendaPage() {
         await updateAppointment(draggedAppointment.id, { googleCalendarEventId: nextEventId });
       }
 
-      await refreshAppointments();
+      await refreshAgendaAppointments();
       setSuccessModal({ show: true, title: 'Turno reprogramado', message: 'El turno se ha reprogramado correctamente' });
     } catch (error) {
       console.error('Error moviendo turno:', error);
@@ -1452,7 +1498,7 @@ export default function AgendaPage() {
                 </div>
 
                 {/* Honorarios */}
-                {selectedEvent.fee && (
+                {selectedEvent.fee && canViewFees(selectedEvent) && (
                   <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-3 border border-green-200 dark:border-green-800">
                     {(() => {
                       const paymentSummary = paymentSummaryFor(selectedEvent);
@@ -1503,19 +1549,21 @@ export default function AgendaPage() {
 
             {/* Acciones principales */}
             <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => {
-                  openPaymentDialog(selectedEvent);
-                  setSelectedEvent(null);
-                }}
-                disabled={!selectedEvent.fee || selectedEvent.status === 'cancelled'}
-                className="group relative overflow-hidden bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 hover:from-green-600 hover:via-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg p-3.5 transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed"
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <DollarSign className="w-5 h-5" />
-                  <span className="text-sm font-bold">Registrar Pago</span>
-                </div>
-              </button>
+              {canViewFees(selectedEvent) && (
+                <button
+                  onClick={() => {
+                    openPaymentDialog(selectedEvent);
+                    setSelectedEvent(null);
+                  }}
+                  disabled={!selectedEvent.fee || selectedEvent.status === 'cancelled'}
+                  className="group relative overflow-hidden bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 hover:from-green-600 hover:via-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg p-3.5 transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed"
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <DollarSign className="w-5 h-5" />
+                    <span className="text-sm font-bold">Registrar Pago</span>
+                  </div>
+                </button>
+              )}
 
               <button
                 onClick={() => {
@@ -1585,7 +1633,7 @@ export default function AgendaPage() {
           onCreated={() => {
             setShowForm(false);
             setEditingAppointment(null);
-            refreshAppointments();
+            refreshAgendaAppointments();
           }}
           onCancel={() => {
             setShowForm(false);
@@ -1609,6 +1657,24 @@ export default function AgendaPage() {
       >
         {paymentDialog.appointment && (() => {
           const appt = paymentDialog.appointment;
+          if (!canViewFees(appt)) {
+            return (
+              <div className="space-y-4">
+                <p className="text-sm text-elegant-600 dark:text-elegant-300">
+                  No tienes permisos para ver honorarios de este turno.
+                </p>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    className="btn-secondary text-sm px-4 py-2"
+                    onClick={() => setPaymentDialog({ open: false, appointment: undefined, mode: 'total', amount: '' })}
+                  >
+                    Cerrar
+                  </button>
+                </div>
+              </div>
+            );
+          }
           const deposit = appt.deposit || 0;
           const completed = payments
             .filter(p => p.appointmentId === appt.id && p.status === 'completed')

@@ -54,7 +54,7 @@ service cloud.firestore {
 
     // Appointments (turnos y eventos personales)
     match /appointments/{appointmentId} {
-      allow read: if signedIn() && (isAdmin() || isSecretary() || isOwner(resource.data.userId));
+      allow read: if signedIn();
       allow create: if signedIn() && (
         // Admin y secretaria crean turnos para cualquiera
         isAdmin() ||
