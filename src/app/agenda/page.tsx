@@ -991,8 +991,8 @@ export default function AgendaPage() {
               </p>
             </div>
               <div className="flex gap-2">
-                {/* Solo Romina Araoz puede bloquear horarios */}
-                {userProfile?.displayName === 'Romina Araoz' && (
+                {/* Solo Romina Araoz y Diego García Santillán pueden bloquear horarios */}
+                {(userProfile?.displayName === 'Romina Araoz' || userProfile?.displayName === 'Diego García Santillán') && (
                   <>
                     <button
                       onClick={() => setShowBlockModal(true)}
