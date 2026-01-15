@@ -43,7 +43,7 @@ export default function FloatingNewAppointmentButton() {
             setIsOpen(false);
             setTimeout(() => {
               setSuccessModal({ show: true, title, message });
-            }, 100);
+            }, 250);
           }}
         />
       </Modal>

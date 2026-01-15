@@ -221,6 +221,8 @@ export interface BlockedSlot {
   endTime: string; // HH:mm
   reason: string;
   userId: string; // Professional ID
+  recurrence?: 'none' | 'weekly' | 'monthly';
+  exceptions?: string[]; // YYYY-MM-DD
   createdAt: string;
   updatedAt: string;
 }

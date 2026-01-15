@@ -10,12 +10,14 @@ import { canModifyAppointment, getPermissionDeniedMessage } from '@/lib/appointm
 import { useToast } from '@/contexts/ToastContext';
 import { format, startOfWeek, endOfWeek, addDays, isSameDay, parseISO, isWithinInterval, startOfDay, endOfDay, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, isSameMonth, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, Clock, User, Ban, ChevronLeft, ChevronRight, X, PlusCircle, FileText, GripVertical } from 'lucide-react';
+import { Calendar, Clock, User, Ban, ChevronLeft, ChevronRight, X, PlusCircle, FileText, GripVertical, MinusCircle } from 'lucide-react';
 import { Appointment, BlockedSlot, SchedulePreference } from '@/types';
 import {
   getBlockedSlotsByUser,
   createBlockedSlot,
   deleteBlockedSlot,
+  updateBlockedSlot,
+  isBlockedSlotActiveOnDate,
 } from '@/lib/blockedSlots';
 import {
   getAllSchedulePreferences,
@@ -56,6 +58,15 @@ export default function AgendaPage() {
     startTime: '09:00',
     endTime: '10:00',
     reason: '',
+    recurrence: 'none' as 'none' | 'weekly' | 'monthly',
+  });
+  const [exceptionModal, setExceptionModal] = useState<{
+    open: boolean;
+    slot?: BlockedSlot;
+    date: string;
+  }>({
+    open: false,
+    date: format(new Date(), 'yyyy-MM-dd'),
   });
   const [professionals, setProfessionals] = useState<UserProfile[]>([]);
   const [schedulePreferences, setSchedulePreferences] = useState<SchedulePreference[]>([]);
@@ -262,6 +273,7 @@ export default function AgendaPage() {
         startTime: '09:00',
         endTime: '10:00',
         reason: '',
+        recurrence: 'none',
       });
       setSuccessModal({ show: true, title: 'Franja bloqueada', message: 'La franja se ha bloqueado exitosamente' });
     } catch (error: any) {
@@ -273,6 +285,35 @@ export default function AgendaPage() {
       } else {
         toast.error(`Error al crear la franja bloqueada: ${error?.message || 'Error desconocido'}`, { duration: 5000 });
       }
+    }
+  };
+
+  const handleAddBlockedException = async () => {
+    if (!user || !exceptionModal.slot) return;
+
+    const exceptionDate = exceptionModal.date;
+    if (!exceptionDate) {
+      toast.error('Selecciona una fecha para la excepción');
+      return;
+    }
+
+    try {
+      const current = exceptionModal.slot.exceptions || [];
+      if (current.includes(exceptionDate)) {
+        toast.error('Esa fecha ya está marcada como excepción');
+        return;
+      }
+
+      const nextExceptions = [...current, exceptionDate];
+      await updateBlockedSlot(exceptionModal.slot.id, { exceptions: nextExceptions });
+
+      const slots = await getBlockedSlotsByUser(user.uid);
+      setBlockedSlots(slots);
+      setSuccessModal({ show: true, title: 'Excepción registrada', message: 'La franja no se bloqueará en esa fecha' });
+      setExceptionModal({ open: false, slot: undefined, date: format(new Date(), 'yyyy-MM-dd') });
+    } catch (error) {
+      console.error('Error guardando excepción:', error);
+      toast.error('No se pudo guardar la excepción');
     }
   };
 
@@ -295,9 +336,8 @@ export default function AgendaPage() {
       return isSameDay(parseISO(apt.date), date);
     });
 
-    const dayBlocked = blockedSlots.filter(slot => {
-      return isSameDay(parseISO(slot.date), date);
-    });
+    const targetDate = format(date, 'yyyy-MM-dd');
+    const dayBlocked = blockedSlots.filter(slot => isBlockedSlotActiveOnDate(slot, targetDate));
 
     const dayBirthdays = patients
       .filter(patient => patient.birthDate)
@@ -672,12 +712,14 @@ export default function AgendaPage() {
     const endMinute = endTotalMinutes % 60;
     const newEndTime = `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`;
 
-    // Verificar conflictos con franjas bloqueadas
-    const hasConflict = blockedSlots.some(slot => {
-      if (!isSameDay(parseISO(slot.date), targetDate)) return false;
+      const targetDateString = format(targetDate, 'yyyy-MM-dd');
 
-      const slotStartTime = slot.startTime;
-      const slotEndTime = slot.endTime;
+      // Verificar conflictos con franjas bloqueadas
+      const hasConflict = blockedSlots.some(slot => {
+        if (!isBlockedSlotActiveOnDate(slot, targetDateString)) return false;
+
+        const slotStartTime = slot.startTime;
+        const slotEndTime = slot.endTime;
 
       return (
         (newStartTime >= slotStartTime && newStartTime < slotEndTime) ||
@@ -1125,6 +1167,21 @@ export default function AgendaPage() {
                                     {slotBlocked.reason}
                                   </div>
                                 </div>
+                                {slotBlocked.recurrence && slotBlocked.recurrence !== 'none' && (
+                                  <button
+                                    onClick={() =>
+                                      setExceptionModal({
+                                        open: true,
+                                        slot: slotBlocked,
+                                        date: format(day, 'yyyy-MM-dd'),
+                                      })
+                                    }
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-amber-200 dark:hover:bg-amber-800/50"
+                                    title="Agregar excepción"
+                                  >
+                                    <MinusCircle className="w-3 h-3 text-amber-700 dark:text-amber-300" />
+                                  </button>
+                                )}
                                 <button
                                   onClick={async () => {
                                     if (await confirm({
@@ -1250,27 +1307,50 @@ export default function AgendaPage() {
                             key={`blocked-${slot.id}`}
                             className="bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg p-4"
                           >
-                            <div className="flex items-start justify-between gap-2 mb-2">
-                              <div className="flex items-center gap-2">
-                                <Ban className="w-5 h-5 text-red-600 dark:text-red-400" />
-                                <span className="font-semibold text-red-700 dark:text-red-300">
-                                  {slot.startTime} - {slot.endTime}
-                                </span>
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <div className="flex items-center gap-2">
+                                  <Ban className="w-5 h-5 text-red-600 dark:text-red-400" />
+                                  <span className="font-semibold text-red-700 dark:text-red-300">
+                                    {slot.startTime} - {slot.endTime}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {slot.recurrence && slot.recurrence !== 'none' && (
+                                    <button
+                                      onClick={() =>
+                                        setExceptionModal({
+                                          open: true,
+                                          slot,
+                                          date: format(currentDate, 'yyyy-MM-dd'),
+                                        })
+                                      }
+                                      className="text-amber-700 hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-200"
+                                      title="Agregar excepción"
+                                    >
+                                      <MinusCircle className="w-4 h-4" />
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={() => removeBlock(slot.id)}
+                                    className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
+                                    title="Eliminar franja bloqueada"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
                               </div>
-                              <button
-                                onClick={() => removeBlock(slot.id)}
-                                className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
+                              <p className="text-sm text-red-600 dark:text-red-400 mb-1">
+                                {slot.reason}
+                              </p>
+                              {slot.recurrence && slot.recurrence !== 'none' && (
+                                <p className="text-xs text-red-500 dark:text-red-300">
+                                  {slot.recurrence === 'weekly' ? 'Se repite todas las semanas' : 'Se repite todos los meses'}
+                                </p>
+                              )}
                             </div>
-                            <p className="text-sm text-red-600 dark:text-red-400">
-                              {slot.reason}
-                            </p>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
                   )}
 
                   {dayAppointments.length > 0 && (
@@ -1369,23 +1449,41 @@ export default function AgendaPage() {
             </h3>
 
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-elegant-700 dark:text-elegant-300 mb-1.5">
-                  Fecha
-                </label>
-                <input
-                  type="date"
-                  value={blockForm.date}
-                  onChange={(e) => setBlockForm({ ...blockForm, date: e.target.value })}
-                  className="input-field w-full"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-elegant-700 dark:text-elegant-300 mb-1.5">
-                    Hora Inicio
+                    Fecha
                   </label>
+                  <input
+                    type="date"
+                    value={blockForm.date}
+                    onChange={(e) => setBlockForm({ ...blockForm, date: e.target.value })}
+                    className="input-field w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-elegant-700 dark:text-elegant-300 mb-1.5">
+                    Repetición
+                  </label>
+                  <select
+                    value={blockForm.recurrence}
+                    onChange={(e) => setBlockForm({ ...blockForm, recurrence: e.target.value as 'none' | 'weekly' | 'monthly' })}
+                    className="input-field w-full"
+                  >
+                    <option value="none">Solo esta fecha</option>
+                    <option value="weekly">Todas las semanas</option>
+                    <option value="monthly">Todos los meses</option>
+                  </select>
+                  <p className="text-xs text-elegant-500 dark:text-elegant-400 mt-1">
+                    Las excepciones se pueden agregar luego desde la agenda.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-elegant-700 dark:text-elegant-300 mb-1.5">
+                      Hora Inicio
+                    </label>
                   <input
                     type="time"
                     value={blockForm.startTime}
@@ -1437,6 +1535,55 @@ export default function AgendaPage() {
           </div>
         </div>
       )}
+
+      <Modal
+        open={exceptionModal.open}
+        onClose={() => setExceptionModal({ open: false, slot: undefined, date: format(new Date(), 'yyyy-MM-dd') })}
+        title="Agregar excepción"
+        maxWidth="max-w-md"
+      >
+        {exceptionModal.slot && (
+          <div className="space-y-4">
+            <div className="rounded-lg border border-elegant-200/70 dark:border-elegant-800/70 p-3 text-sm text-elegant-700 dark:text-elegant-300">
+              <div className="font-semibold text-elegant-900 dark:text-white">
+                {exceptionModal.slot.startTime} - {exceptionModal.slot.endTime}
+              </div>
+              <div className="text-xs text-elegant-500 dark:text-elegant-400">
+                {exceptionModal.slot.recurrence === 'weekly' ? 'Bloqueo semanal' : 'Bloqueo mensual'}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-elegant-700 dark:text-elegant-300 mb-1.5">
+                Fecha de excepción
+              </label>
+              <input
+                type="date"
+                value={exceptionModal.date}
+                onChange={(e) => setExceptionModal({ ...exceptionModal, date: e.target.value })}
+                className="input-field w-full"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setExceptionModal({ open: false, slot: undefined, date: format(new Date(), 'yyyy-MM-dd') })}
+                className="btn-secondary flex-1"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleAddBlockedException}
+                className="btn-primary flex-1"
+              >
+                Guardar excepción
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {selectedEvent && (
         <Modal open={!!selectedEvent} onClose={() => setSelectedEvent(null)} title="Detalle de turno" maxWidth="max-w-2xl">
@@ -1654,12 +1801,12 @@ export default function AgendaPage() {
             // Cerrar el modal del formulario primero
             setShowForm(false);
             setEditingAppointment(null);
-            // Mostrar el modal de éxito después de un pequeño delay para permitir la transición
-            setTimeout(() => {
-              setSuccessModal({ show: true, title, message });
-            }, 100);
-          }}
-        />
+              // Mostrar el modal de éxito después de la transición del formulario
+              setTimeout(() => {
+                setSuccessModal({ show: true, title, message });
+              }, 250);
+            }}
+          />
       </Modal>
 
       <Modal

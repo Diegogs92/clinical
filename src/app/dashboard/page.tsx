@@ -869,12 +869,12 @@ export default function DashboardPage() {
                 // Cerrar el modal del formulario primero
                 setShowForm(false);
                 setEditingAppointment(null);
-                // Mostrar el modal de éxito después de un pequeño delay para permitir la transición
-                setTimeout(() => {
-                  setSuccessModal({ show: true, title, message });
-                }, 100);
-              }}
-            />
+                  // Mostrar el modal de éxito después de la transición del formulario
+                  setTimeout(() => {
+                    setSuccessModal({ show: true, title, message });
+                  }, 250);
+                }}
+              />
           </Modal>
         </div>
       <Modal

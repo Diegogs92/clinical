@@ -9,7 +9,6 @@ import {
   query,
   where,
   orderBy,
-  Timestamp,
 } from 'firebase/firestore';
 import { BlockedSlot } from '@/types';
 
@@ -25,6 +24,8 @@ export async function createBlockedSlot(
     startTime: string;
     endTime: string;
     reason: string;
+    recurrence?: 'none' | 'weekly' | 'monthly';
+    exceptions?: string[];
   }
 ): Promise<BlockedSlot> {
   if (!db) throw new Error('Firestore not initialized');
@@ -76,19 +77,10 @@ export async function getBlockedSlotsByDate(
 ): Promise<BlockedSlot[]> {
   if (!db) throw new Error('Firestore not initialized');
 
-  const q = query(
-    collection(db, COLLECTION_NAME),
-    where('userId', '==', userId),
-    where('date', '==', date),
-    orderBy('startTime', 'asc')
-  );
-
-  const snapshot = await getDocs(q);
-
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-  })) as BlockedSlot[];
+  const slots = await getBlockedSlotsByUser(userId);
+  return slots
+    .filter(slot => isBlockedSlotActiveOnDate(slot, date))
+    .sort((a, b) => a.startTime.localeCompare(b.startTime));
 }
 
 /**
@@ -121,6 +113,8 @@ export async function updateBlockedSlot(
     startTime: string;
     endTime: string;
     reason: string;
+    recurrence: 'none' | 'weekly' | 'monthly';
+    exceptions: string[];
   }>
 ): Promise<void> {
   if (!db) throw new Error('Firestore not initialized');
@@ -149,6 +143,51 @@ export async function deleteBlockedSlot(id: string): Promise<void> {
 function timeToMinutes(time: string): number {
   const [hours, minutes] = time.split(':').map(Number);
   return hours * 60 + minutes;
+}
+
+function parseDateParts(date: string): { year: number; month: number; day: number } | null {
+  const [year, month, day] = date.split('-').map(Number);
+  if (!year || !month || !day) return null;
+  return { year, month, day };
+}
+
+function compareDateParts(a: string, b: string): number {
+  const left = parseDateParts(a);
+  const right = parseDateParts(b);
+  if (!left || !right) return 0;
+  const leftValue = left.year * 10000 + left.month * 100 + left.day;
+  const rightValue = right.year * 10000 + right.month * 100 + right.day;
+  return leftValue - rightValue;
+}
+
+function dayOfWeek(date: string): number | null {
+  const parts = parseDateParts(date);
+  if (!parts) return null;
+  return new Date(parts.year, parts.month - 1, parts.day).getDay();
+}
+
+export function isBlockedSlotActiveOnDate(slot: BlockedSlot, date: string): boolean {
+  if (!slot || !date) return false;
+  if (slot.exceptions?.includes(date)) return false;
+
+  const recurrence = slot.recurrence ?? 'none';
+  if (recurrence === 'none') return slot.date === date;
+
+  if (compareDateParts(date, slot.date) < 0) return false;
+
+  if (recurrence === 'weekly') {
+    const slotDay = dayOfWeek(slot.date);
+    const targetDay = dayOfWeek(date);
+    return slotDay !== null && targetDay !== null && slotDay === targetDay;
+  }
+
+  if (recurrence === 'monthly') {
+    const slotParts = parseDateParts(slot.date);
+    const targetParts = parseDateParts(date);
+    return !!slotParts && !!targetParts && slotParts.day === targetParts.day;
+  }
+
+  return slot.date === date;
 }
 
 /**
