@@ -1642,8 +1642,8 @@ export default function AgendaPage() {
         <AppointmentForm
           initialData={editingAppointment || undefined}
           onCreated={() => {
-            setShowForm(false);
-            setEditingAppointment(null);
+            // No cerrar el modal aquí, ya se cierra en onSuccess
+            // Solo refrescar los datos
             refreshAgendaAppointments();
           }}
           onCancel={() => {
@@ -1651,11 +1651,13 @@ export default function AgendaPage() {
             setEditingAppointment(null);
           }}
           onSuccess={(title: string, message: string) => {
-            // Cerrar el modal del formulario inmediatamente
+            // Cerrar el modal del formulario primero
             setShowForm(false);
             setEditingAppointment(null);
-            // Mostrar el modal de éxito
-            setSuccessModal({ show: true, title, message });
+            // Mostrar el modal de éxito después de un pequeño delay para permitir la transición
+            setTimeout(() => {
+              setSuccessModal({ show: true, title, message });
+            }, 100);
           }}
         />
       </Modal>

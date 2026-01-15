@@ -860,13 +860,19 @@ export default function DashboardPage() {
             <AppointmentForm
               initialData={editingAppointment || undefined}
               onCreated={(appt: Appointment) => {
-                setShowForm(false);
-                setEditingAppointment(null);
+                // No cerrar el modal aquí, ya se cierra en onSuccess
+                // Solo refrescar los datos
                 refreshDashboardAppointments();
               }}
               onCancel={()=>{setShowForm(false); setEditingAppointment(null);}}
               onSuccess={(title: string, message: string) => {
-                setSuccessModal({ show: true, title, message });
+                // Cerrar el modal del formulario primero
+                setShowForm(false);
+                setEditingAppointment(null);
+                // Mostrar el modal de éxito después de un pequeño delay para permitir la transición
+                setTimeout(() => {
+                  setSuccessModal({ show: true, title, message });
+                }, 100);
               }}
             />
           </Modal>
