@@ -1178,7 +1178,7 @@ export default function AgendaPage() {
                           onDragOver={(e) => handleDragOver(e, day, timeSlot)}
                           onDragLeave={handleDragLeave}
                           onDrop={(e) => handleDrop(e, day, timeSlot)}
-                          className={`h-6 border-t border-elegant-100 dark:border-elegant-800 transition-colors ${
+                          className={`relative h-6 border-t border-elegant-100 dark:border-elegant-800 transition-colors ${
                             isDragOverSlot ? 'bg-blue-100 dark:bg-blue-900/30 border-l-2 border-l-blue-400' : ''
                           }`}
                         >
@@ -1190,49 +1190,63 @@ export default function AgendaPage() {
                           )}
 
                           {/* Renderizar franja bloqueada solo en el primer slot */}
-                            {slotBlocked && slotBlocked.startTime === timeSlot && (
-                              <div className="bg-red-100 border border-red-300 dark:bg-red-900/30 dark:border-red-700 rounded-lg p-3 transition-all duration-200">
-                                <div className="flex items-start gap-2">
-                                  <div className="flex-1 min-w-0 space-y-1.5">
-                                    {/* Motivo del bloqueo */}
-                                    <h4 className="font-semibold text-sm text-red-700 dark:text-red-300 line-clamp-2">
-                                      {slotBlocked.reason}
-                                    </h4>
+                            {slotBlocked && slotBlocked.startTime === timeSlot && (() => {
+                              // Calcular la duración del bloqueo en minutos
+                              const [startHour, startMin] = slotBlocked.startTime.split(':').map(Number);
+                              const [endHour, endMin] = slotBlocked.endTime.split(':').map(Number);
+                              const durationMinutes = (endHour * 60 + endMin) - (startHour * 60 + startMin);
 
-                                    {/* Horario */}
-                                    <div className="flex items-center gap-1.5 text-xs text-elegant-600 dark:text-elegant-300">
-                                      <Clock className="w-3.5 h-3.5 flex-shrink-0" />
-                                      <span className="font-medium">{slotBlocked.startTime} - {slotBlocked.endTime}</span>
+                              // Cada slot es de 30 minutos con altura de 24px (h-6)
+                              const slotsCount = durationMinutes / 30;
+                              const heightPx = slotsCount * 24; // 24px por cada slot de 30min
+
+                              return (
+                                <div
+                                  className="absolute left-0 right-0 bg-red-100 border border-red-300 dark:bg-red-900/30 dark:border-red-700 rounded-lg p-3 transition-all duration-200 z-10"
+                                  style={{ height: `${heightPx}px` }}
+                                >
+                                  <div className="flex items-start gap-2 h-full">
+                                    <div className="flex-1 min-w-0 space-y-1.5">
+                                      {/* Motivo del bloqueo */}
+                                      <h4 className="font-semibold text-sm text-red-700 dark:text-red-300 line-clamp-2">
+                                        {slotBlocked.reason}
+                                      </h4>
+
+                                      {/* Horario */}
+                                      <div className="flex items-center gap-1.5 text-xs text-elegant-600 dark:text-elegant-300">
+                                        <Clock className="w-3.5 h-3.5 flex-shrink-0" />
+                                        <span className="font-medium">{slotBlocked.startTime} - {slotBlocked.endTime}</span>
+                                      </div>
                                     </div>
-                                  </div>
 
-                                  <button
-                                    onClick={async () => {
-                                      if (await confirm({
-                                        title: 'Eliminar franja bloqueada',
-                                        description: `¿Estás seguro de que deseas eliminar esta franja bloqueada (${slotBlocked.startTime} - ${slotBlocked.endTime})?`,
-                                        confirmText: 'Eliminar',
-                                        tone: 'danger'
-                                      })) {
-                                        try {
-                                          await deleteBlockedSlot(slotBlocked.id);
-                                          const slots = await getBlockedSlotsByUser(user!.uid);
-                                          setBlockedSlots(slots);
-                                          setSuccessModal({ show: true, title: 'Franja eliminada', message: 'La franja bloqueada se ha eliminado correctamente' });
-                                        } catch (error) {
-                                          console.error('Error eliminando franja:', error);
-                                          toast.error('No se pudo eliminar la franja bloqueada');
+                                    <button
+                                      onClick={async () => {
+                                        if (await confirm({
+                                          title: 'Eliminar franja bloqueada',
+                                          description: `¿Estás seguro de que deseas eliminar esta franja bloqueada (${slotBlocked.startTime} - ${slotBlocked.endTime})?`,
+                                          confirmText: 'Eliminar',
+                                          tone: 'danger'
+                                        })) {
+                                          try {
+                                            await deleteBlockedSlot(slotBlocked.id);
+                                            const slots = await getBlockedSlotsByUser(user!.uid);
+                                            setBlockedSlots(slots);
+                                            setSuccessModal({ show: true, title: 'Franja eliminada', message: 'La franja bloqueada se ha eliminado correctamente' });
+                                          } catch (error) {
+                                            console.error('Error eliminando franja:', error);
+                                            toast.error('No se pudo eliminar la franja bloqueada');
+                                          }
                                         }
-                                      }
-                                    }}
-                                    className="shrink-0 rounded-full p-1 text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/40"
-                                    title="Eliminar franja bloqueada"
-                                  >
-                                    <X className="w-3 h-3" />
-                                  </button>
+                                      }}
+                                      className="shrink-0 rounded-full p-1 text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/40"
+                                      title="Eliminar franja bloqueada"
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </button>
+                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              );
+                            })()}
                         </div>
                       );
                     })}
