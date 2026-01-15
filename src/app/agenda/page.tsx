@@ -584,6 +584,26 @@ export default function AgendaPage() {
       return;
     }
 
+    // Validación crítica: verificar que el paciente del turno coincide con un paciente real
+    const patient = getPatientInfo(appt.patientId);
+    if (!patient) {
+      console.error('[submitPayment] ERROR: No se encontró el paciente con ID:', appt.patientId);
+      toast.error('Error: El paciente del turno no existe. Por favor verifica los datos del turno.');
+      return;
+    }
+
+    // Verificar que el nombre del paciente coincide
+    const expectedName = `${patient.lastName}, ${patient.firstName}`;
+    if (appt.patientName !== expectedName) {
+      console.warn('[submitPayment] ADVERTENCIA: El nombre del paciente en el turno no coincide:', {
+        enTurno: appt.patientName,
+        esperado: expectedName,
+        patientId: appt.patientId
+      });
+      toast.error(`Error: El turno tiene información incorrecta del paciente. Se esperaba "${expectedName}" pero el turno muestra "${appt.patientName}". Por favor edita el turno primero.`);
+      return;
+    }
+
     const deposit = appt.deposit || 0;
     const completed = payments
       .filter(p => p.appointmentId === appt.id && p.status === 'completed')

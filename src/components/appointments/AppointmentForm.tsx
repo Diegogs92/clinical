@@ -201,10 +201,19 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
       console.log('No hay solapamientos, procediendo a crear turno');
 
       const selected = patients.find(p => p.id === (values.patientId as unknown as string));
+
+      // Validación crítica: asegurar que el paciente existe antes de crear/actualizar
+      if (!selected) {
+        console.error('[AppointmentForm] ERROR CRÍTICO: No se encontró el paciente con ID:', values.patientId);
+        toast.error('Error: No se encontró el paciente seleccionado. Por favor, recarga la página e intenta nuevamente.');
+        setLoading(false);
+        return;
+      }
+
       const selectedProfessional = professionals.find(p => p.uid === values.professionalId);
       const payload = {
-        patientId: values.patientId as unknown as string,
-        patientName: selected ? `${selected.lastName}, ${selected.firstName}` : (values.patientName || ''),
+        patientId: selected.id, // Usar el ID del paciente encontrado para mayor seguridad
+        patientName: `${selected.lastName}, ${selected.firstName}`, // Siempre construir desde el paciente encontrado
         date: startDate.toISOString(),
         startTime: values.startTime,
         endTime: `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`,
