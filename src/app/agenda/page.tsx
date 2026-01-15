@@ -1155,60 +1155,47 @@ export default function AgendaPage() {
                           )}
 
                           {/* Renderizar franja bloqueada solo en el primer slot */}
-                          {slotBlocked && slotBlocked.startTime === timeSlot && (
-                            <div className="bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg p-2 group hover:shadow-md transition-shadow">
-                              <div className="flex items-start gap-1">
-                                <Ban className="w-3 h-3 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-                                <div className="flex-1 min-w-0">
-                                  <div className="text-xs font-semibold text-red-700 dark:text-red-300">
-                                    {slotBlocked.startTime} - {slotBlocked.endTime}
-                                  </div>
-                                  <div className="text-xs text-red-600 dark:text-red-400 line-clamp-1">
-                                    {slotBlocked.reason}
+                            {slotBlocked && slotBlocked.startTime === timeSlot && (
+                              <div className="rounded-lg border border-red-200/70 dark:border-red-800/70 bg-gradient-to-r from-red-50 via-red-50 to-white dark:from-red-900/30 dark:via-red-900/20 dark:to-elegant-900 p-2 shadow-sm">
+                                <div className="flex items-start gap-2">
+                                  <Ban className="w-3.5 h-3.5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between gap-2">
+                                      <div className="text-xs font-semibold text-red-700 dark:text-red-300">
+                                        {slotBlocked.startTime} - {slotBlocked.endTime}
+                                      </div>
+                                      <button
+                                        onClick={async () => {
+                                          if (await confirm({
+                                            title: 'Eliminar franja bloqueada',
+                                            description: `¿Estás seguro de que deseas eliminar esta franja bloqueada (${slotBlocked.startTime} - ${slotBlocked.endTime})?`,
+                                            confirmText: 'Eliminar',
+                                            tone: 'danger'
+                                          })) {
+                                            try {
+                                              await deleteBlockedSlot(slotBlocked.id);
+                                              const slots = await getBlockedSlotsByUser(user!.uid);
+                                              setBlockedSlots(slots);
+                                              setSuccessModal({ show: true, title: 'Franja eliminada', message: 'La franja bloqueada se ha eliminado correctamente' });
+                                            } catch (error) {
+                                              console.error('Error eliminando franja:', error);
+                                              toast.error('No se pudo eliminar la franja bloqueada');
+                                            }
+                                          }
+                                        }}
+                                        className="p-0.5 rounded hover:bg-red-200 dark:hover:bg-red-800/50"
+                                        title="Eliminar franja bloqueada"
+                                      >
+                                        <X className="w-3 h-3 text-red-600 dark:text-red-400" />
+                                      </button>
+                                    </div>
+                                    <div className="text-xs text-red-600 dark:text-red-400 line-clamp-1">
+                                      {slotBlocked.reason}
+                                    </div>
                                   </div>
                                 </div>
-                                {slotBlocked.recurrence && slotBlocked.recurrence !== 'none' && (
-                                  <button
-                                    onClick={() =>
-                                      setExceptionModal({
-                                        open: true,
-                                        slot: slotBlocked,
-                                        date: format(day, 'yyyy-MM-dd'),
-                                      })
-                                    }
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-amber-200 dark:hover:bg-amber-800/50"
-                                    title="Agregar excepción"
-                                  >
-                                    <MinusCircle className="w-3 h-3 text-amber-700 dark:text-amber-300" />
-                                  </button>
-                                )}
-                                <button
-                                  onClick={async () => {
-                                    if (await confirm({
-                                      title: 'Eliminar franja bloqueada',
-                                      description: `¿Estás seguro de que deseas eliminar esta franja bloqueada (${slotBlocked.startTime} - ${slotBlocked.endTime})?`,
-                                      confirmText: 'Eliminar',
-                                      tone: 'danger'
-                                    })) {
-                                      try {
-                                        await deleteBlockedSlot(slotBlocked.id);
-                                        const slots = await getBlockedSlotsByUser(user!.uid);
-                                        setBlockedSlots(slots);
-                                        setSuccessModal({ show: true, title: 'Franja eliminada', message: 'La franja bloqueada se ha eliminado correctamente' });
-                                      } catch (error) {
-                                        console.error('Error eliminando franja:', error);
-                                        toast.error('No se pudo eliminar la franja bloqueada');
-                                      }
-                                    }
-                                  }}
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-red-200 dark:hover:bg-red-800/50"
-                                  title="Eliminar franja bloqueada"
-                                >
-                                  <X className="w-3 h-3 text-red-600 dark:text-red-400" />
-                                </button>
                               </div>
-                            </div>
-                          )}
+                            )}
                         </div>
                       );
                     })}
