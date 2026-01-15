@@ -1153,7 +1153,7 @@ export default function AgendaPage() {
                           onDrop={(e) => handleDrop(e, day, timeSlot)}
                           className={`h-6 border-t border-elegant-100 dark:border-elegant-800 transition-colors ${
                             isDragOverSlot ? 'bg-blue-100 dark:bg-blue-900/30 border-l-2 border-l-blue-400' : ''
-                          } ${slotBlocked ? 'bg-red-50 dark:bg-red-900/10' : ''}`}
+                          }`}
                         >
                           {/* Renderizar turno si existe */}
                           {slotAppointment && (
