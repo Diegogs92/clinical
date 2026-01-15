@@ -16,7 +16,7 @@ export default function SuccessModal({
   onClose,
   title,
   message,
-  duration = 2000
+  duration = 1800
 }: SuccessModalProps) {
   const onCloseRef = useRef(onClose);
 
