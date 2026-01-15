@@ -626,16 +626,31 @@ export default function DashboardPage() {
                         // Determinar el label del estado de pago
                           const getPaymentStatusLabel = () => {
                             if (!a.fee) return 'Sin honorarios';
+
                             const deposit = a.deposit || 0;
-                            if (!paymentState.isDue && paymentState.status !== 'paid') return 'Sin deuda';
-                            if (paymentState.status === 'paid') return 'Pagado';
-                            if (deposit > 0 && paymentState.remainingAmount > 0) {
-                              return `Señado (Falta: $${formatCurrency(paymentState.remainingAmount)})`;
+                            const completed = payments
+                              .filter(p => p.appointmentId === a.id && p.status === 'completed')
+                              .reduce((sum, p) => sum + p.amount, 0);
+                            const totalPaid = deposit + completed;
+                            const remaining = paymentState.remainingAmount;
+
+                            // Si está completamente pagado
+                            if (paymentState.status === 'paid') {
+                              return `Pagado: $${formatCurrency(totalPaid)}`;
                             }
-                            if (paymentState.status === 'partial') {
-                              return `Parcial (Falta: $${formatCurrency(paymentState.remainingAmount)})`;
+
+                            // Si no hay deuda (turno futuro sin pago aún)
+                            if (!paymentState.isDue && paymentState.status !== 'paid') {
+                              return totalPaid > 0 ? `Pagado: $${formatCurrency(totalPaid)}` : 'Sin deuda';
                             }
-                            return `Pendiente ($${formatCurrency(paymentState.remainingAmount)})`;
+
+                            // Si tiene pagos parciales
+                            if (totalPaid > 0 && remaining > 0) {
+                              return `Pagado: $${formatCurrency(totalPaid)} | Falta: $${formatCurrency(remaining)}`;
+                            }
+
+                            // Si no ha pagado nada aún
+                            return `Pendiente: $${formatCurrency(remaining)}`;
                           };
 
                         return (
