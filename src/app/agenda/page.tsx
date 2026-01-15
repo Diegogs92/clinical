@@ -898,13 +898,6 @@ export default function AgendaPage() {
     const isDragging = draggedAppointment?.id === apt.id;
     const canDrag = canModifyAppointment(apt, user, userProfile);
 
-    // Calcular altura dinámica basada en la duración
-    const [startHour, startMin] = apt.startTime.split(':').map(Number);
-    const [endHour, endMin] = apt.endTime.split(':').map(Number);
-    const durationMinutes = (endHour * 60 + endMin) - (startHour * 60 + startMin);
-    const slotsCount = durationMinutes / 30;
-    const heightPx = slotsCount * 24; // 24px por cada slot de 30min
-
     if (compact) {
       return (
         <div
@@ -942,10 +935,10 @@ export default function AgendaPage() {
             setSelectedEvent(apt);
           }
         }}
-        className={`absolute left-0 right-0 ${statusColor} border-l-4 rounded-lg p-3 transition-all duration-200 z-10 ${
+        className={`${statusColor} border-l-4 rounded-lg p-3 transition-all duration-200 ${
           isDragging ? 'opacity-50' : ''
-        } ${canDrag ? 'cursor-move hover:shadow-md' : canOpen ? 'cursor-pointer hover:shadow-md' : 'cursor-default'}`}
-        style={{ borderLeftColor: professionalColor, height: `${heightPx}px` }}
+        } ${canDrag ? 'cursor-move hover:shadow-md hover:scale-[1.02]' : canOpen ? 'cursor-pointer hover:shadow-md hover:scale-[1.02]' : 'cursor-default'}`}
+        style={{ borderLeftColor: professionalColor }}
       >
         <div className="flex items-start gap-2">
           {canDrag && (
