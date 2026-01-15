@@ -1164,7 +1164,7 @@ export default function AgendaPage() {
 
                           {/* Renderizar franja bloqueada solo en el primer slot */}
                             {slotBlocked && slotBlocked.startTime === timeSlot && (
-                              <div className="bg-red-100 border-red-300 dark:bg-red-900/30 dark:border-red-700 border-l-4 rounded-lg p-3 transition-all duration-200">
+                              <div className="bg-red-100 border border-red-300 dark:bg-red-900/30 dark:border-red-700 rounded-lg p-3 transition-all duration-200">
                                 <div className="flex items-start gap-2">
                                   <div className="flex-1 min-w-0 space-y-1.5">
                                     {/* Motivo del bloqueo */}
