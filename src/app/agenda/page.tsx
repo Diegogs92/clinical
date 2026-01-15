@@ -1164,9 +1164,11 @@ export default function AgendaPage() {
 
                           {/* Renderizar franja bloqueada solo en el primer slot */}
                             {slotBlocked && slotBlocked.startTime === timeSlot && (
-                              <div className="rounded-lg border border-red-200/70 dark:border-red-800/70 bg-gradient-to-r from-red-50 via-red-50 to-white dark:from-red-900/30 dark:via-red-900/20 dark:to-elegant-900 px-2.5 py-2 shadow-sm">
-                                <div className="flex items-start gap-2 min-h-[36px]">
-                                  <Ban className="w-3.5 h-3.5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                              <div className="rounded-xl border border-red-200/70 dark:border-red-800/70 bg-red-50/80 dark:bg-red-900/20 shadow-sm overflow-hidden">
+                                <div className="flex items-start gap-2 px-3 py-2.5">
+                                  <div className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40">
+                                    <Ban className="w-3 h-3 text-red-600 dark:text-red-400" />
+                                  </div>
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between gap-2">
                                       <div className="text-xs font-semibold text-red-700 dark:text-red-300">
@@ -1191,13 +1193,13 @@ export default function AgendaPage() {
                                             }
                                           }
                                         }}
-                                        className="p-0.5 rounded hover:bg-red-200 dark:hover:bg-red-800/50"
+                                        className="shrink-0 rounded-full p-1 text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/40"
                                         title="Eliminar franja bloqueada"
                                       >
-                                        <X className="w-3 h-3 text-red-600 dark:text-red-400" />
+                                        <X className="w-3 h-3" />
                                       </button>
                                     </div>
-                                    <div className="text-xs text-red-600 dark:text-red-400 leading-4 line-clamp-1 pr-4">
+                                    <div className="text-xs text-red-600 dark:text-red-400 leading-4 truncate">
                                       {slotBlocked.reason}
                                     </div>
                                   </div>
