@@ -735,8 +735,10 @@ export default function AgendaPage() {
 
       const targetDateString = format(targetDate, 'yyyy-MM-dd');
 
-      // Verificar conflictos con franjas bloqueadas
+      // Verificar conflictos con franjas bloqueadas (solo del mismo profesional)
       const hasConflict = blockedSlots.some(slot => {
+        // Las franjas bloqueadas solo afectan al profesional que las creó
+        if (slot.userId !== draggedAppointment.userId) return false;
         if (!isBlockedSlotActiveOnDate(slot, targetDateString)) return false;
 
         const slotStartTime = slot.startTime;
@@ -989,20 +991,25 @@ export default function AgendaPage() {
               </p>
             </div>
               <div className="flex gap-2">
-                <button
-                  onClick={() => setShowBlockModal(true)}
-                  className="btn-danger flex items-center gap-2 whitespace-nowrap"
-                >
-                  <Ban className="w-4 h-4" />
-                  Bloquear Horario
-                </button>
-                <button
-                  onClick={() => setShowBlocksList(true)}
-                  className="btn-secondary flex items-center gap-2 whitespace-nowrap"
-                >
-                  <FileText className="w-4 h-4" />
-                  Bloqueos
-                </button>
+                {/* Solo Romina Araoz puede bloquear horarios */}
+                {userProfile?.displayName === 'Romina Araoz' && (
+                  <>
+                    <button
+                      onClick={() => setShowBlockModal(true)}
+                      className="btn-danger flex items-center gap-2 whitespace-nowrap"
+                    >
+                      <Ban className="w-4 h-4" />
+                      Bloquear Horario
+                    </button>
+                    <button
+                      onClick={() => setShowBlocksList(true)}
+                      className="btn-secondary flex items-center gap-2 whitespace-nowrap"
+                    >
+                      <FileText className="w-4 h-4" />
+                      Bloqueos
+                    </button>
+                  </>
+                )}
               </div>
             </div>
         </div>
