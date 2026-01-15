@@ -4,9 +4,15 @@ import { useState } from 'react';
 import { CalendarPlus } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import AppointmentForm from '@/components/appointments/AppointmentForm';
+import SuccessModal from '@/components/ui/SuccessModal';
 
 export default function FloatingNewAppointmentButton() {
   const [isOpen, setIsOpen] = useState(false);
+  const [successModal, setSuccessModal] = useState<{ show: boolean; title: string; message?: string }>({
+    show: false,
+    title: '',
+    message: ''
+  });
 
   return (
     <>
@@ -33,8 +39,21 @@ export default function FloatingNewAppointmentButton() {
             setIsOpen(false);
           }}
           onCancel={() => setIsOpen(false)}
+          onSuccess={(title: string, message: string) => {
+            setIsOpen(false);
+            setTimeout(() => {
+              setSuccessModal({ show: true, title, message });
+            }, 100);
+          }}
         />
       </Modal>
+
+      <SuccessModal
+        isOpen={successModal.show}
+        onClose={() => setSuccessModal({ show: false, title: '', message: '' })}
+        title={successModal.title}
+        message={successModal.message}
+      />
     </>
   );
 }
