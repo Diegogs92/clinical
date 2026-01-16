@@ -66,11 +66,14 @@ export default function PatientList() {
 
   // Helper function to calculate total paid
   const getPatientPaid = (patientId: string) => {
-    const patientAppointments = appointments.filter(a => a.patientId === patientId && a.fee);
+    // Solo contar pagos y señas de turnos completados
+    const completedAppointments = appointments.filter(
+      a => a.patientId === patientId && a.fee && a.status === 'completed'
+    );
     const patientPayments = payments.filter(p => p.patientId === patientId);
     const completed = patientPayments.filter(p => p.status === 'completed');
     const paymentsTotal = completed.reduce((sum, p) => sum + p.amount, 0);
-    const depositsTotal = patientAppointments.reduce((sum, appt) => sum + (appt.deposit || 0), 0);
+    const depositsTotal = completedAppointments.reduce((sum, appt) => sum + (appt.deposit || 0), 0);
     return paymentsTotal + depositsTotal;
   };
 
