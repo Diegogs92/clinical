@@ -1536,7 +1536,14 @@ export default function AgendaPage() {
                   <input
                     type="time"
                     value={blockForm.endTime}
-                    onChange={(e) => setBlockForm({ ...blockForm, endTime: e.target.value })}
+                    onChange={(e) => {
+                      const selectedTime = e.target.value;
+                      if (selectedTime > '19:45') {
+                        toast.error('La hora fin no puede ser posterior a las 19:45');
+                        return;
+                      }
+                      setBlockForm({ ...blockForm, endTime: selectedTime });
+                    }}
                     max="19:45"
                     className="input-field w-full"
                   />

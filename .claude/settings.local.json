@@ -33,7 +33,8 @@
       "Bash(do sed -i \"s|from ''''@/contexts/ToastContext''''|from ''''@/hooks/useToast''''|g\" \"$file\" echo \"Actualizado: $file\" done)",
       "Bash(npm search:*)",
       "Bash(git remote add:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(Falta: $Y\" for partial payments\n- Format: \"Pagado: $X\" for completed payments\n- Format: \"Pendiente: $X\" for unpaid appointments\n- Improves payment tracking visibility\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
