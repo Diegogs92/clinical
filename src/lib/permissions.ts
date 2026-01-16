@@ -12,7 +12,7 @@ import { UserRole } from '@/types';
 export const PERMISSIONS = {
   // Permisos de turnos
   appointments: {
-    viewAll: ['administrador', 'secretaria'] as UserRole[],
+    viewAll: ['administrador', 'secretaria', 'profesional'] as UserRole[], // Todos ven todos los turnos para calcular correctamente pagos/deudas
     viewOwn: ['profesional'] as UserRole[],
     createOwn: ['administrador', 'profesional'] as UserRole[],
     createForOthers: ['administrador'] as UserRole[],
@@ -37,7 +37,7 @@ export const PERMISSIONS = {
 
   payments: {
     register: ['administrador', 'secretaria', 'profesional'] as UserRole[],
-    viewAll: ['administrador', 'secretaria'] as UserRole[],
+    viewAll: ['administrador', 'secretaria', 'profesional'] as UserRole[], // Todos ven todos los pagos para consistencia con turnos compartidos
     viewOwn: ['profesional'] as UserRole[],
   },
 
