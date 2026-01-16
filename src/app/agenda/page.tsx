@@ -1021,13 +1021,13 @@ export default function AgendaPage() {
 
         {/* Navegación y selector de vista */}
         <div className="card">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
             <div className="flex items-center gap-2">
               <button onClick={goToPrevious} className="icon-btn">
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <div className="text-center min-w-[200px]">
-                <h2 className="text-lg font-semibold text-elegant-900 dark:text-white">
+              <div className="text-center min-w-[180px]">
+                <h2 className="text-base font-semibold text-elegant-900 dark:text-white">
                   {viewMode === 'month'
                     ? format(currentDate, "MMMM yyyy", { locale: es })
                     : viewMode === 'week'
@@ -1035,12 +1035,12 @@ export default function AgendaPage() {
                     : format(currentDate, "EEEE d 'de' MMMM, yyyy", { locale: es })
                   }
                 </h2>
-                <p className="text-xs text-elegant-600 dark:text-elegant-400 mt-1">
+                <p className="text-[11px] text-elegant-600 dark:text-elegant-400 mt-0.5">
                   {scheduledPatientsCount === 1
                     ? '1 paciente agendado'
                     : `${scheduledPatientsCount} pacientes agendados`}
                 </p>
-                <button onClick={goToToday} className="text-sm text-primary hover:underline">
+                <button onClick={goToToday} className="text-xs text-primary hover:underline">
                   Ir a hoy
                 </button>
               </div>
@@ -1052,7 +1052,7 @@ export default function AgendaPage() {
             <div className="flex items-center gap-2 bg-elegant-100 dark:bg-elegant-800/60 p-1 rounded-lg">
               <button
                 onClick={() => setViewMode('day')}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition ${
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
                   viewMode === 'day'
                     ? 'bg-primary text-white shadow'
                     : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
@@ -1062,7 +1062,7 @@ export default function AgendaPage() {
               </button>
               <button
                 onClick={() => setViewMode('week')}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition ${
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
                   viewMode === 'week'
                     ? 'bg-primary text-white shadow'
                     : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
@@ -1072,7 +1072,7 @@ export default function AgendaPage() {
               </button>
               <button
                 onClick={() => setViewMode('month')}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition ${
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
                   viewMode === 'month'
                     ? 'bg-primary text-white shadow'
                     : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
