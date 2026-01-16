@@ -648,9 +648,13 @@ export default function AgendaPage() {
         await updateAppointment(appt.id, { status: 'completed' });
       }
 
-      await refreshAgendaAppointments();
-      await refreshPayments();
-      await refreshPendingPayments();
+      // Refrescar tanto los turnos locales de la agenda como el contexto global
+      await Promise.all([
+        refreshAgendaAppointments(),
+        refreshAppointments(),
+        refreshPayments(),
+        refreshPendingPayments()
+      ]);
 
       setSuccessModal({
         show: true,
