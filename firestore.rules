@@ -75,7 +75,7 @@ service cloud.firestore {
 
     // Payments
     match /payments/{paymentId} {
-      allow read: if signedIn() && (isAdmin() || isSecretary() || isOwner(resource.data.userId));
+      allow read: if signedIn();
       allow create: if signedIn()
         && (isAdmin() || isSecretary() || isOwner(request.resource.data.userId))
         && request.resource.data.keys().hasAll(['patientId', 'patientName', 'amount', 'method', 'status', 'date', 'consultationType', 'userId', 'createdAt', 'updatedAt']);

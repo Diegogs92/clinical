@@ -12,6 +12,7 @@ import { createPayment } from '@/lib/payments';
 import { useToast } from '@/contexts/ToastContext';
 import { DollarSign } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
+import SuccessModal from '@/components/ui/SuccessModal';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { listProfessionals } from '@/lib/users';
 export const dynamic = 'force-dynamic';
@@ -33,6 +34,11 @@ export default function FeesPage() {
     appointment: undefined,
     mode: 'total',
     amount: '',
+  });
+  const [successModal, setSuccessModal] = useState<{ show: boolean; title: string; message?: string }>({
+    show: false,
+    title: '',
+    message: '',
   });
   const [submittingPayment, setSubmittingPayment] = useState(false);
   const toast = useToast();
@@ -262,12 +268,16 @@ export default function FeesPage() {
       await refreshPayments();
       await refreshPendingPayments();
       setPaymentDialog({ open: false, appointment: undefined, mode: 'total', amount: '' });
-      toast.success(isTotal ? 'Pago registrado' : 'Pago parcial registrado');
-    } catch (error) {
-      console.error('Error al registrar pago:', error);
-      toast.error('Error al registrar el pago');
-    } finally {
-      setSubmittingPayment(false);
+        setSuccessModal({
+          show: true,
+          title: isTotal ? 'Pago registrado' : 'Pago parcial registrado',
+          message: isTotal ? 'El pago se ha registrado con éxito' : 'El pago parcial se ha registrado con éxito',
+        });
+      } catch (error) {
+        console.error('Error al registrar pago:', error);
+        toast.error('Error al registrar el pago');
+      } finally {
+        setSubmittingPayment(false);
     }
   };
 
@@ -587,6 +597,13 @@ export default function FeesPage() {
             );
           })()}
         </Modal>
+
+        <SuccessModal
+          isOpen={successModal.show}
+          onClose={() => setSuccessModal({ show: false, title: '', message: '' })}
+          title={successModal.title}
+          message={successModal.message}
+        />
 
       </DashboardLayout>
     </ProtectedRoute>
