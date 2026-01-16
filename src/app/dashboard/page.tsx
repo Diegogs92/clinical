@@ -967,7 +967,7 @@ export default function DashboardPage() {
                     className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'total' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
                     onClick={() => setPaymentDialog(p => ({ ...p, mode: 'total', amount: remainingAmount.toString() }))}
                   >
-                    {totalPaid > 0 && remainingAmount > 0 && remainingAmount < (appt.fee || 0)
+                    {(appt.fee || 0) - remainingAmount > 0 && remainingAmount > 0 && remainingAmount < (appt.fee || 0)
                       ? 'Pagar saldo'
                       : 'Pago total'}
                   </button>
