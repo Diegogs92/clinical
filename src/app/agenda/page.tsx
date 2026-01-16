@@ -1184,7 +1184,7 @@ export default function AgendaPage() {
                         >
                           {/* Renderizar turno si existe */}
                           {slotAppointment && (
-                            <div className="relative -mt-1">
+                            <div className="relative -mt-1 z-10">
                               {renderAppointmentCard(slotAppointment)}
                             </div>
                           )}
