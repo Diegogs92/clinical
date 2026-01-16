@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { deletePatient } from '@/lib/patients';
 import { listPayments } from '@/lib/payments';
 import { Payment } from '@/types';
-import { Trash2, Edit, Search, Calendar, DollarSign, CheckCircle, XCircle, Clock, FileText } from 'lucide-react';
+import { Trash2, Edit, Search, Calendar, DollarSign, CheckCircle, XCircle, Clock, FileText, ArrowUpDown } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import ECGLoader from '@/components/ui/ECGLoader';
@@ -29,6 +29,7 @@ export default function PatientList() {
   const [isNewPatientModalOpen, setIsNewPatientModalOpen] = useState(false);
   const [editPatientModal, setEditPatientModal] = useState<{ open: boolean; patientId?: string; patientName?: string }>({ open: false });
   const [historyModal, setHistoryModal] = useState<{ open: boolean; patientId?: string; patientName?: string }>({ open: false });
+  const [historyOrder, setHistoryOrder] = useState<'asc' | 'desc'>('asc');
   const { patients, loading: patientsLoading, refreshPatients } = usePatients();
   const { appointments } = useAppointments();
   const { canViewAllPayments } = usePermissions();
@@ -492,6 +493,7 @@ export default function PatientList() {
             description: string;
             amount?: number;
             notes?: string;
+            sortKey: number;
           }> = [];
 
           const getEventDateTime = (value?: string, fallbackDate?: string, fallbackTime?: string) => {
@@ -505,6 +507,24 @@ export default function PatientList() {
               }
             }
             return { date: fallbackDate || '', time: fallbackTime };
+          };
+
+          const getSortKey = (value?: string, fallbackDate?: string, fallbackTime?: string) => {
+            if (value) {
+              const parsed = new Date(value);
+              if (!Number.isNaN(parsed.getTime())) {
+                return parsed.getTime();
+              }
+            }
+            if (fallbackDate && fallbackTime) {
+              const combined = combineDateAndTime(fallbackDate, fallbackTime);
+              return combined.getTime();
+            }
+            if (fallbackDate) {
+              const parsed = new Date(`${fallbackDate}T00:00:00`);
+              return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+            }
+            return 0;
           };
 
           // Agregar turnos
@@ -521,6 +541,7 @@ export default function PatientList() {
               description: `${typeLabel} - ${appt.startTime} a ${appt.endTime}`,
               amount: appt.fee,
               notes: appt.notes,
+              sortKey: getSortKey(appt.createdAt, appt.date, appt.startTime),
             });
 
             if (appt.updatedAt && appt.updatedAt !== appt.createdAt) {
@@ -533,6 +554,7 @@ export default function PatientList() {
                 color: 'amber',
                 title: 'Turno actualizado',
                 description: `${typeLabel} - ${appt.startTime} a ${appt.endTime}`,
+                sortKey: getSortKey(appt.updatedAt, appt.date, appt.endTime),
               });
             }
 
@@ -546,6 +568,7 @@ export default function PatientList() {
                 color: 'green',
                 title: 'Asistencia registrada',
                 description: 'Paciente presente',
+                sortKey: getSortKey(appt.updatedAt, appt.date, appt.endTime),
               });
             } else if (appt.status === 'no-show') {
               const statusEventTime = getEventDateTime(appt.updatedAt, appt.date, appt.endTime);
@@ -557,6 +580,7 @@ export default function PatientList() {
                 color: 'red',
                 title: 'Asistencia registrada',
                 description: 'Paciente ausente',
+                sortKey: getSortKey(appt.updatedAt, appt.date, appt.endTime),
               });
             } else if (appt.status === 'cancelled') {
               const statusEventTime = getEventDateTime(appt.updatedAt, appt.date, appt.endTime);
@@ -568,6 +592,7 @@ export default function PatientList() {
                 color: 'red',
                 title: 'Turno cancelado',
                 description: `${typeLabel} - ${appt.startTime} a ${appt.endTime}`,
+                sortKey: getSortKey(appt.updatedAt, appt.date, appt.endTime),
               });
             }
 
@@ -582,6 +607,7 @@ export default function PatientList() {
                 color: 'purple',
                 title: 'Recordatorio programado',
                 description: reason,
+                sortKey: getSortKey(appt.followUpDate, reminderEventTime.date, reminderEventTime.time),
               });
             }
 
@@ -597,6 +623,7 @@ export default function PatientList() {
                 title: 'Seña pagada',
                 description: `Seña del turno del ${new Date(appt.date).toLocaleDateString('es-AR')}`,
                 amount: appt.deposit,
+                sortKey: getSortKey(appt.date, appt.date, appt.startTime),
               });
             }
           });
@@ -611,6 +638,7 @@ export default function PatientList() {
               color: 'amber',
               title: 'Panoramica cargada',
               description: patient.panoramicName || 'Archivo cargado',
+              sortKey: getSortKey(patient.panoramicUploadedAt),
             });
           }
 
@@ -625,18 +653,30 @@ export default function PatientList() {
               title: payment.status === 'completed' ? 'Pago completado' : 'Pago parcial',
               description: payment.consultationType || 'Pago',
               amount: payment.amount,
+              sortKey: new Date(payment.date).getTime(),
             });
           });
 
-          // Ordenar eventos por fecha y hora
-          events.sort((a, b) => {
-            const dateCompare = b.date.localeCompare(a.date);
-            if (dateCompare !== 0) return dateCompare;
-            return (b.time || '').localeCompare(a.time || '');
-          });
+            // Ordenar eventos por fecha y hora
+            events.sort((a, b) => (
+              historyOrder === 'asc' ? a.sortKey - b.sortKey : b.sortKey - a.sortKey
+            ));
 
           return (
             <div className="space-y-4">
+              <div className="flex items-center justify-between rounded-lg border border-elegant-200/70 dark:border-elegant-800/70 bg-elegant-50/70 dark:bg-elegant-900/40 px-3 py-2">
+                <div className="text-xs font-semibold text-elegant-600 dark:text-elegant-300">
+                  Orden: {historyOrder === 'asc' ? 'mas antiguos primero' : 'mas recientes primero'}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setHistoryOrder(prev => (prev === 'asc' ? 'desc' : 'asc'))}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary-dark"
+                >
+                  <ArrowUpDown className="w-3.5 h-3.5" />
+                  {historyOrder === 'asc' ? 'Ver mas recientes' : 'Ver mas antiguos'}
+                </button>
+              </div>
               {events.length === 0 ? (
                 <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                   No hay movimientos registrados para este paciente
