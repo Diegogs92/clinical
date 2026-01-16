@@ -1954,6 +1954,7 @@ export default function AgendaPage() {
           })();
           const totalPaid = deposit + completed + pending;
           const remainingAmount = (appt.fee || 0) - totalPaid;
+          const hasPartialPaid = totalPaid > 0 && remainingAmount > 0 && remainingAmount < (appt.fee || 0);
 
           return (
             <div className="space-y-4">
