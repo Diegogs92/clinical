@@ -619,8 +619,9 @@ export default function AgendaPage() {
       }
       return sum;
     })();
-    const totalPaid = deposit + completed + pending;
-    const remainingAmount = (appt.fee || 0) - totalPaid;
+            const totalPaid = deposit + completed + pending;
+            const remainingAmount = (appt.fee || 0) - totalPaid;
+            const hasPartialPaid = totalPaid > 0 && remainingAmount > 0 && remainingAmount < (appt.fee || 0);
 
     if (amountNum > remainingAmount) {
       toast.error(`El monto ingresado ($${amountNum.toLocaleString('es-AR')}) supera el monto restante ($${remainingAmount.toLocaleString('es-AR')})`);
@@ -1973,22 +1974,22 @@ export default function AgendaPage() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 bg-elegant-100 dark:bg-elegant-800/60 p-2 rounded-full">
-                <button
-                  type="button"
-                  className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'total' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
-                  onClick={() => setPaymentDialog(p => ({ ...p, mode: 'total', amount: remainingAmount.toString() }))}
-                >
-                  Pago total
-                </button>
-                <button
-                  type="button"
-                  className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'partial' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
-                  onClick={() => setPaymentDialog(p => ({ ...p, mode: 'partial', amount: '' }))}
-                >
-                  Pago parcial
-                </button>
-              </div>
+                <div className="flex items-center gap-2 bg-elegant-100 dark:bg-elegant-800/60 p-2 rounded-full">
+                  <button
+                    type="button"
+                    className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'total' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
+                    onClick={() => setPaymentDialog(p => ({ ...p, mode: 'total', amount: remainingAmount.toString() }))}
+                  >
+                    {hasPartialPaid ? 'Pagar saldo' : 'Pago total'}
+                  </button>
+                  <button
+                    type="button"
+                    className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'partial' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
+                    onClick={() => setPaymentDialog(p => ({ ...p, mode: 'partial', amount: '' }))}
+                  >
+                    Pago parcial
+                  </button>
+                </div>
 
               {paymentDialog.mode === 'partial' && (
                 <div className="space-y-1">
