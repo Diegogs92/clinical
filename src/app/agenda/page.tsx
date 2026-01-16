@@ -1537,6 +1537,7 @@ export default function AgendaPage() {
                     type="time"
                     value={blockForm.endTime}
                     onChange={(e) => setBlockForm({ ...blockForm, endTime: e.target.value })}
+                    max="19:45"
                     className="input-field w-full"
                   />
                 </div>
