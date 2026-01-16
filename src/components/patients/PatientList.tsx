@@ -70,9 +70,16 @@ export default function PatientList() {
     const completedAppointments = appointments.filter(
       a => a.patientId === patientId && a.fee && a.status === 'completed'
     );
-    const patientPayments = payments.filter(p => p.patientId === patientId);
-    const completed = patientPayments.filter(p => p.status === 'completed');
-    const paymentsTotal = completed.reduce((sum, p) => sum + p.amount, 0);
+    const completedAppointmentIds = new Set(completedAppointments.map(a => a.id));
+
+    // Solo sumar pagos que están asociados a turnos completados
+    const patientPayments = payments.filter(
+      p => p.patientId === patientId &&
+      p.status === 'completed' &&
+      p.appointmentId &&
+      completedAppointmentIds.has(p.appointmentId)
+    );
+    const paymentsTotal = patientPayments.reduce((sum, p) => sum + p.amount, 0);
     const depositsTotal = completedAppointments.reduce((sum, appt) => sum + (appt.deposit || 0), 0);
     return paymentsTotal + depositsTotal;
   };
