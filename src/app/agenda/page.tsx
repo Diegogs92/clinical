@@ -1183,7 +1183,7 @@ export default function AgendaPage() {
                           onDragOver={(e) => handleDragOver(e, day, timeSlot)}
                           onDragLeave={handleDragLeave}
                           onDrop={(e) => handleDrop(e, day, timeSlot)}
-                          className={`relative h-6 border-t border-elegant-100 dark:border-elegant-800 transition-colors ${
+                          className={`relative h-6 transition-colors ${
                             isDragOverSlot ? 'bg-blue-100 dark:bg-blue-900/30 border-l-2 border-l-blue-400' : ''
                           }`}
                         >
