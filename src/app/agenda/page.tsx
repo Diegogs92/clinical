@@ -1837,7 +1837,7 @@ export default function AgendaPage() {
 
             <button
               onClick={() => handleReschedule(selectedEvent)}
-              disabled={!canEditSelected || selectedEvent.status === 'cancelled'}
+              disabled={!canEditSelected || selectedEvent.status === 'cancelled' || selectedEvent.status === 'completed'}
               className="group relative overflow-hidden w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded-lg p-3.5 transition-all duration-200 hover:shadow-lg hover:scale-[1.02] disabled:hover:scale-100 disabled:cursor-not-allowed"
             >
               <div className="flex items-center justify-center gap-2">
@@ -1853,7 +1853,7 @@ export default function AgendaPage() {
                   handleCancelAppointment(selectedEvent);
                   setSelectedEvent(null);
                 }}
-                disabled={selectedEvent.status === 'cancelled'}
+                disabled={selectedEvent.status === 'cancelled' || selectedEvent.status === 'completed'}
                 className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-lg bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:hover:bg-amber-900/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-amber-300 dark:border-amber-700"
               >
                 <BanIcon className="w-4 h-4 text-amber-700 dark:text-amber-400" />
