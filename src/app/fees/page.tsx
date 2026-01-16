@@ -242,8 +242,8 @@ export default function FeesPage() {
       return;
     }
 
-    const isTotal = amountNum >= remainingAmount;
-    const status: 'completed' | 'pending' = isTotal ? 'completed' : 'pending';
+      const isTotal = amountNum >= remainingAmount;
+      const status: 'completed' = 'completed';
 
     try {
       setSubmittingPayment(true);

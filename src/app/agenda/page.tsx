@@ -627,8 +627,8 @@ export default function AgendaPage() {
       return;
     }
 
-    const isTotal = appt.fee ? amountNum >= appt.fee : true;
-    const status: 'completed' | 'pending' = isTotal ? 'completed' : 'pending';
+      const isTotal = amountNum >= remainingAmount;
+      const status: 'completed' = 'completed';
 
     try {
       setSubmittingPayment(true);
