@@ -1769,7 +1769,7 @@ export default function AgendaPage() {
                               <div className="mt-1 space-y-0.5 text-xs text-green-600 dark:text-green-500">
                                 <p>Total: <span className="font-semibold text-green-700 dark:text-green-300">${formatCurrency(selectedEvent.fee)}</span></p>
                                 <p>Señado: <span className="font-semibold text-green-700 dark:text-green-300">${formatCurrency(paymentSummary.deposit)}</span></p>
-                                <p>Pendiente: <span className="font-semibold text-green-700 dark:text-green-300">${formatCurrency(paymentSummary.remaining)}</span></p>
+                                <p>{selectedEvent.status === 'completed' ? 'Deuda' : 'Pendiente'}: <span className="font-semibold text-green-700 dark:text-green-300">${formatCurrency(paymentSummary.remaining)}</span></p>
                                 {priorDebt > 0 && (
                                   <p>Deuda anterior: <span className="font-semibold text-green-700 dark:text-green-300">${formatCurrency(priorDebt)}</span></p>
                                 )}
