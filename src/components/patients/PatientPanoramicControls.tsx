@@ -82,9 +82,10 @@ export default function PatientPanoramicControls({
       return;
     }
 
-    const isPdfFile = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-    if (!isPdfFile) {
-      const message = 'Solo se permite PDF para la panor\u00e1mica.';
+    const isImageFile = file.type.startsWith('image/') ||
+                        /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(file.name);
+    if (!isImageFile) {
+      const message = 'Solo se permiten archivos de imagen para la panorámica.';
       toast.error(message);
       setErrorMessage(message);
       inputEl.value = '';
@@ -122,7 +123,7 @@ export default function PatientPanoramicControls({
       setSuccessModal({
         show: true,
         title: 'Panorámica subida',
-        message: 'El PDF se adjuntó correctamente.',
+        message: 'La imagen se adjuntó correctamente.',
       });
     } catch (error) {
       console.error('[Panoramic] Upload error:', error);
@@ -178,14 +179,13 @@ export default function PatientPanoramicControls({
       setSuccessModal({
         show: true,
         title: 'Panorámica eliminada',
-        message: 'El PDF se eliminó correctamente.',
+        message: 'La imagen se eliminó correctamente.',
       });
     } finally {
       setDeleting(false);
     }
   };
 
-  const isPdf = currentName.toLowerCase().endsWith('.pdf') || currentUrl.toLowerCase().includes('.pdf');
   const compactButtonClass = compact
     ? 'px-2 py-1.5 text-xs'
     : 'px-3 py-2 text-sm';
@@ -196,7 +196,7 @@ export default function PatientPanoramicControls({
         id={inputId}
         type="file"
         className="hidden"
-        accept="application/pdf,.pdf"
+        accept="image/*,.jpg,.jpeg,.png,.gif,.webp,.bmp"
         onChange={handleFileSelect}
         onInput={handleFileSelect}
         onClick={() => console.log('[Panoramic] File input click')}
@@ -232,7 +232,7 @@ export default function PatientPanoramicControls({
             className={`inline-flex items-center gap-2 font-semibold text-primary hover:text-primary-dark underline-offset-4 hover:underline ${compact ? 'text-xs' : 'text-sm'}`}
           >
             <Eye className="w-4 h-4" />
-            Ver PDF
+            Ver panorámica
           </button>
           <button
             type="button"
@@ -241,7 +241,7 @@ export default function PatientPanoramicControls({
             className={`inline-flex items-center gap-1.5 font-semibold text-red-600 hover:text-red-700 underline-offset-4 hover:underline disabled:opacity-60 disabled:cursor-not-allowed ${compact ? 'text-xs' : 'text-sm'}`}
           >
             <Trash2 className="w-4 h-4" />
-            Eliminar PDF
+            Eliminar panorámica
           </button>
         </>
       )}
@@ -276,17 +276,11 @@ export default function PatientPanoramicControls({
             <X className="w-4 h-4" />
           </button>
           <div className="mt-6">
-            {isPdf ? (
-              <iframe
-                title="Panorámica"
-                src={currentUrl}
-                className="w-full h-[70vh] rounded-lg border border-elegant-200 dark:border-elegant-700"
-              />
-            ) : (
-              <div className="text-sm text-elegant-600 dark:text-elegant-300">
-                El archivo adjunto no es un PDF.
-              </div>
-            )}
+            <img
+              src={currentUrl}
+              alt="Panorámica"
+              className="w-full h-auto rounded-lg border border-elegant-200 dark:border-elegant-700"
+            />
           </div>
         </div>
       </Modal>
