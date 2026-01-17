@@ -85,38 +85,21 @@ export default function GlobalSearch({
     appointments.forEach((appointment) => {
       const matchesPatientName = appointment.patientName?.toLowerCase().includes(lowerQuery);
       const matchesNotes = appointment.notes?.toLowerCase().includes(lowerQuery);
+      const matchesTitle = appointment.title?.toLowerCase().includes(lowerQuery);
 
-      if (matchesPatientName || matchesNotes) {
+      if (matchesPatientName || matchesNotes || matchesTitle) {
         const appointmentDate = new Date(appointment.date);
+        const isPersonal = appointment.appointmentType === 'personal';
+
         searchResults.push({
           id: appointment.id,
           type: 'appointment',
-          title: appointment.patientName || 'Sin paciente',
+          title: isPersonal ? (appointment.title || 'Evento personal') : (appointment.patientName || 'Sin paciente'),
           subtitle: `${format(appointmentDate, "d 'de' MMMM, yyyy", { locale: es })} - ${appointment.startTime}`,
           icon: <Calendar className="w-4 h-4 text-green-500" />,
           link: `/dashboard?highlight=${appointment.id}`,
           metadata: appointment.status || 'programado'
         });
-      }
-    });
-
-    // Search appointments with pending payments
-    appointments.forEach((appointment) => {
-      if (appointment.fee && appointment.fee > 0) {
-        const totalPaid = (appointment.paid || 0) + (appointment.deposit || 0);
-        const isPending = totalPaid < appointment.fee;
-
-        if (isPending && appointment.patientName?.toLowerCase().includes(lowerQuery)) {
-          searchResults.push({
-            id: `payment-${appointment.id}`,
-            type: 'payment',
-            title: appointment.patientName,
-            subtitle: `Pendiente: $${(appointment.fee - totalPaid).toLocaleString()}`,
-            icon: <DollarSign className="w-4 h-4 text-amber-500" />,
-            link: `/dashboard/fees?patient=${appointment.patientId}`,
-            metadata: 'Pago pendiente'
-          });
-        }
       }
     });
 
