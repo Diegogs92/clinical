@@ -57,12 +57,22 @@ export function exportToExcel(data: ExportData[], filename: string, columns?: st
 
 /**
  * Export table to PDF (requires html2canvas and jspdf - to be installed)
+ *
+ * To use this function, install the required dependencies:
+ * npm install html2canvas jspdf
  */
 export async function exportTableToPDF(
   tableElement: HTMLElement,
   filename: string,
   title?: string
 ) {
+  throw new Error(
+    'PDF export requires html2canvas and jspdf packages. ' +
+    'Install them with: npm install html2canvas jspdf'
+  );
+
+  // Uncomment the code below after installing the packages:
+  /*
   try {
     // Dynamic import to avoid bundling if not used
     const html2canvas = (await import('html2canvas')).default;
@@ -88,6 +98,7 @@ export async function exportTableToPDF(
     console.error('Error exporting to PDF:', error);
     throw new Error('Error al exportar a PDF. Asegúrate de tener html2canvas y jspdf instalados.');
   }
+  */
 }
 
 /**
