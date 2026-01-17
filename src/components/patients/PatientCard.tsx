@@ -13,6 +13,7 @@ interface PatientCardProps {
   onEdit?: (patient: Patient) => void;
   onDelete?: (patient: Patient) => void;
   className?: string;
+  lastVisit?: string; // Optional last visit date
 }
 
 export default function PatientCard({
@@ -21,22 +22,33 @@ export default function PatientCard({
   showActions = false,
   onEdit,
   onDelete,
-  className = ''
+  className = '',
+  lastVisit
 }: PatientCardProps) {
-  const getInitials = (name?: string) => {
-    if (!name) return '?';
-    const parts = name.split(' ').filter(Boolean);
-    if (parts.length >= 2) {
-      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-    }
-    return name[0]?.toUpperCase() || '?';
+  const getInitials = (firstName?: string, lastName?: string) => {
+    if (!firstName && !lastName) return '?';
+    const first = firstName?.[0]?.toUpperCase() || '';
+    const last = lastName?.[0]?.toUpperCase() || '';
+    return first + last || '?';
   };
 
-  const getInsuranceBadgeColor = (insurance?: string) => {
-    if (!insurance || insurance.toLowerCase() === 'particular') {
+  const getFullName = () => {
+    return `${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'Sin nombre';
+  };
+
+  const getInsuranceBadgeColor = (insuranceType?: string) => {
+    if (!insuranceType || insuranceType === 'particular') {
       return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
     }
     return 'bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400';
+  };
+
+  const getInsuranceLabel = () => {
+    if (patient.insuranceName) return patient.insuranceName;
+    if (patient.insuranceType === 'particular') return 'Particular';
+    if (patient.insuranceType === 'obra-social') return 'Obra Social';
+    if (patient.insuranceType === 'prepaga') return 'Prepaga';
+    return 'Particular';
   };
 
   return (
@@ -48,7 +60,7 @@ export default function PatientCard({
         {/* Avatar */}
         <div className="flex-shrink-0">
           <div className="w-14 h-14 bg-gradient-to-br from-sky-400 to-sky-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
-            {getInitials(patient.name)}
+            {getInitials(patient.firstName, patient.lastName)}
           </div>
         </div>
 
@@ -58,7 +70,7 @@ export default function PatientCard({
           <div className="flex items-start justify-between gap-2 mb-2">
             <div className="flex-1 min-w-0">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white truncate">
-                {patient.name || 'Sin nombre'}
+                {getFullName()}
               </h3>
               {patient.dni && (
                 <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -66,8 +78,8 @@ export default function PatientCard({
                 </p>
               )}
             </div>
-            <span className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium ${getInsuranceBadgeColor(patient.insurance)}`}>
-              {patient.insurance || 'Particular'}
+            <span className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium ${getInsuranceBadgeColor(patient.insuranceType)}`}>
+              {getInsuranceLabel()}
             </span>
           </div>
 
@@ -97,22 +109,24 @@ export default function PatientCard({
 
           {/* Footer */}
           <div className="flex items-center justify-between gap-4 pt-3 border-t border-slate-100 dark:border-slate-700">
-            {showLastVisit && patient.lastVisit ? (
+            {showLastVisit && lastVisit ? (
               <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                 <Clock className="w-3.5 h-3.5" />
                 <span>
                   Última visita{' '}
-                  {formatDistanceToNow(new Date(patient.lastVisit), {
+                  {formatDistanceToNow(new Date(lastVisit), {
                     addSuffix: true,
                     locale: es
                   })}
                 </span>
               </div>
-            ) : (
+            ) : showLastVisit ? (
               <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
                 <Calendar className="w-3.5 h-3.5" />
                 <span>Sin visitas registradas</span>
               </div>
+            ) : (
+              <div />
             )}
 
             {patient.notes && (
