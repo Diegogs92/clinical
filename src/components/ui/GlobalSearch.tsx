@@ -63,7 +63,8 @@ export default function GlobalSearch({
 
     // Search patients
     patients.forEach((patient) => {
-      const matchesName = patient.name?.toLowerCase().includes(lowerQuery);
+      const fullName = `${patient.firstName || ''} ${patient.lastName || ''}`.trim();
+      const matchesName = fullName.toLowerCase().includes(lowerQuery);
       const matchesDNI = patient.dni?.toLowerCase().includes(lowerQuery);
       const matchesPhone = patient.phone?.toLowerCase().includes(lowerQuery);
 
@@ -71,11 +72,11 @@ export default function GlobalSearch({
         searchResults.push({
           id: patient.id,
           type: 'patient',
-          title: patient.name || 'Sin nombre',
+          title: fullName || 'Sin nombre',
           subtitle: patient.dni ? `DNI: ${patient.dni}` : patient.phone,
           icon: <User className="w-4 h-4 text-sky-500" />,
           link: `/dashboard/patients/${patient.id}`,
-          metadata: patient.insurance || 'Particular'
+          metadata: patient.insuranceName || patient.insuranceType || 'Particular'
         });
       }
     });
