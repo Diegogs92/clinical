@@ -347,7 +347,7 @@ export default function PatientList() {
                   <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` })}>{p.phone}</td>
                   <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` })}>
                     <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs font-semibold">
-                      {patientAppts.length}
+                      {patientAppts}
                     </span>
                   </td>
                   <td onClick={() => setHistoryModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` })}>
@@ -419,7 +419,7 @@ export default function PatientList() {
                 <div className="text-center">
                   <div className="text-xs text-secondary dark:text-gray-400 mb-1">Turnos</div>
                   <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs font-semibold">
-                    {patientAppts.length}
+                    {patientAppts}
                   </span>
                 </div>
                 <div className="text-center">
