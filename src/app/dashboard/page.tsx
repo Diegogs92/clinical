@@ -31,6 +31,185 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { listProfessionals } from '@/lib/users';
 import { formatCurrency } from '@/lib/formatCurrency';
 
+// Componente optimizado para mostrar hora en vivo sin re-renderizar el padre
+function LiveClock() {
+  const [time, setTime] = useState(new Date());
+
+  useEffect(() => {
+    // Actualizar cada minuto es suficiente para mostrar la hora
+    const interval = setInterval(() => setTime(new Date()), 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return <>{format(time, 'dd/MM/yyyy HH:mm')}</>;
+}
+
+// Componente memoizado para filas de tabla - evita re-renders innecesarios
+const AppointmentTableRow = memo(function AppointmentTableRow({
+  appointment,
+  professional,
+  paymentState,
+  canSeeFees,
+  canEdit,
+  canDelete,
+  payments,
+  onEdit,
+  onDelete,
+  onCancel,
+  onOpenPayment,
+  canRegisterPayments
+}: {
+  appointment: Appointment;
+  professional: any;
+  paymentState: any;
+  canSeeFees: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+  payments: any[];
+  onEdit: (a: Appointment) => void;
+  onDelete: (a: Appointment) => void;
+  onCancel: (a: Appointment) => void;
+  onOpenPayment: (a: Appointment) => void;
+  canRegisterPayments: boolean;
+}) {
+  const fecha = useMemo(() => new Date(appointment.date).toLocaleDateString(), [appointment.date]);
+
+  const getPaymentStatusLabel = useMemo(() => {
+    if (!appointment.fee) return 'Sin honorarios';
+
+    const deposit = appointment.deposit || 0;
+    const completed = payments
+      .filter(p => p.appointmentId === appointment.id && p.status === 'completed')
+      .reduce((sum, p) => sum + p.amount, 0);
+    const totalPaid = deposit + completed;
+    const remaining = paymentState.remainingAmount;
+
+    if (paymentState.status === 'paid') {
+      return `Pagado: $${formatCurrency(totalPaid)}`;
+    }
+
+    if (!paymentState.isDue && paymentState.status !== 'paid') {
+      return totalPaid > 0 ? `Pagado: $${formatCurrency(totalPaid)}` : 'Sin deuda';
+    }
+
+    if (totalPaid > 0 && remaining > 0) {
+      return `Pagado: $${formatCurrency(totalPaid)} | Falta: $${formatCurrency(remaining)}`;
+    }
+
+    return `Pendiente: $${formatCurrency(remaining)}`;
+  }, [appointment.fee, appointment.deposit, appointment.id, payments, paymentState]);
+
+  return (
+    <tr>
+      <td>
+        <div className="flex items-center gap-1">
+          {canEdit && (
+            <button
+              onClick={() => onEdit(appointment)}
+              className="icon-btn-primary"
+              aria-label="Editar turno"
+            >
+              <Edit className="w-4 h-4" />
+            </button>
+          )}
+          {canDelete && (
+            <button
+              onClick={() => onDelete(appointment)}
+              className="icon-btn-danger"
+              aria-label="Eliminar turno"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </td>
+      <td className="font-medium">{fecha}</td>
+      <td>{appointment.startTime} - {appointment.endTime}</td>
+      <td>{appointment.patientName || appointment.title || 'Evento'}</td>
+      <td>
+        {professional ? (
+          <span className="text-sm text-gray-600 dark:text-gray-300">
+            {professional.displayName || professional.email}
+          </span>
+        ) : (
+          <span className="text-gray-400 text-xs">-</span>
+        )}
+      </td>
+      <td>
+        {canSeeFees && appointment.fee ? (
+          <span className="font-semibold text-elegant-900 dark:text-white">
+            ${formatCurrency(appointment.fee)}
+          </span>
+        ) : (
+          <span className="text-gray-400">-</span>
+        )}
+      </td>
+      <td>
+        {canEdit ? (
+          <button
+            onClick={() => onCancel(appointment)}
+            disabled={appointment.status === 'cancelled'}
+            className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:hover:scale-100 ${
+              appointment.status === 'completed' ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-800/60' :
+              appointment.status === 'cancelled' ? 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200' :
+              appointment.status === 'no-show' ? 'bg-gray-100/80 text-gray-800 dark:bg-gray-700/60 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600/60' :
+              'bg-blue-100/80 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800/60'
+            }`}
+          >
+            {translateAppointmentStatus(appointment.status)}
+          </button>
+        ) : (
+          <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${
+            appointment.status === 'completed' ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200' :
+            appointment.status === 'cancelled' ? 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200' :
+            appointment.status === 'no-show' ? 'bg-gray-100/80 text-gray-800 dark:bg-gray-700/60 dark:text-gray-200' :
+            'bg-blue-100/80 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200'
+          }`}>
+            {translateAppointmentStatus(appointment.status)}
+          </span>
+        )}
+      </td>
+      <td>
+        {canSeeFees && appointment.fee && canRegisterPayments ? (
+          <button
+            onClick={() => onOpenPayment(appointment)}
+            disabled={paymentState.status === 'paid'}
+            className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:hover:scale-100 ${
+              !paymentState.isDue && paymentState.status !== 'paid'
+                ? 'bg-elegant-100/80 text-elegant-700 dark:bg-elegant-800/60 dark:text-elegant-300'
+                : paymentState.status === 'paid'
+                  ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200'
+                  : (appointment.deposit || 0) > 0 && paymentState.remainingAmount > 0
+                    ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 hover:bg-amber-200 dark:hover:bg-amber-800/60'
+                    : paymentState.status === 'partial'
+                      ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 hover:bg-amber-200 dark:hover:bg-amber-800/60'
+                      : 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800/60'
+            }`}
+          >
+            {getPaymentStatusLabel}
+          </button>
+        ) : canSeeFees && appointment.fee ? (
+          <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${
+            !paymentState.isDue && paymentState.status !== 'paid'
+              ? 'bg-elegant-100/80 text-elegant-700 dark:bg-elegant-800/60 dark:text-elegant-300'
+              : paymentState.status === 'paid'
+                ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200'
+                : (appointment.deposit || 0) > 0 && paymentState.remainingAmount > 0
+                  ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
+                  : paymentState.status === 'partial'
+                    ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
+                    : 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200'
+          }`}>
+            {getPaymentStatusLabel}
+          </span>
+        ) : (
+          <span className="text-gray-400 text-xs">-</span>
+        )}
+      </td>
+    </tr>
+  );
+});
+
 const statusOptions = [
   { value: '', label: 'Todos los estados' },
   { value: 'scheduled', label: 'Agendado' },
@@ -62,7 +241,6 @@ export default function DashboardPage() {
   const [filterPatient, setFilterPatient] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [search, setSearch] = useState<string>('');
-  const [now, setNow] = useState<Date>(new Date());
   const [successModal, setSuccessModal] = useState<{ show: boolean; title: string; message?: string }>({
     show: false,
     title: '',
@@ -105,11 +283,6 @@ export default function DashboardPage() {
     }
   }, [isProfessionalRole, refreshAppointments, user, userProfile]);
 
-  // Reloj en vivo
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
 
   useEffect(() => {
     const loadProfessionals = async () => {
@@ -164,7 +337,7 @@ export default function DashboardPage() {
   }, [appointments, refreshDashboardAppointments, user, userProfile]);
 
   const windowRange = useMemo(() => {
-    const startBase = new Date(now);
+    const startBase = new Date();
     startBase.setHours(0, 0, 0, 0);
 
     switch (view) {
@@ -196,7 +369,7 @@ export default function DashboardPage() {
       default:
         return { start: startBase, end: addDays(startBase, 7) };
     }
-  }, [now, view]);
+  }, [view]);
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -276,7 +449,7 @@ export default function DashboardPage() {
       }
       return { color: 'text-red-500', status: 'unpaid', remainingAmount: appt.fee, isDue: true };
     };
-  }, [now, payments, pendingPayments]);
+  }, [payments, pendingPayments]);
 
   const canViewFees = (appt: Appointment) => {
     if (!user || !userProfile) return false;
@@ -310,7 +483,7 @@ export default function DashboardPage() {
     });
     if (!confirmed) return;
 
-    const isToday = appt.date === format(now, 'yyyy-MM-dd');
+    const isToday = appt.date === format(new Date(), 'yyyy-MM-dd');
 
     try {
       await updateAppointment(appt.id, { status: 'cancelled' });
@@ -524,7 +697,7 @@ export default function DashboardPage() {
               <div className="min-w-0 flex-1">
                 <p className="text-[12px] md:text-xs uppercase tracking-[0.1em] md:tracking-[0.15em] text-elegant-500">Inicio</p>
                 <h1 className="text-lg md:text-xl font-bold text-primary-dark dark:text-white truncate">
-                  {format(now, 'dd/MM/yyyy HH:mm')}
+                  <LiveClock />
                 </h1>
                 <p className="text-[12px] md:text-xs text-elegant-500 dark:text-elegant-400 truncate">Agenda sincronizada</p>
               </div>
@@ -616,153 +789,23 @@ export default function DashboardPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filtered.map(a => {
-                        const d = new Date(a.date);
-                        const fecha = d.toLocaleDateString();
-                        const professional = professionals.find(p => p.uid === a.userId);
-                        const paymentState = paymentStateFor(a);
-                        const canSeeFees = canViewFees(a);
-
-                        // Determinar el label del estado de pago
-                          const getPaymentStatusLabel = () => {
-                            if (!a.fee) return 'Sin honorarios';
-
-                            const deposit = a.deposit || 0;
-                            const completed = payments
-                              .filter(p => p.appointmentId === a.id && p.status === 'completed')
-                              .reduce((sum, p) => sum + p.amount, 0);
-                            const totalPaid = deposit + completed;
-                            const remaining = paymentState.remainingAmount;
-
-                            // Si está completamente pagado
-                            if (paymentState.status === 'paid') {
-                              return `Pagado: $${formatCurrency(totalPaid)}`;
-                            }
-
-                            // Si no hay deuda (turno futuro sin pago aún)
-                            if (!paymentState.isDue && paymentState.status !== 'paid') {
-                              return totalPaid > 0 ? `Pagado: $${formatCurrency(totalPaid)}` : 'Sin deuda';
-                            }
-
-                            // Si tiene pagos parciales
-                            if (totalPaid > 0 && remaining > 0) {
-                              return `Pagado: $${formatCurrency(totalPaid)} | Falta: $${formatCurrency(remaining)}`;
-                            }
-
-                            // Si no ha pagado nada aún
-                            return `Pendiente: $${formatCurrency(remaining)}`;
-                          };
-
-                        return (
-                          <tr key={a.id}>
-                            <td>
-                              <div className="flex items-center gap-1">
-                                {(a.userId === user?.uid || permissions.canEditAppointmentsForOthers) && (
-                                  <button
-                                    onClick={() => handleEdit(a)}
-                                    className="icon-btn-primary"
-                                    aria-label="Editar turno"
-                                  >
-                                    <Edit className="w-4 h-4" />
-                                  </button>
-                                )}
-                                {(a.userId === user?.uid || permissions.canDeleteAppointmentsForOthers) && (
-                                  <button
-                                    onClick={() => handleDelete(a)}
-                                    className="icon-btn-danger"
-                                    aria-label="Eliminar turno"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                            <td className="font-medium">{fecha}</td>
-                            <td>{a.startTime} - {a.endTime}</td>
-                            <td>{a.patientName || a.title || 'Evento'}</td>
-                            <td>
-                              {professional ? (
-                                <span className="text-sm text-gray-600 dark:text-gray-300">
-                                  {professional.displayName || professional.email}
-                                </span>
-                              ) : (
-                                <span className="text-gray-400 text-xs">-</span>
-                              )}
-                            </td>
-                            <td>
-                              {canSeeFees && a.fee ? (
-                                <span className="font-semibold text-elegant-900 dark:text-white">
-                                  ${formatCurrency(a.fee)}
-                                </span>
-                              ) : (
-                                <span className="text-gray-400">-</span>
-                              )}
-                            </td>
-                            <td>
-                              {(a.userId === user?.uid || permissions.canEditAppointmentsForOthers) ? (
-                                <button
-                                  onClick={() => handleCancel(a)}
-                                  disabled={a.status === 'cancelled'}
-                                  className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:hover:scale-100 ${
-                                    a.status === 'completed' ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-800/60' :
-                                    a.status === 'cancelled' ? 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200' :
-                                    a.status === 'no-show' ? 'bg-gray-100/80 text-gray-800 dark:bg-gray-700/60 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600/60' :
-                                    'bg-blue-100/80 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800/60'
-                                  }`}
-                                >
-                                  {translateAppointmentStatus(a.status)}
-                                </button>
-                              ) : (
-                                <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${
-                                  a.status === 'completed' ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200' :
-                                  a.status === 'cancelled' ? 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200' :
-                                  a.status === 'no-show' ? 'bg-gray-100/80 text-gray-800 dark:bg-gray-700/60 dark:text-gray-200' :
-                                  'bg-blue-100/80 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200'
-                                }`}>
-                                  {translateAppointmentStatus(a.status)}
-                                </span>
-                              )}
-                            </td>
-                            <td>
-                              {canSeeFees && a.fee && permissions.canRegisterPayments ? (
-                                <button
-                                  onClick={() => openPaymentDialog(a)}
-                                  disabled={paymentState.status === 'paid'}
-                                  className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:hover:scale-100 ${
-                                    !paymentState.isDue && paymentState.status !== 'paid'
-                                      ? 'bg-elegant-100/80 text-elegant-700 dark:bg-elegant-800/60 dark:text-elegant-300'
-                                      : paymentState.status === 'paid'
-                                        ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200'
-                                        : (a.deposit || 0) > 0 && paymentState.remainingAmount > 0
-                                          ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 hover:bg-amber-200 dark:hover:bg-amber-800/60'
-                                          : paymentState.status === 'partial'
-                                            ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 hover:bg-amber-200 dark:hover:bg-amber-800/60'
-                                            : 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800/60'
-                                  }`}
-                                >
-                                  {getPaymentStatusLabel()}
-                                </button>
-                              ) : canSeeFees && a.fee ? (
-                                <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${
-                                  !paymentState.isDue && paymentState.status !== 'paid'
-                                    ? 'bg-elegant-100/80 text-elegant-700 dark:bg-elegant-800/60 dark:text-elegant-300'
-                                    : paymentState.status === 'paid'
-                                      ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200'
-                                      : (a.deposit || 0) > 0 && paymentState.remainingAmount > 0
-                                        ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
-                                        : paymentState.status === 'partial'
-                                          ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
-                                          : 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200'
-                                }`}>
-                                  {getPaymentStatusLabel()}
-                                </span>
-                              ) : (
-                                <span className="text-gray-400 text-xs">-</span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
+                      {filtered.map(a => (
+                        <AppointmentTableRow
+                          key={a.id}
+                          appointment={a}
+                          professional={professionals.find(p => p.uid === a.userId)}
+                          paymentState={paymentStateFor(a)}
+                          canSeeFees={canViewFees(a)}
+                          canEdit={a.userId === user?.uid || permissions.canEditAppointmentsForOthers}
+                          canDelete={a.userId === user?.uid || permissions.canDeleteAppointmentsForOthers}
+                          payments={payments}
+                          onEdit={handleEdit}
+                          onDelete={handleDelete}
+                          onCancel={handleCancel}
+                          onOpenPayment={openPaymentDialog}
+                          canRegisterPayments={permissions.canRegisterPayments}
+                        />
+                      ))}
                     </tbody>
                   </table>
                 </div>

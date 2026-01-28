@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { usePayments } from '@/contexts/PaymentsContext';
@@ -20,63 +21,80 @@ export default function StatsOverview() {
   const { appointments } = useAppointments();
   const { payments, pendingPayments } = usePayments();
 
-  const today = new Date().toISOString().slice(0, 10);
-  const todayAppointments = appointments.filter(a => a.date.startsWith(today) && a.status !== 'cancelled');
+  // Memoizar fecha actual para evitar recalcular en cada render
+  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const currentMonth = useMemo(() => new Date().getMonth(), []);
+  const currentYear = useMemo(() => new Date().getFullYear(), []);
 
-  const currentMonth = new Date().getMonth();
-  const currentYear = new Date().getFullYear();
-
-  // Calcular ingresos del mes: pagos + señas de turnos del mes
-  const paymentsIncome = payments
-    .filter(p => {
-      const d = new Date(p.date);
-      return (p.status === 'completed' || p.status === 'pending') &&
-        d.getMonth() === currentMonth &&
-        d.getFullYear() === currentYear;
-    })
-    .reduce((sum, p) => sum + p.amount, 0);
-
-  const depositsIncome = appointments
-    .filter(a => {
-      const d = new Date(a.date);
-      return a.deposit && a.deposit > 0 &&
-        d.getMonth() === currentMonth &&
-        d.getFullYear() === currentYear;
-    })
-    .reduce((sum, a) => sum + (a.deposit || 0), 0);
-
-  const monthlyIncome = paymentsIncome + depositsIncome;
-
-  const allPayments = [...payments, ...pendingPayments].reduce((acc, payment) => {
-    acc.set(payment.id, payment);
-    return acc;
-  }, new Map<string, typeof payments[number]>());
-
-  const paymentTotalsByAppointment = Array.from(allPayments.values()).reduce((acc, payment) => {
-    if (!payment.appointmentId) return acc;
-    if (payment.status !== 'completed' && payment.status !== 'pending') return acc;
-    const prev = acc.get(payment.appointmentId) || 0;
-    acc.set(payment.appointmentId, prev + payment.amount);
-    return acc;
-  }, new Map<string, number>());
-
-  const pendingSummary = appointments.reduce(
-    (acc, appointment) => {
-      if (!appointment.fee) return acc;
-      if (appointment.status !== 'completed') return acc;
-      const paid = paymentTotalsByAppointment.get(appointment.id) || 0;
-      const deposit = appointment.deposit || 0;
-      const remaining = Math.max(0, appointment.fee - deposit - paid);
-      if (remaining > 0) {
-        acc.amount += remaining;
-        acc.count += 1;
-      }
-      return acc;
-    },
-    { amount: 0, count: 0 }
+  // Memoizar turnos de hoy
+  const todayAppointments = useMemo(() =>
+    appointments.filter(a => a.date.startsWith(today) && a.status !== 'cancelled'),
+    [appointments, today]
   );
 
-  const stats: Stat[] = [
+  // Memoizar ingresos del mes
+  const monthlyIncome = useMemo(() => {
+    // Calcular ingresos de pagos del mes
+    const paymentsIncome = payments
+      .filter(p => {
+        const d = new Date(p.date);
+        return (p.status === 'completed' || p.status === 'pending') &&
+          d.getMonth() === currentMonth &&
+          d.getFullYear() === currentYear;
+      })
+      .reduce((sum, p) => sum + p.amount, 0);
+
+    // Calcular ingresos de señas del mes
+    const depositsIncome = appointments
+      .filter(a => {
+        const d = new Date(a.date);
+        return a.deposit && a.deposit > 0 &&
+          d.getMonth() === currentMonth &&
+          d.getFullYear() === currentYear;
+      })
+      .reduce((sum, a) => sum + (a.deposit || 0), 0);
+
+    return paymentsIncome + depositsIncome;
+  }, [payments, appointments, currentMonth, currentYear]);
+
+  // Memoizar mapa de pagos totales por turno
+  const paymentTotalsByAppointment = useMemo(() => {
+    const allPayments = [...payments, ...pendingPayments].reduce((acc, payment) => {
+      acc.set(payment.id, payment);
+      return acc;
+    }, new Map<string, typeof payments[number]>());
+
+    return Array.from(allPayments.values()).reduce((acc, payment) => {
+      if (!payment.appointmentId) return acc;
+      if (payment.status !== 'completed' && payment.status !== 'pending') return acc;
+      const prev = acc.get(payment.appointmentId) || 0;
+      acc.set(payment.appointmentId, prev + payment.amount);
+      return acc;
+    }, new Map<string, number>());
+  }, [payments, pendingPayments]);
+
+  // Memoizar resumen de pendientes de cobro
+  const pendingSummary = useMemo(() =>
+    appointments.reduce(
+      (acc, appointment) => {
+        if (!appointment.fee) return acc;
+        if (appointment.status !== 'completed') return acc;
+        const paid = paymentTotalsByAppointment.get(appointment.id) || 0;
+        const deposit = appointment.deposit || 0;
+        const remaining = Math.max(0, appointment.fee - deposit - paid);
+        if (remaining > 0) {
+          acc.amount += remaining;
+          acc.count += 1;
+        }
+        return acc;
+      },
+      { amount: 0, count: 0 }
+    ),
+    [appointments, paymentTotalsByAppointment]
+  );
+
+  // Memoizar array de stats para evitar recrearlo en cada render
+  const stats: Stat[] = useMemo(() => [
     {
       label: 'Pacientes',
       value: patients.length,
@@ -107,7 +125,7 @@ export default function StatsOverview() {
       sub: `${pendingSummary.count} pendiente${pendingSummary.count !== 1 ? 's' : ''}`,
       color: 'from-amber-500 to-amber-600'
     },
-  ];
+  ], [patients.length, todayAppointments.length, monthlyIncome, pendingSummary]);
 
   return (
     <div className="grid gap-2 md:gap-2.5 grid-cols-2 lg:grid-cols-4">

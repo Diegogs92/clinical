@@ -1,5 +1,5 @@
 import { db, mockMode } from '@/lib/firebase';
-import { collection, addDoc, updateDoc, doc, deleteDoc, getDoc, getDocs, query, where, orderBy, Firestore } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc, deleteDoc, getDoc, getDocs, query, where, orderBy, Firestore, limit } from 'firebase/firestore';
 import { Appointment, RecurrenceRule } from '@/types';
 import { loadFromLocalStorage, saveToLocalStorage } from './mockStorage';
 import { deletePayment, listPaymentsByAppointment } from './payments';
@@ -7,6 +7,19 @@ import { deletePayment, listPaymentsByAppointment } from './payments';
 const APPOINTMENTS_COLLECTION = 'appointments';
 // In-memory mocks when mockMode is active
 const mockAppointments: Appointment[] = loadFromLocalStorage<Appointment>('appointments');
+
+// Rango de fechas para optimización de queries (6 meses atrás, 6 meses adelante)
+const getAppointmentsDateRange = () => {
+  const now = new Date();
+  const startDate = new Date(now);
+  startDate.setMonth(startDate.getMonth() - 6); // 6 meses atrás
+  const endDate = new Date(now);
+  endDate.setMonth(endDate.getMonth() + 6); // 6 meses adelante
+  return {
+    start: startDate.toISOString().split('T')[0], // YYYY-MM-DD
+    end: endDate.toISOString().split('T')[0]
+  };
+};
 
 export async function createAppointment(data: Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>) {
   const now = new Date().toISOString();
@@ -100,17 +113,31 @@ export async function getAppointmentsByUser(userId: string): Promise<Appointment
 }
 
 /**
- * Obtiene todos los turnos (para administradores y secretarias)
+ * Obtiene turnos recientes y futuros (optimizado con rango de fechas)
+ * Carga solo turnos de los últimos 6 meses y próximos 6 meses para mejor rendimiento
  */
 export async function getAllAppointments(): Promise<Appointment[]> {
   if (mockMode || !db) {
-    return mockAppointments.sort((a,b) => a.date.localeCompare(b.date));
+    // En mock mode, filtrar por rango de fechas para simular la optimización
+    const { start, end } = getAppointmentsDateRange();
+    return mockAppointments
+      .filter(a => a.date >= start && a.date <= end)
+      .sort((a,b) => a.date.localeCompare(b.date));
   }
-  const colRef = collection(db as Firestore, APPOINTMENTS_COLLECTION);
-  const snap = await getDocs(colRef);
-  const appointments = snap.docs.map(d => ({ ...d.data() as Appointment, id: d.id }));
 
-  // Ordenar por fecha en el cliente
+  // Optimización: cargar solo turnos en rango de fechas relevante
+  // Esto evita cargar años de historial innecesariamente
+  const { start, end } = getAppointmentsDateRange();
+  const q = query(
+    collection(db as Firestore, APPOINTMENTS_COLLECTION),
+    where('date', '>=', start),
+    where('date', '<=', end),
+    orderBy('date', 'asc'),
+    limit(2000) // Límite de seguridad adicional
+  );
+
+  const snap = await getDocs(q);
+  const appointments = snap.docs.map(d => ({ ...d.data() as Appointment, id: d.id }));
   return appointments.sort((a, b) => a.date.localeCompare(b.date));
 }
 

@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { deletePatient } from '@/lib/patients';
 import { listPayments } from '@/lib/payments';
@@ -26,6 +26,7 @@ export default function PatientList() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [isNewPatientModalOpen, setIsNewPatientModalOpen] = useState(false);
   const [editPatientModal, setEditPatientModal] = useState<{ open: boolean; patientId?: string; patientName?: string }>({ open: false });
   const [historyModal, setHistoryModal] = useState<{ open: boolean; patientId?: string; patientName?: string }>({ open: false });
@@ -36,75 +37,96 @@ export default function PatientList() {
   const toast = useToast();
   const confirm = useConfirm();
 
-  // Helper function to count appointments for a patient
+  // Debounce search input para mejor performance
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Memoizar cálculos de estadísticas por paciente para evitar recalcularlos en cada render
+  const patientStats = useMemo(() => {
+    const stats = new Map<string, {
+      appointmentsCount: number;
+      debt: number;
+      paid: number;
+      pending: number;
+    }>();
+
+    // Crear índice de pagos por turno
+    const paymentsByAppointment = new Map<string, number>();
+    payments.forEach(payment => {
+      if (!payment.appointmentId) return;
+      if (payment.status !== 'completed' && payment.status !== 'pending') return;
+      const prev = paymentsByAppointment.get(payment.appointmentId) || 0;
+      paymentsByAppointment.set(payment.appointmentId, prev + payment.amount);
+    });
+
+    // Calcular estadísticas por paciente
+    patients.forEach(patient => {
+      const patientAppointments = appointments.filter(a => a.patientId === patient.id);
+      const completedAppointments = patientAppointments.filter(a => a.fee && a.status === 'completed');
+      const scheduledAppointments = patientAppointments.filter(
+        a => a.fee && (a.status === 'scheduled' || a.status === 'confirmed')
+      );
+
+      // Calcular deuda (turnos completados sin pagar completamente)
+      const debt = completedAppointments.reduce((sum, appt) => {
+        const paid = paymentsByAppointment.get(appt.id) || 0;
+        const deposit = appt.deposit || 0;
+        if (appt.status === 'cancelled' && paid === 0 && deposit === 0) return sum;
+        const totalPaid = paid + deposit;
+        const remaining = Math.max(0, (appt.fee || 0) - totalPaid);
+        return sum + remaining;
+      }, 0);
+
+      // Calcular total pagado (solo de turnos completados)
+      const paymentsTotal = payments
+        .filter(p =>
+          p.patientId === patient.id &&
+          p.status === 'completed' &&
+          p.appointmentId &&
+          completedAppointments.some(a => a.id === p.appointmentId)
+        )
+        .reduce((sum, p) => sum + p.amount, 0);
+      const depositsTotal = completedAppointments.reduce((sum, appt) => sum + (appt.deposit || 0), 0);
+      const paid = paymentsTotal + depositsTotal;
+
+      // Calcular pendiente (turnos futuros agendados)
+      const pending = scheduledAppointments.reduce((sum, appt) => {
+        const paidForAppt = paymentsByAppointment.get(appt.id) || 0;
+        const deposit = appt.deposit || 0;
+        const remaining = Math.max(0, (appt.fee || 0) - deposit - paidForAppt);
+        return sum + remaining;
+      }, 0);
+
+      stats.set(patient.id, {
+        appointmentsCount: patientAppointments.length,
+        debt,
+        paid,
+        pending
+      });
+    });
+
+    return stats;
+  }, [patients, appointments, payments]);
+
+  // Helper functions optimizadas que usan el caché
   const getPatientAppointments = (patientId: string) => {
-    return appointments.filter(a => a.patientId === patientId);
+    return patientStats.get(patientId)?.appointmentsCount || 0;
   };
 
-  // Helper function to calculate patient debt
   const getPatientDebt = (patientId: string) => {
-    const patientAppointments = appointments.filter(
-      a => a.patientId === patientId && a.fee && a.status === 'completed'
-    );
-    const paymentTotalsByAppointment = payments.reduce((acc, payment) => {
-      if (payment.patientId !== patientId) return acc;
-      if (!payment.appointmentId) return acc;
-      if (payment.status !== 'completed' && payment.status !== 'pending') return acc;
-      const prev = acc.get(payment.appointmentId) || 0;
-      acc.set(payment.appointmentId, prev + payment.amount);
-      return acc;
-    }, new Map<string, number>());
-
-    return patientAppointments.reduce((sum, appt) => {
-      const paid = paymentTotalsByAppointment.get(appt.id) || 0;
-      const deposit = appt.deposit || 0;
-      if (appt.status === 'cancelled' && paid === 0 && deposit === 0) return sum;
-      const totalPaid = paid + deposit;
-      const remaining = Math.max(0, (appt.fee || 0) - totalPaid);
-      return sum + remaining;
-    }, 0);
+    return patientStats.get(patientId)?.debt || 0;
   };
 
-  // Helper function to calculate total paid
   const getPatientPaid = (patientId: string) => {
-    // Solo contar pagos y señas de turnos completados
-    const completedAppointments = appointments.filter(
-      a => a.patientId === patientId && a.fee && a.status === 'completed'
-    );
-    const completedAppointmentIds = new Set(completedAppointments.map(a => a.id));
-
-    // Solo sumar pagos que están asociados a turnos completados
-    const patientPayments = payments.filter(
-      p => p.patientId === patientId &&
-      p.status === 'completed' &&
-      p.appointmentId &&
-      completedAppointmentIds.has(p.appointmentId)
-    );
-    const paymentsTotal = patientPayments.reduce((sum, p) => sum + p.amount, 0);
-    const depositsTotal = completedAppointments.reduce((sum, appt) => sum + (appt.deposit || 0), 0);
-    return paymentsTotal + depositsTotal;
+    return patientStats.get(patientId)?.paid || 0;
   };
 
   const getPatientPending = (patientId: string) => {
-    const patientAppointments = appointments.filter(
-      a => a.patientId === patientId && a.fee && (a.status === 'scheduled' || a.status === 'confirmed')
-    );
-    if (!patientAppointments.length) return 0;
-
-    const completedPayments = payments
-      .filter(p => p.patientId === patientId && p.status === 'completed' && p.appointmentId)
-      .reduce((acc, payment) => {
-        const prev = acc.get(payment.appointmentId as string) || 0;
-        acc.set(payment.appointmentId as string, prev + payment.amount);
-        return acc;
-      }, new Map<string, number>());
-
-    return patientAppointments.reduce((sum, appt) => {
-      const paid = completedPayments.get(appt.id) || 0;
-      const deposit = appt.deposit || 0;
-      const remaining = Math.max(0, (appt.fee || 0) - deposit - paid);
-      return sum + remaining;
-    }, 0);
+    return patientStats.get(patientId)?.pending || 0;
   };
 
   // Helper function to get formatted birthdate and next birthday
@@ -158,9 +180,15 @@ export default function PatientList() {
     return () => window.removeEventListener('focus', handleFocus);
   }, [loadData]);
 
-  const filtered = patients.filter(p =>
-    `${p.lastName}, ${p.firstName}`.toLowerCase().includes(search.toLowerCase()) || p.dni.includes(search)
-  );
+  // Memoizar búsqueda filtrada para evitar filtrar en cada render
+  const filtered = useMemo(() => {
+    if (!debouncedSearch.trim()) return patients;
+    const searchLower = debouncedSearch.toLowerCase();
+    return patients.filter(p =>
+      `${p.lastName}, ${p.firstName}`.toLowerCase().includes(searchLower) ||
+      p.dni.includes(debouncedSearch)
+    );
+  }, [patients, debouncedSearch]);
 
   const handleDelete = async (id: string) => {
     const ok = await confirm({

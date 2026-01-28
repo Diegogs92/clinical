@@ -1,9 +1,16 @@
 import { db, mockMode } from '@/lib/firebase';
-import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, getDoc, query, where, Firestore } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, getDoc, query, where, Firestore, orderBy, limit } from 'firebase/firestore';
 import { Payment } from '@/types';
 import { loadFromLocalStorage, saveToLocalStorage } from './mockStorage';
 
 const PAYMENTS_COLLECTION = 'payments';
+
+// Límite de pagos recientes para optimizar performance (últimos 12 meses de datos)
+const getRecentPaymentsStartDate = () => {
+  const date = new Date();
+  date.setMonth(date.getMonth() - 12); // Últimos 12 meses
+  return date.toISOString().split('T')[0]; // formato YYYY-MM-DD
+};
 
 // Helper functions
 const sortByDateDesc = (items: Payment[]) => [...items].sort((a, b) => b.date.localeCompare(a.date));
@@ -74,13 +81,22 @@ export async function getPayment(id: string): Promise<Payment|null> {
 export async function listPayments(userId: string, viewAll: boolean = false): Promise<Payment[]> {
   if (mockMode || !db) {
     const mockPayments = getMockPayments();
-    // Siempre retornar todos los pagos, ya que están vinculados a pacientes compartidos
-    return sortByDateDesc(mockPayments);
+    // En mock mode, filtrar por fecha reciente para simular la optimización
+    const recentDate = getRecentPaymentsStartDate();
+    return sortByDateDesc(mockPayments.filter(p => p.date >= recentDate));
   }
 
-  // Siempre retornar todos los pagos, ya que están vinculados a pacientes compartidos
-  const snap = await getDocs(collection(db as Firestore, PAYMENTS_COLLECTION));
+  // Optimización: cargar solo pagos recientes (últimos 12 meses) ordenados por fecha
+  // Esto mejora dramáticamente el rendimiento al evitar cargar miles de registros históricos
+  const recentDate = getRecentPaymentsStartDate();
+  const q = query(
+    collection(db as Firestore, PAYMENTS_COLLECTION),
+    where('date', '>=', recentDate),
+    orderBy('date', 'desc'),
+    limit(1000) // Límite de seguridad adicional
+  );
 
+  const snap = await getDocs(q);
   const payments = snap.docs.map(d => ({ ...d.data() as Payment, id: d.id }));
   return sortByDateDesc(payments);
 }
@@ -88,15 +104,25 @@ export async function listPayments(userId: string, viewAll: boolean = false): Pr
 export async function listPendingPayments(userId: string, viewAll: boolean = false): Promise<Payment[]> {
   if (mockMode || !db) {
     const mockPayments = getMockPayments();
-    // Siempre retornar todos los pagos pendientes, ya que están vinculados a pacientes compartidos
-    return sortByDateDesc(mockPayments.filter(p => p.status === 'pending'));
+    // Retornar pagos pendientes recientes
+    const recentDate = getRecentPaymentsStartDate();
+    return sortByDateDesc(mockPayments.filter(p => p.status === 'pending' && p.date >= recentDate));
   }
 
-  // Siempre retornar todos los pagos pendientes, ya que están vinculados a pacientes compartidos
-  const snap = await getDocs(collection(db as Firestore, PAYMENTS_COLLECTION));
+  // Optimización: usar query con where para filtrar en el servidor, no en el cliente
+  // Solo cargar pagos pendientes recientes para evitar cargar miles de registros
+  const recentDate = getRecentPaymentsStartDate();
+  const q = query(
+    collection(db as Firestore, PAYMENTS_COLLECTION),
+    where('status', '==', 'pending'),
+    where('date', '>=', recentDate),
+    orderBy('date', 'desc'),
+    limit(500) // Los pendientes suelen ser menos, pero ponemos límite de seguridad
+  );
 
+  const snap = await getDocs(q);
   const payments = snap.docs.map(d => ({ ...d.data() as Payment, id: d.id }));
-  return sortByDateDesc(payments.filter(p => p.status === 'pending'));
+  return sortByDateDesc(payments);
 }
 
 export async function listPaymentsByAppointment(appointmentId: string, userId?: string): Promise<Payment[]> {
