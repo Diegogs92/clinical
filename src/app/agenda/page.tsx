@@ -683,6 +683,10 @@ export default function AgendaPage() {
   };
 
   const timeSlots = useMemo(() => generateTimeSlots(), []);
+  const timeToMinutes = (time: string) => {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
 
   // Drag and Drop handlers
   const handleDragStart = (e: React.DragEvent, apt: any) => {
@@ -1171,6 +1175,10 @@ export default function AgendaPage() {
                           return apt.startTime >= timeSlot;
                         }
                       });
+                      const appointmentOffset =
+                        slotAppointment
+                          ? Math.max(0, ((timeToMinutes(slotAppointment.startTime) - timeToMinutes(timeSlot)) / 30) * 24)
+                          : 0;
 
                       // Verificar si hay una franja bloqueada en este slot
                       const slotBlocked = dayBlocked.find(slot =>
@@ -1189,7 +1197,7 @@ export default function AgendaPage() {
                         >
                           {/* Renderizar turno si existe */}
                           {slotAppointment && (
-                            <div className="relative -mt-1 z-10">
+                            <div className="relative z-10" style={{ marginTop: `${appointmentOffset}px` }}>
                               {renderAppointmentCard(slotAppointment)}
                             </div>
                           )}
