@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 import DashboardLayout from '@/components/DashboardLayout';
 import StatsOverview from '@/components/dashboard/StatsOverview';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, memo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAllAppointments, updateAppointment, deleteAppointment } from '@/lib/appointments';
 import { Appointment, UserProfile } from '@/types';
