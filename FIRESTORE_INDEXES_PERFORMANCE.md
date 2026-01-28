@@ -5,7 +5,11 @@ Este documento lista los índices compuestos requeridos en Firestore para las qu
 ## Fecha de Creación
 2026-01-28
 
-## Índices Requeridos
+## ✅ Estado: DEPLOYADOS Y ACTIVOS
+
+Los índices fueron deployados exitosamente usando `firebase deploy --only firestore:indexes`.
+
+## Índices Configurados
 
 ### 1. Payments Collection - Query por Fecha
 
