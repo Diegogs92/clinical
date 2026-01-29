@@ -155,7 +155,8 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label htmlFor="firstName" className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">
@@ -402,6 +403,7 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
           {loading ? 'Guardando...' : (patientId ? 'Actualizar' : 'Crear')}
         </button>
       </div>
+      </form>
 
       <SuccessModal
         isOpen={successModal.show}
@@ -409,6 +411,6 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
         title={successModal.title}
         message={successModal.message}
       />
-    </form>
+    </>
   );
 }
