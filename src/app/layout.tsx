@@ -13,6 +13,7 @@ import { OfficesProvider } from '@/contexts/OfficesContext';
 import { CalendarSyncProvider } from '@/contexts/CalendarSyncContext';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import GlobalLoader from '@/components/GlobalLoader';
+import { CommandMenu } from '@/components/ui/CommandMenu';
 
 const sourceSans = Manrope({
   subsets: ['latin'],
@@ -60,6 +61,7 @@ export default function RootLayout({
                       <PaymentsProvider>
                         <CalendarSyncProvider>
                           <GlobalLoader />
+                          <CommandMenu />
                           {children}
                           <Toaster position="top-center" richColors closeButton className="toaster-centered" />
                         </CalendarSyncProvider>
