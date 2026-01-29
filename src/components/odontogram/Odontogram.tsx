@@ -1,9 +1,7 @@
-"use client"
-
-import React, { useState } from 'react';
+// Imports fixed
+import React, { useState, useEffect } from 'react';
 import { Tooth } from './Tooth';
 import { ToothState, ToothSurfaces, SurfaceState } from '@/types/odontogram';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 // Helper to generate initial empty state
@@ -27,13 +25,30 @@ const generateInitialTeeth = (): Record<number, ToothState> => {
 
 type ToolType = 'caries' | 'filled' | 'endodontics' | 'sealant' | 'cleaning' | 'extract';
 
-export default function Odontogram() {
-    const [teeth, setTeeth] = useState<Record<number, ToothState>>(generateInitialTeeth());
+interface OdontogramProps {
+    initialData?: Record<number, ToothState>;
+    onDataChange?: (data: Record<number, ToothState>) => void;
+}
+
+
+export default function Odontogram({ initialData, onDataChange }: OdontogramProps) {
+    const [teeth, setTeeth] = useState<Record<number, ToothState>>(initialData || generateInitialTeeth());
     const [selectedTool, setSelectedTool] = useState<ToolType>('caries');
     const [view, setView] = useState<'permanent' | 'mixed'>('permanent');
 
+    // Propagate changes
+    useEffect(() => {
+        if (onDataChange) {
+            onDataChange(teeth);
+        }
+    }, [teeth, onDataChange]);
+
     const handleSurfaceClick = (toothId: number, surface: keyof ToothSurfaces) => {
-        if (selectedTool === 'extract') return; // Extraction handles whole tooth
+        // If tool is extract, we treat any surface click as a tooth click
+        if (selectedTool === 'extract') {
+            handleToothClick(toothId);
+            return;
+        }
 
         setTeeth(prev => {
             const tooth = prev[toothId];
@@ -54,6 +69,8 @@ export default function Odontogram() {
     };
 
     const handleToothClick = (toothId: number) => {
+        // Only allow toggling missing state if tool is extract or regular click
+        // If regular click (no tool selected) maybe select? For now strictly bind to 'extract' tool
         if (selectedTool === 'extract') {
             setTeeth(prev => ({
                 ...prev,

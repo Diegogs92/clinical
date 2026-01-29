@@ -16,6 +16,7 @@ export interface Patient {
   panoramicUrl?: string;
   panoramicName?: string;
   panoramicUploadedAt?: string;
+  odontogram?: Record<string, any>; // Estado del odontograma
   createdAt: string;
   updatedAt: string;
   userId: string; // Professional ID

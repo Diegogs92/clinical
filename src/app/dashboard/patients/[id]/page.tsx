@@ -1,6 +1,8 @@
 "use client"
 
+import { useState } from 'react';
 import { usePatients } from '@/contexts/PatientsContext';
+import { updatePatient } from '@/lib/patients';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -14,6 +16,23 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
     const { patients } = usePatients();
     const router = useRouter();
     const patient = patients.find(p => p.id === params.id);
+    const [odontogramData, setOdontogramData] = useState<any>(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const { refreshPatients } = usePatients();
+
+    const handleSaveOdontogram = async () => {
+        if (!patient || !odontogramData) return;
+        setIsSaving(true);
+        try {
+            await updatePatient(patient.id, { odontogram: odontogramData });
+            await refreshPatients();
+            // Optional: show toast
+        } catch (error) {
+            console.error("Error saving odontogram:", error);
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     if (!patient) {
         return (
@@ -105,9 +124,19 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center">
                                         <h3 className="text-lg font-medium">Odontograma Interactivo</h3>
-                                        <Button size="sm">Guardar Cambios</Button>
+                                        <Button
+                                            size="sm"
+                                            onClick={handleSaveOdontogram}
+                                            disabled={isSaving}
+                                            className="min-w-[140px]"
+                                        >
+                                            {isSaving ? "Guardando..." : "Guardar Cambios"}
+                                        </Button>
                                     </div>
-                                    <Odontogram />
+                                    <Odontogram
+                                        initialData={patient.odontogram}
+                                        onDataChange={setOdontogramData}
+                                    />
                                 </div>
                             </TabsContent>
 
