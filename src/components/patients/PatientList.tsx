@@ -81,16 +81,17 @@ export default function PatientList() {
         return sum + remaining;
       }, 0);
 
-      // Calcular total pagado (solo de turnos completados)
+      // Calcular total pagado (pagos completados + TODAS las señas de turnos con fee)
       const paymentsTotal = payments
         .filter(p =>
           p.patientId === patient.id &&
-          p.status === 'completed' &&
-          p.appointmentId &&
-          completedAppointments.some(a => a.id === p.appointmentId)
+          p.status === 'completed'
         )
         .reduce((sum, p) => sum + p.amount, 0);
-      const depositsTotal = completedAppointments.reduce((sum, appt) => sum + (appt.deposit || 0), 0);
+      // Incluir señas de TODOS los turnos con fee, no solo completados
+      const depositsTotal = patientAppointments
+        .filter(a => a.fee && a.fee > 0)
+        .reduce((sum, appt) => sum + (appt.deposit || 0), 0);
       const paid = paymentsTotal + depositsTotal;
 
       // Calcular pendiente (turnos futuros agendados)
