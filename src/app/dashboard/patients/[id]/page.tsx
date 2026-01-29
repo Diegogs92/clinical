@@ -13,6 +13,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Mail, Calendar as CalendarIcon, FileText, Activity, Shield } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import SuccessModal from '@/components/ui/SuccessModal';
 import Odontogram from '@/components/odontogram/Odontogram';
 import PatientHistory from '@/components/patients/PatientHistory';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -27,6 +28,7 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
     const [odontogramData, setOdontogramData] = useState<any>(null);
     const [isSaving, setIsSaving] = useState(false);
     const { refreshPatients } = usePatients();
+    const [successModal, setSuccessModal] = useState<{ show: boolean; title: string; message: string }>({ show: false, title: '', message: '' });
     const [payments, setPayments] = useState<any[]>([]);
 
     const handleSaveOdontogram = async () => {
@@ -35,7 +37,11 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
         try {
             await updatePatient(patient.id, { odontogram: odontogramData });
             await refreshPatients();
-            toast.success("Odontograma guardado con éxito");
+            setSuccessModal({
+                show: true,
+                title: 'Odontograma guardado',
+                message: 'El odontograma ha sido actualizado correctamente'
+            });
         } catch (error) {
             console.error("Error saving odontogram:", error);
             toast.error("Error al guardar el odontograma");
@@ -209,6 +215,12 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
                     </Tabs>
                 </div>
             </DashboardLayout>
+            <SuccessModal
+                isOpen={successModal.show}
+                onClose={() => setSuccessModal({ ...successModal, show: false })}
+                title={successModal.title}
+                message={successModal.message}
+            />
         </ProtectedRoute>
     );
 }
