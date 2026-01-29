@@ -10,6 +10,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import ECGLoader from '@/components/ui/ECGLoader';
 import Modal from '@/components/ui/Modal';
+import SuccessModal from '@/components/ui/SuccessModal';
 import PatientForm from './PatientForm';
 import PatientPanoramicControls from './PatientPanoramicControls';
 import { usePatients } from '@/contexts/PatientsContext';
@@ -31,6 +32,11 @@ export default function PatientList() {
   const [editPatientModal, setEditPatientModal] = useState<{ open: boolean; patientId?: string; patientName?: string }>({ open: false });
   const [historyModal, setHistoryModal] = useState<{ open: boolean; patientId?: string; patientName?: string }>({ open: false });
   const [historyOrder, setHistoryOrder] = useState<'asc' | 'desc'>('asc');
+  const [successModal, setSuccessModal] = useState<{ show: boolean; title: string; message?: string }>({
+    show: false,
+    title: '',
+    message: ''
+  });
   const { patients, loading: patientsLoading, refreshPatients } = usePatients();
   const { appointments } = useAppointments();
   const { canViewAllPayments } = usePermissions();
@@ -247,10 +253,13 @@ export default function PatientList() {
         maxWidth="max-w-2xl"
       >
         <PatientForm
-          onSuccess={async () => {
+          onSuccess={async (title, message) => {
             setIsNewPatientModalOpen(false);
             await refreshPatients();
             loadData();
+            setTimeout(() => {
+              setSuccessModal({ show: true, title, message });
+            }, 250);
           }}
         />
       </Modal>
@@ -263,10 +272,13 @@ export default function PatientList() {
         {editPatientModal.patientId && (
           <PatientForm
             patientId={editPatientModal.patientId}
-            onSuccess={async () => {
+            onSuccess={async (title, message) => {
               setEditPatientModal({ open: false });
               await refreshPatients();
               loadData();
+              setTimeout(() => {
+                setSuccessModal({ show: true, title, message });
+              }, 250);
             }}
           />
         )}
@@ -771,6 +783,13 @@ export default function PatientList() {
           );
         })()}
       </Modal>
+
+      <SuccessModal
+        isOpen={successModal.show}
+        onClose={() => setSuccessModal({ show: false, title: '', message: '' })}
+        title={successModal.title}
+        message={successModal.message}
+      />
     </div>
   );
 }

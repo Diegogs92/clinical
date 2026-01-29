@@ -12,6 +12,7 @@ import { Patient, Insurance } from '@/types';
 import { useToast } from '@/contexts/ToastContext';
 import PatientPanoramicControls from './PatientPanoramicControls';
 import { usePatients } from '@/contexts/PatientsContext';
+import SuccessModal from '@/components/ui/SuccessModal';
 
 const patientSchema = z.object({
   firstName: z.string().min(1, 'Nombre requerido'),
@@ -29,7 +30,7 @@ export type PatientFormValues = z.infer<typeof patientSchema>;
 
 interface Props {
   patientId?: string;
-  onSuccess?: () => void;
+  onSuccess?: (title: string, message: string) => void;
 }
 export default function PatientForm({ patientId, onSuccess }: Props) {
   const { user } = useAuth();
@@ -42,14 +43,11 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
   const [showNewInsuranceInput, setShowNewInsuranceInput] = useState(false);
   const [newInsuranceName, setNewInsuranceName] = useState('');
   const { refreshPatients } = usePatients();
-  const handleSuccess = async (message: string) => {
-    toast.success(message);
-    if (onSuccess) {
-      await Promise.resolve(onSuccess());
-    } else {
-      router.push('/patients');
-    }
-  };
+  const [successModal, setSuccessModal] = useState<{ show: boolean; title: string; message?: string }>({
+    show: false,
+    title: '',
+    message: ''
+  });
 
   const { register, handleSubmit, formState: { errors, touchedFields }, reset, watch, setValue } = useForm<PatientFormValues>({
     resolver: zodResolver(patientSchema),
@@ -126,11 +124,27 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
       if (patientId && initialPatient) {
         await updatePatient(patientId, patientData);
         await refreshPatients();
-        await handleSuccess('Paciente actualizado correctamente');
+        if (onSuccess) {
+          onSuccess('Paciente actualizado', 'El paciente se ha actualizado correctamente');
+        } else {
+          setSuccessModal({
+            show: true,
+            title: 'Paciente actualizado',
+            message: 'El paciente se ha actualizado correctamente'
+          });
+        }
       } else {
         await createPatient(patientData);
         await refreshPatients();
-        await handleSuccess('Paciente creado correctamente');
+        if (onSuccess) {
+          onSuccess('Paciente creado', 'El paciente se ha creado correctamente');
+        } else {
+          setSuccessModal({
+            show: true,
+            title: 'Paciente creado',
+            message: 'El paciente se ha creado correctamente'
+          });
+        }
       }
     } catch (e) {
       console.error('Error al guardar:', e);
@@ -391,6 +405,15 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
       </div>
       </form>
 
+      <SuccessModal
+        isOpen={successModal.show}
+        onClose={() => {
+          setSuccessModal({ show: false, title: '', message: '' });
+          router.push('/patients');
+        }}
+        title={successModal.title}
+        message={successModal.message}
+      />
     </>
   );
 }
