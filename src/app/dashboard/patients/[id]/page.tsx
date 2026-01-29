@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { usePatients } from '@/contexts/PatientsContext';
-import { updatePatient, deletePatient } from '@/lib/patients';
+import { updatePatient } from '@/lib/patients';
 import { listPayments } from '@/lib/payments';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Mail, Calendar as CalendarIcon, FileText, Activity, Shield, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, Mail, Calendar as CalendarIcon, FileText, Activity, Shield } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import Odontogram from '@/components/odontogram/Odontogram';
 import PatientHistory from '@/components/patients/PatientHistory';
@@ -85,7 +85,7 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
                             <ArrowLeft className="h-5 w-5" />
                         </Button>
                         <div>
-                            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400">
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                                 {patient.firstName} {patient.lastName}
                             </h1>
                             <p className="text-gray-500 dark:text-gray-400 flex items-center gap-2 text-sm">
@@ -93,29 +93,7 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
                                 Paciente #{patient.id.slice(-6)}
                             </p>
                         </div>
-                        <div className="ml-auto flex gap-2">
-                            <Button variant="outline" size="sm" onClick={() => {
-                                // TODO: Add edit logic here or a Dialog
-                                console.log("Edit patient");
-                            }}>
-                                <Edit className="w-4 h-4 mr-2" />
-                                Editar
-                            </Button>
-                            <Button variant="destructive" size="sm" onClick={async () => {
-                                if (confirm('¿Estás seguro de que deseas eliminar este paciente? Esta acción no se puede deshacer.')) {
-                                    try {
-                                        await deletePatient(patient.id);
-                                        router.push('/dashboard/patients');
-                                    } catch (e) {
-                                        console.error(e);
-                                        alert('Error al eliminar paciente');
-                                    }
-                                }
-                            }}>
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Eliminar
-                            </Button>
-                        </div>
+
                     </div>
 
                     <Tabs defaultValue="general" className="w-full space-y-6">
