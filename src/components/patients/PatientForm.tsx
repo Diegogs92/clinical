@@ -12,7 +12,6 @@ import { Patient, Insurance } from '@/types';
 import { useToast } from '@/contexts/ToastContext';
 import PatientPanoramicControls from './PatientPanoramicControls';
 import { usePatients } from '@/contexts/PatientsContext';
-import SuccessModal from '@/components/ui/SuccessModal';
 
 const patientSchema = z.object({
   firstName: z.string().min(1, 'Nombre requerido'),
@@ -43,11 +42,14 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
   const [showNewInsuranceInput, setShowNewInsuranceInput] = useState(false);
   const [newInsuranceName, setNewInsuranceName] = useState('');
   const { refreshPatients } = usePatients();
-  const [successModal, setSuccessModal] = useState<{ show: boolean; title: string; message?: string }>({
-    show: false,
-    title: '',
-    message: ''
-  });
+  const handleSuccess = async (message: string) => {
+    toast.success(message);
+    if (onSuccess) {
+      await Promise.resolve(onSuccess());
+    } else {
+      router.push('/patients');
+    }
+  };
 
   const { register, handleSubmit, formState: { errors, touchedFields }, reset, watch, setValue } = useForm<PatientFormValues>({
     resolver: zodResolver(patientSchema),
@@ -124,19 +126,11 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
       if (patientId && initialPatient) {
         await updatePatient(patientId, patientData);
         await refreshPatients();
-        setSuccessModal({
-          show: true,
-          title: 'Paciente actualizado',
-          message: 'El paciente se ha actualizado correctamente'
-        });
+        await handleSuccess('Paciente actualizado correctamente');
       } else {
         await createPatient(patientData);
         await refreshPatients();
-        setSuccessModal({
-          show: true,
-          title: 'Paciente creado',
-          message: 'El paciente se ha creado correctamente'
-        });
+        await handleSuccess('Paciente creado correctamente');
       }
     } catch (e) {
       console.error('Error al guardar:', e);
@@ -397,20 +391,6 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
       </div>
       </form>
 
-      <SuccessModal
-        isOpen={successModal.show}
-        onClose={() => {
-          setSuccessModal({ show: false, title: '', message: '' });
-          // Llamar a onSuccess o navegar después de que el modal se cierre
-          if (onSuccess) {
-            onSuccess();
-          } else {
-            router.push('/patients');
-          }
-        }}
-        title={successModal.title}
-        message={successModal.message}
-      />
     </>
   );
 }
