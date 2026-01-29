@@ -12,6 +12,7 @@ import { Patient, Insurance } from '@/types';
 import { useToast } from '@/contexts/ToastContext';
 import PatientPanoramicControls from './PatientPanoramicControls';
 import { usePatients } from '@/contexts/PatientsContext';
+import SuccessModal from '@/components/ui/SuccessModal';
 
 const patientSchema = z.object({
   firstName: z.string().min(1, 'Nombre requerido'),
@@ -42,6 +43,11 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
   const [showNewInsuranceInput, setShowNewInsuranceInput] = useState(false);
   const [newInsuranceName, setNewInsuranceName] = useState('');
   const { refreshPatients } = usePatients();
+  const [successModal, setSuccessModal] = useState<{ show: boolean; title: string; message?: string }>({
+    show: false,
+    title: '',
+    message: ''
+  });
 
   const { register, handleSubmit, formState: { errors, touchedFields }, reset, watch, setValue } = useForm<PatientFormValues>({
     resolver: zodResolver(patientSchema),
@@ -117,17 +123,29 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
 
       if (patientId && initialPatient) {
         await updatePatient(patientId, patientData);
-        toast.success('Paciente actualizado correctamente');
+        setSuccessModal({
+          show: true,
+          title: 'Paciente actualizado',
+          message: 'El paciente se ha actualizado correctamente'
+        });
       } else {
         await createPatient(patientData);
-        toast.success('Paciente creado correctamente');
+        setSuccessModal({
+          show: true,
+          title: 'Paciente creado',
+          message: 'El paciente se ha creado correctamente'
+        });
       }
       await refreshPatients();
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        router.push('/patients');
-      }
+
+      // Esperar a que el modal se cierre antes de llamar onSuccess o navegar
+      setTimeout(() => {
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          router.push('/patients');
+        }
+      }, 2100);
     } catch (e) {
       console.error('Error al guardar:', e);
       alert(`Error al guardar paciente: ${e instanceof Error ? e.message : 'Error desconocido'}`);
@@ -384,6 +402,13 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
           {loading ? 'Guardando...' : (patientId ? 'Actualizar' : 'Crear')}
         </button>
       </div>
+
+      <SuccessModal
+        isOpen={successModal.show}
+        onClose={() => setSuccessModal({ show: false, title: '', message: '' })}
+        title={successModal.title}
+        message={successModal.message}
+      />
     </form>
   );
 }
