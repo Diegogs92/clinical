@@ -43,7 +43,8 @@ export default function PaymentDialog({
 
     return (
         <Modal
-            isOpen={isOpen}
+            open={isOpen}
+
             onClose={onClose}
             title="Registrar Pago"
         >
@@ -72,8 +73,8 @@ export default function PaymentDialog({
                                 onAmountChange(remainingAmount.toString());
                             }}
                             className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all ${initialMode === 'total'
-                                    ? 'bg-primary/10 border-primary text-primary dark:text-white'
-                                    : 'bg-white dark:bg-elegant-900 border-elegant-200 dark:border-elegant-800 text-elegant-600 dark:text-elegant-400 hover:border-primary/50'
+                                ? 'bg-primary/10 border-primary text-primary dark:text-white'
+                                : 'bg-white dark:bg-elegant-900 border-elegant-200 dark:border-elegant-800 text-elegant-600 dark:text-elegant-400 hover:border-primary/50'
                                 }`}
                         >
                             <span className="font-semibold">Total Restante</span>
@@ -82,8 +83,8 @@ export default function PaymentDialog({
                         <button
                             onClick={() => onModeChange('partial')}
                             className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all ${initialMode === 'partial'
-                                    ? 'bg-primary/10 border-primary text-primary dark:text-white'
-                                    : 'bg-white dark:bg-elegant-900 border-elegant-200 dark:border-elegant-800 text-elegant-600 dark:text-elegant-400 hover:border-primary/50'
+                                ? 'bg-primary/10 border-primary text-primary dark:text-white'
+                                : 'bg-white dark:bg-elegant-900 border-elegant-200 dark:border-elegant-800 text-elegant-600 dark:text-elegant-400 hover:border-primary/50'
                                 }`}
                         >
                             <span className="font-semibold">Pago Parcial</span>

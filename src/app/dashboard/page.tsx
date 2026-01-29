@@ -14,7 +14,9 @@ import { usePatients } from '@/contexts/PatientsContext';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import AppointmentForm from '@/components/appointments/AppointmentForm';
 import { Clock } from 'lucide-react';
+import Modal from '@/components/ui/Modal';
 import SuccessModal from '@/components/ui/SuccessModal';
+
 import { useToast } from '@/contexts/ToastContext';
 import { createPayment } from '@/lib/payments';
 import { usePayments } from '@/contexts/PaymentsContext';
@@ -460,16 +462,35 @@ export default function DashboardPage() {
 
         {/* Modales */}
         {showForm && (
-          <AppointmentForm
-            isOpen={showForm}
+          <Modal
+            open={showForm}
+
             onClose={() => {
               setShowForm(false);
               setEditingAppointment(null);
             }}
-            onSuccess={refreshDashboardAppointments}
-            initialData={editingAppointment}
-          />
+            title={editingAppointment ? 'Editar Turno' : 'Nuevo Turno'}
+          >
+            <AppointmentForm
+              initialData={editingAppointment || undefined}
+              onCancel={() => {
+                setShowForm(false);
+                setEditingAppointment(null);
+              }}
+              onSuccess={(title, message) => {
+                refreshDashboardAppointments();
+                setSuccessModal({ show: true, title, message });
+                setShowForm(false);
+                setEditingAppointment(null);
+              }}
+              onCreated={() => {
+                // handled by onSuccess or prop if needed, but onSuccess logic above covers it
+                // AppointmentForm calls onSuccess prop to notify parent.
+              }}
+            />
+          </Modal>
         )}
+
 
         {paymentDialog.open && paymentDialog.appointment && (
           <PaymentDialog
