@@ -218,7 +218,7 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
           <input
             id="phone"
             className="input-field"
-            placeholder="Ej: 11-1234-5678"
+            placeholder="Ej: 1112345678"
             {...register('phone')}
           />
           {touchedFields.phone && errors.phone && (
