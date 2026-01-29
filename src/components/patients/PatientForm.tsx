@@ -43,8 +43,9 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
   const [newInsuranceName, setNewInsuranceName] = useState('');
   const { refreshPatients } = usePatients();
 
-  const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm<PatientFormValues>({
+  const { register, handleSubmit, formState: { errors, touchedFields }, reset, watch, setValue } = useForm<PatientFormValues>({
     resolver: zodResolver(patientSchema),
+    mode: 'onBlur', // Validación en tiempo real al salir del campo
     defaultValues: {
       insuranceType: 'particular',
     },
@@ -139,31 +140,87 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Nombre</label>
-          <input className="input-field" {...register('firstName')} />
-          {errors.firstName && <p className="text-red-600 text-xs mt-1">{errors.firstName.message}</p>}
+          <label htmlFor="firstName" className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">
+            Nombre <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="firstName"
+            className="input-field"
+            autoFocus={!patientId}
+            placeholder="Ej: Juan"
+            {...register('firstName')}
+          />
+          {touchedFields.firstName && errors.firstName && (
+            <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+              <span className="text-sm">⚠</span>
+              {errors.firstName.message}
+            </p>
+          )}
         </div>
         <div>
-          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Apellido</label>
-          <input className="input-field" {...register('lastName')} />
-          {errors.lastName && <p className="text-red-600 text-xs mt-1">{errors.lastName.message}</p>}
+          <label htmlFor="lastName" className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">
+            Apellido <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="lastName"
+            className="input-field"
+            placeholder="Ej: García"
+            {...register('lastName')}
+          />
+          {touchedFields.lastName && errors.lastName && (
+            <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+              <span className="text-sm">⚠</span>
+              {errors.lastName.message}
+            </p>
+          )}
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">DNI</label>
-          <input className="input-field" {...register('dni')} />
-          {errors.dni && <p className="text-red-600 text-xs mt-1">{errors.dni.message}</p>}
+          <label htmlFor="dni" className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">
+            DNI <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="dni"
+            className="input-field"
+            placeholder="Ej: 12345678"
+            {...register('dni')}
+          />
+          {touchedFields.dni && errors.dni && (
+            <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+              <span className="text-sm">⚠</span>
+              {errors.dni.message}
+            </p>
+          )}
         </div>
         <div>
-          <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Teléfono</label>
-          <input className="input-field" {...register('phone')} />
-          {errors.phone && <p className="text-red-600 text-xs mt-1">{errors.phone.message}</p>}
+          <label htmlFor="phone" className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">
+            Teléfono <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="phone"
+            className="input-field"
+            placeholder="Ej: 11-1234-5678"
+            {...register('phone')}
+          />
+          {touchedFields.phone && errors.phone && (
+            <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+              <span className="text-sm">⚠</span>
+              {errors.phone.message}
+            </p>
+          )}
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">Fecha de Nacimiento</label>
-        <input type="date" className="input-field" {...register('birthDate')} />
+        <label htmlFor="birthDate" className="block text-sm font-medium text-primary-dark dark:text-white mb-1.5">
+          Fecha de Nacimiento
+        </label>
+        <input
+          id="birthDate"
+          type="date"
+          className="input-field"
+          {...register('birthDate')}
+        />
       </div>
 
       <div>

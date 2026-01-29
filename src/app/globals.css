@@ -309,15 +309,17 @@ input[type="tel"],
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Inputs - Con focus mejorado y efecto glow */
+  /* Inputs - Con focus mejorado y efecto glow WCAG compliant */
   .input-field {
-    @apply w-full px-3.5 py-2.5 border border-elegant-300/60 dark:border-elegant-700/60
+    @apply w-full px-3.5 py-2.5 border-2 border-elegant-300/60 dark:border-elegant-700/60
            rounded-xl bg-white dark:bg-elegant-900 text-base
            text-elegant-900 dark:text-white placeholder-elegant-400 dark:placeholder-elegant-500
-           focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/60
+           focus:outline-none focus:ring-3 focus:ring-primary/50 focus:border-primary
+           focus:ring-offset-2
            transition-all duration-200 hover:border-primary/40 dark:hover:border-primary/40
-           disabled:bg-elegant-50 dark:disabled:bg-elegant-950 disabled:cursor-not-allowed
-           focus:shadow-md focus:shadow-primary/10;
+           disabled:bg-gray-200 dark:disabled:bg-elegant-950 disabled:text-gray-500
+           disabled:cursor-not-allowed
+           focus:shadow-lg focus:shadow-primary/20;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 

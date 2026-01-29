@@ -30,6 +30,7 @@ import { combineDateAndTime } from '@/lib/dateUtils';
 import { usePermissions } from '@/hooks/usePermissions';
 import { listProfessionals } from '@/lib/users';
 import { formatCurrency } from '@/lib/formatCurrency';
+import { useCommonShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 // Componente optimizado para mostrar hora en vivo sin re-renderizar el padre
 function LiveClock() {
@@ -249,11 +250,33 @@ export default function DashboardPage() {
   const [dashboardAppointments, setDashboardAppointments] = useState<Appointment[]>([]);
   const [dashboardLoading, setDashboardLoading] = useState(false);
   const defaultFilterSet = useRef(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const isProfessionalRole = userProfile?.role === 'profesional';
   const appointments = isProfessionalRole ? dashboardAppointments : baseAppointments;
   const appointmentsLoading = isProfessionalRole ? dashboardLoading : baseLoading;
 
   const toast = useToast();
+
+  // Atajos de teclado globales
+  useCommonShortcuts({
+    onSearch: () => {
+      // Focus en el input de búsqueda
+      searchInputRef.current?.focus();
+    },
+    onNew: () => {
+      // Abrir modal de nuevo turno
+      openNewAppointment();
+    },
+    onClose: () => {
+      // Cerrar cualquier modal abierto
+      if (showForm) {
+        setShowForm(false);
+        setEditingAppointment(null);
+      } else if (paymentDialog.open) {
+        setPaymentDialog({ open: false, appointment: undefined, mode: 'total', amount: '' });
+      }
+    },
+  });
   const openNewAppointment = () => {
     setEditingAppointment(null);
     setShowForm(true);
@@ -725,11 +748,13 @@ export default function DashboardPage() {
                 <label className="flex items-center gap-2 px-3 py-2 rounded-lg bg-elegant-100 dark:bg-elegant-800 text-sm text-elegant-700 dark:text-elegant-300">
                   <Search className="w-4 h-4" />
                   <input
+                    ref={searchInputRef}
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Buscar por paciente, DNI u obra social"
+                    placeholder="Buscar por paciente, DNI u obra social (Ctrl+K)"
                     className="flex-1 bg-transparent outline-none text-sm placeholder:text-elegant-400 dark:placeholder:text-elegant-500"
+                    aria-label="Buscar turnos"
                   />
                 </label>
                 <select
@@ -909,19 +934,19 @@ export default function DashboardPage() {
                             {(a.userId === user?.uid || permissions.canEditAppointmentsForOthers) && (
                               <button
                                 onClick={() => handleEdit(a)}
-                                className="flex items-center justify-center px-2 py-2.5 rounded-xl bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light transition-all touch-manipulation active:scale-95"
-                                aria-label="Editar"
+                                className="flex items-center justify-center min-w-[48px] min-h-[48px] rounded-xl bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light transition-all touch-manipulation active:scale-95"
+                                aria-label="Editar turno"
                               >
-                                <Edit className="w-4 h-4" />
+                                <Edit className="w-5 h-5" />
                               </button>
                             )}
                             {(a.userId === user?.uid || permissions.canEditAppointmentsForOthers) && (
                               <button
                                 onClick={() => handleCancel(a)}
-                                className="flex items-center justify-center px-2 py-2.5 rounded-xl bg-elegant-100 text-danger dark:bg-elegant-800/60 dark:text-red-400 transition-all touch-manipulation active:scale-95"
-                                aria-label="Cancelar"
+                                className="flex items-center justify-center min-w-[48px] min-h-[48px] rounded-xl bg-elegant-100 text-danger dark:bg-elegant-800/60 dark:text-red-400 transition-all touch-manipulation active:scale-95"
+                                aria-label="Cancelar turno"
                               >
-                                <Ban className="w-4 h-4" />
+                                <Ban className="w-5 h-5" />
                               </button>
                             )}
                           </div>

@@ -10,6 +10,9 @@ interface ToastOptions {
   duration?: number;
 }
 
+const SUCCESS_DURATION_MS = 1200;
+const DEFAULT_DURATION_MS = 2500;
+
 interface ToastContextType {
   showToast: (message: string, type?: ToastType, options?: ToastOptions) => void;
   success: (message: string, options?: ToastOptions) => void;
@@ -22,7 +25,7 @@ interface ToastContextType {
 export function useToast(): ToastContextType {
   return {
     showToast: (message: string, type: ToastType = 'info', options?: ToastOptions) => {
-      const duration = options?.duration || 2500;
+      const duration = options?.duration || (type === 'success' ? SUCCESS_DURATION_MS : DEFAULT_DURATION_MS);
       switch (type) {
         case 'success':
           sonnerToast.success(message, { duration });
@@ -40,16 +43,16 @@ export function useToast(): ToastContextType {
       }
     },
     success: (message: string, options?: ToastOptions) => {
-      sonnerToast.success(message, { duration: options?.duration || 2500 });
+      sonnerToast.success(message, { duration: options?.duration || SUCCESS_DURATION_MS });
     },
     error: (message: string, options?: ToastOptions) => {
-      sonnerToast.error(message, { duration: options?.duration || 2500 });
+      sonnerToast.error(message, { duration: options?.duration || DEFAULT_DURATION_MS });
     },
     info: (message: string, options?: ToastOptions) => {
-      sonnerToast.info(message, { duration: options?.duration || 2500 });
+      sonnerToast.info(message, { duration: options?.duration || DEFAULT_DURATION_MS });
     },
     warning: (message: string, options?: ToastOptions) => {
-      sonnerToast.warning(message, { duration: options?.duration || 2500 });
+      sonnerToast.warning(message, { duration: options?.duration || DEFAULT_DURATION_MS });
     },
   };
 }
