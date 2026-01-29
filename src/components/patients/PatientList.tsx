@@ -208,7 +208,11 @@ export default function PatientList() {
     if (!ok) return;
     try {
       await deletePatient(id);
-      toast.success('Paciente eliminado correctamente');
+      setSuccessModal({
+        show: true,
+        title: 'Paciente eliminado',
+        message: 'El paciente se ha eliminado correctamente'
+      });
       await refreshPatients();
       loadData();
     } catch (e) {

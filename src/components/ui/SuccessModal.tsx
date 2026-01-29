@@ -1,7 +1,8 @@
 'use client';
 
 import { CheckCircle2 } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface SuccessModalProps {
   isOpen: boolean;
@@ -19,10 +20,15 @@ export default function SuccessModal({
   duration = 1800
 }: SuccessModalProps) {
   const onCloseRef = useRef(onClose);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     onCloseRef.current = onClose;
   }, [onClose]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -33,9 +39,9 @@ export default function SuccessModal({
     }
   }, [isOpen, duration]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-2xl">
       <div className="bg-white dark:bg-elegant-800 rounded-2xl shadow-2xl p-8 max-w-md mx-4 border border-elegant-200 dark:border-elegant-700">
         <div className="flex flex-col items-center text-center">
@@ -52,6 +58,7 @@ export default function SuccessModal({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
