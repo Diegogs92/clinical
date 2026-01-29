@@ -177,7 +177,6 @@ export default function PatientsPage() {
                                             <th className="px-4 py-3 font-medium text-center">Pagado</th>
                                             <th className="px-4 py-3 font-medium text-center">Pendiente</th>
                                             <th className="px-4 py-3 font-medium text-center">Deuda</th>
-                                            <th className="px-4 py-3 font-medium text-right">Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -232,14 +231,6 @@ export default function PatientsPage() {
                                                         </td>
                                                         <td className="px-4 py-3 text-center text-red-600 font-medium text-xs">
                                                             {stats.debt > 0 ? `$${formatCurrency(stats.debt)}` : '-'}
-                                                        </td>
-                                                        <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                                                            <button
-                                                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
-                                                                onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/patients/${patient.id}`); }}
-                                                            >
-                                                                <FileText className="w-4 h-4 text-gray-500" />
-                                                            </button>
                                                         </td>
                                                     </tr>
                                                 );
