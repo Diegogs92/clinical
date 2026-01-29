@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { usePatients } from '@/contexts/PatientsContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { deletePatient } from '@/lib/patients';
 import { useAppointments } from '@/contexts/AppointmentsContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { listPayments } from '@/lib/payments';
@@ -177,6 +178,7 @@ export default function PatientsPage() {
                                             <th className="px-4 py-3 font-medium text-center">Pagado</th>
                                             <th className="px-4 py-3 font-medium text-center">Pendiente</th>
                                             <th className="px-4 py-3 font-medium text-center">Deuda</th>
+                                            <th className="px-4 py-3 font-medium text-right">Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -231,6 +233,36 @@ export default function PatientsPage() {
                                                         </td>
                                                         <td className="px-4 py-3 text-center text-red-600 font-medium text-xs">
                                                             {stats.debt > 0 ? `$${formatCurrency(stats.debt)}` : '-'}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                                                            <div className="flex justify-end gap-2">
+                                                                <button
+                                                                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-blue-600"
+                                                                    onClick={(e) => { e.stopPropagation(); console.log('Edit', patient.id); /* Implement Edit Modal or Nav */ }}
+                                                                    title="Editar"
+                                                                >
+                                                                    <Edit className="w-4 h-4" />
+                                                                </button>
+                                                                <button
+                                                                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-red-600"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        if (confirm('¿Eliminar paciente?')) {
+                                                                            deletePatient(patient.id);
+                                                                        }
+                                                                    }}
+                                                                    title="Eliminar"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                                <button
+                                                                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-gray-500"
+                                                                    onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/patients/${patient.id}`); }}
+                                                                    title="Ver Ficha"
+                                                                >
+                                                                    <FileText className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 );
