@@ -137,23 +137,28 @@ export default function PatientsPage() {
     };
 
     const [editingPatient, setEditingPatient] = useState<any>(null);
-    // refreshPatients removed from here as it is destructured above
+    const [deletingPatientId, setDeletingPatientId] = useState<string | null>(null);
 
     const handleEdit = (patient: any) => {
         setEditingPatient(patient);
     };
 
-    const handleDelete = async (patientId: string) => {
-        if (!confirm('¿Estás seguro de que deseas eliminar este paciente? Esta acción no se puede deshacer.')) return;
+    const confirmDelete = (patientId: string) => {
+        setDeletingPatientId(patientId);
+    };
+
+    const handleDelete = async () => {
+        if (!deletingPatientId) return;
 
         try {
-            await deletePatient(patientId);
-            // toast.success('Paciente eliminado correctamente'); // If toast is available in this file? 
-            // The context should auto-update if it's realtime, otherwise:
+            await deletePatient(deletingPatientId);
+            // toast.success('Paciente eliminado correctamente'); // Add toast here in future if context available
             await refreshPatients();
         } catch (error) {
             console.error("Error deleting patient:", error);
             alert('Error al eliminar paciente');
+        } finally {
+            setDeletingPatientId(null);
         }
     };
 
@@ -275,7 +280,7 @@ export default function PatientsPage() {
                                                                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-red-600"
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
-                                                                        handleDelete(patient.id);
+                                                                        confirmDelete(patient.id);
                                                                     }}
                                                                     title="Eliminar"
                                                                 >
@@ -316,6 +321,34 @@ export default function PatientsPage() {
                                 }}
                             />
                         )}
+                    </Modal>
+
+                    {/* Modal de Confirmación de Eliminación */}
+                    <Modal
+                        open={!!deletingPatientId}
+                        onClose={() => setDeletingPatientId(null)}
+                        title="Confirmar eliminación"
+                        maxWidth="max-w-md"
+                    >
+                        <div className="p-4 space-y-4">
+                            <p className="text-gray-600 dark:text-gray-300">
+                                ¿Estás seguro de que deseas eliminar este paciente? Esta acción no se puede deshacer y se perderán todos los datos asociados (turnos, odontograma, historial).
+                            </p>
+                            <div className="flex justify-end gap-3 pt-2">
+                                <button
+                                    onClick={() => setDeletingPatientId(null)}
+                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={handleDelete}
+                                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                >
+                                    Eliminar
+                                </button>
+                            </div>
+                        </div>
                     </Modal>
                 </div>
             </DashboardLayout>
