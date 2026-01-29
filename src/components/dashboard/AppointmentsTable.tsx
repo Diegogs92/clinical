@@ -1,12 +1,14 @@
 
 import { memo, useMemo } from 'react';
 import { Appointment, Payment } from '@/types';
-import { Edit, Trash2, CalendarX } from 'lucide-react';
+import { Edit, Trash2, CalendarX, CalendarSearch } from 'lucide-react';
 import EmptyState from '@/components/ui/EmptyState';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 import { translateAppointmentStatus } from '@/lib/translations';
 import { formatCurrency } from '@/lib/formatCurrency';
-import ECGLoader from '@/components/ui/ECGLoader';
+// import ECGLoader from '@/components/ui/ECGLoader'; // Unused
+
 
 interface AppointmentsTableProps {
     appointments: Appointment[];
@@ -118,7 +120,7 @@ const AppointmentTableRow = memo(function AppointmentTableRow({
     }, [appointment.fee, appointment.deposit, appointment.id, payments, paymentState]);
 
     return (
-        <tr>
+        <tr className="group hover:bg-gray-50 dark:hover:bg-elegant-800/50 transition-colors duration-200">
             <td>
                 <div className="flex items-center gap-1">
                     {canEdit && (
@@ -240,12 +242,7 @@ export default function AppointmentsTable({
     canViewFees
 }: AppointmentsTableProps) {
     if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center py-12 text-primary dark:text-white">
-                <ECGLoader />
-                <p className="mt-4 text-sm">Cargando turnos...</p>
-            </div>
-        );
+        return <AppointmentsTableSkeleton />;
     }
 
     if (appointments.length === 0) {
@@ -312,3 +309,37 @@ export default function AppointmentsTable({
         </div>
     );
 }
+
+function AppointmentsTableSkeleton() {
+    return (
+        <div className="overflow-x-auto rounded-xl border border-elegant-200/60 dark:border-elegant-800/60 bg-white dark:bg-elegant-900/50">
+            <div className="p-4">
+                <div className="space-y-3">
+                    {/* Headers shim */}
+                    <div className="flex gap-4 mb-4">
+                        {[...Array(8)].map((_, i) => (
+                            <Skeleton key={i} className="h-4 w-24" />
+                        ))}
+                    </div>
+                    {/* Rows */}
+                    {[...Array(5)].map((_, i) => (
+                        <div key={i} className="flex items-center gap-4 py-2 border-b border-elegant-100 dark:border-elegant-800 last:border-0 invisible-scrollbar">
+                            <div className="flex gap-2 w-20">
+                                <Skeleton className="h-8 w-8 rounded-full" />
+                                <Skeleton className="h-8 w-8 rounded-full" />
+                            </div>
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-4 w-40" />
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-4 w-20" />
+                            <Skeleton className="h-6 w-24 rounded-full" />
+                            <Skeleton className="h-6 w-24 rounded-full" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    )
+}
+
