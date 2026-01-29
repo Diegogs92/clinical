@@ -1,7 +1,9 @@
 
 import { memo, useMemo } from 'react';
 import { Appointment, Payment } from '@/types';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, CalendarX } from 'lucide-react';
+import EmptyState from '@/components/ui/EmptyState';
+
 import { translateAppointmentStatus } from '@/lib/translations';
 import { formatCurrency } from '@/lib/formatCurrency';
 import ECGLoader from '@/components/ui/ECGLoader';
@@ -166,18 +168,18 @@ const AppointmentTableRow = memo(function AppointmentTableRow({
                         onClick={() => onCancel(appointment)}
                         disabled={appointment.status === 'cancelled'}
                         className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:hover:scale-100 ${appointment.status === 'completed' ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-800/60' :
-                                appointment.status === 'cancelled' ? 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200' :
-                                    appointment.status === 'no-show' ? 'bg-gray-100/80 text-gray-800 dark:bg-gray-700/60 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600/60' :
-                                        'bg-blue-100/80 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800/60'
+                            appointment.status === 'cancelled' ? 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200' :
+                                appointment.status === 'no-show' ? 'bg-gray-100/80 text-gray-800 dark:bg-gray-700/60 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600/60' :
+                                    'bg-blue-100/80 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800/60'
                             }`}
                     >
                         {translateAppointmentStatus(appointment.status)}
                     </button>
                 ) : (
                     <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${appointment.status === 'completed' ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200' :
-                            appointment.status === 'cancelled' ? 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200' :
-                                appointment.status === 'no-show' ? 'bg-gray-100/80 text-gray-800 dark:bg-gray-700/60 dark:text-gray-200' :
-                                    'bg-blue-100/80 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200'
+                        appointment.status === 'cancelled' ? 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200' :
+                            appointment.status === 'no-show' ? 'bg-gray-100/80 text-gray-800 dark:bg-gray-700/60 dark:text-gray-200' :
+                                'bg-blue-100/80 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200'
                         }`}>
                         {translateAppointmentStatus(appointment.status)}
                     </span>
@@ -189,28 +191,28 @@ const AppointmentTableRow = memo(function AppointmentTableRow({
                         onClick={() => onOpenPayment(appointment)}
                         disabled={paymentState.status === 'paid'}
                         className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:hover:scale-100 ${!paymentState.isDue && paymentState.status !== 'paid'
-                                ? 'bg-elegant-100/80 text-elegant-700 dark:bg-elegant-800/60 dark:text-elegant-300'
-                                : paymentState.status === 'paid'
-                                    ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200'
-                                    : (appointment.deposit || 0) > 0 && paymentState.remainingAmount > 0
+                            ? 'bg-elegant-100/80 text-elegant-700 dark:bg-elegant-800/60 dark:text-elegant-300'
+                            : paymentState.status === 'paid'
+                                ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200'
+                                : (appointment.deposit || 0) > 0 && paymentState.remainingAmount > 0
+                                    ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 hover:bg-amber-200 dark:hover:bg-amber-800/60'
+                                    : paymentState.status === 'partial'
                                         ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 hover:bg-amber-200 dark:hover:bg-amber-800/60'
-                                        : paymentState.status === 'partial'
-                                            ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 hover:bg-amber-200 dark:hover:bg-amber-800/60'
-                                            : 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800/60'
+                                        : 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800/60'
                             }`}
                     >
                         {getPaymentStatusLabel}
                     </button>
                 ) : canSeeFees && appointment.fee ? (
                     <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${!paymentState.isDue && paymentState.status !== 'paid'
-                            ? 'bg-elegant-100/80 text-elegant-700 dark:bg-elegant-800/60 dark:text-elegant-300'
-                            : paymentState.status === 'paid'
-                                ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200'
-                                : (appointment.deposit || 0) > 0 && paymentState.remainingAmount > 0
+                        ? 'bg-elegant-100/80 text-elegant-700 dark:bg-elegant-800/60 dark:text-elegant-300'
+                        : paymentState.status === 'paid'
+                            ? 'bg-green-100/80 text-green-800 dark:bg-green-900/60 dark:text-green-200'
+                            : (appointment.deposit || 0) > 0 && paymentState.remainingAmount > 0
+                                ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
+                                : paymentState.status === 'partial'
                                     ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
-                                    : paymentState.status === 'partial'
-                                        ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
-                                        : 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200'
+                                    : 'bg-red-100/80 text-red-800 dark:bg-red-900/60 dark:text-red-200'
                         }`}>
                         {getPaymentStatusLabel}
                     </span>
@@ -247,8 +249,17 @@ export default function AppointmentsTable({
     }
 
     if (appointments.length === 0) {
-        return <p className="text-black dark:text-white p-4">No hay turnos en el periodo seleccionado.</p>;
+        return (
+            <div className="bg-white dark:bg-elegant-900 rounded-xl border border-elegant-200/60 dark:border-elegant-800/60">
+                <EmptyState
+                    icon={CalendarX}
+                    title="No hay turnos"
+                    description="No se encontraron turnos para el periodo o filtros seleccionados."
+                />
+            </div>
+        );
     }
+
 
     return (
         <div className="overflow-x-auto rounded-xl border border-elegant-200/60 dark:border-elegant-800/60">
