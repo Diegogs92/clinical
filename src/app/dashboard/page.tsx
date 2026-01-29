@@ -34,8 +34,13 @@ import { useAppointmentFilters } from '@/hooks/useAppointmentFilters';
 import AppointmentFilters from '@/components/dashboard/AppointmentFilters';
 import AppointmentsTable from '@/components/dashboard/AppointmentsTable';
 import PaymentDialog from '@/components/payments/PaymentDialog';
-import BirthdayFloatingButton from '@/components/dashboard/BirthdayFloatingButton'; // Re-adding if missed
-import FloatingNewAppointmentButton from '@/components/appointments/FloatingNewAppointmentButton'; // Re-adding if missed
+import BirthdayFloatingButton from '@/components/dashboard/BirthdayFloatingButton';
+import FloatingNewAppointmentButton from '@/components/appointments/FloatingNewAppointmentButton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RevenueChart } from '@/components/dashboard/RevenueChart';
+import { StatusDistributionChart } from '@/components/dashboard/StatusDistributionChart';
+import { AnalyticsCards } from '@/components/dashboard/AnalyticsCards';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
 
 function LiveClock() {
   const [time, setTime] = useState(new Date());
@@ -98,6 +103,12 @@ export default function DashboardPage() {
     patients,
     professionals,
     currentUserId: user?.uid
+  });
+
+  const dashboardStats = useDashboardStats({
+    appointments: dashboardAppointments,
+    payments,
+    patients
   });
 
   // Atajos de teclado globales
@@ -422,42 +433,62 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <StatsOverview />
+          <Tabs defaultValue="agenda" className="w-full space-y-6">
+            <div className="flex items-center justify-between">
+              <TabsList className="bg-white/50 dark:bg-elegant-900/50 backdrop-blur-sm border border-elegant-100 dark:border-elegant-800">
+                <TabsTrigger value="agenda" className="px-6">Agenda</TabsTrigger>
+                <TabsTrigger value="analytics" className="px-6">Estadísticas</TabsTrigger>
+              </TabsList>
+            </div>
 
-          <div className="card relative overflow-hidden">
-            <div className="absolute inset-x-0 -top-24 h-40 bg-gradient-to-r from-primary/10 via-secondary/5 to-primary/10 blur-3xl pointer-events-none" />
+            <TabsContent value="agenda" className="space-y-6 mt-0">
+              <StatsOverview />
 
-            <AppointmentFilters
-              view={filters.view}
-              onViewChange={setView}
-              search={filters.search}
-              onSearchChange={setSearch}
-              filterPatient={filters.patientId}
-              onFilterPatientChange={setFilterPatient}
-              filterStatus={filters.status}
-              onFilterStatusChange={setFilterStatus}
-              onClearFilters={clearFilters}
-              professionals={professionals}
-              userRole={userProfile?.role}
-              searchInputRef={searchInputRef}
-            />
+              <div className="card relative overflow-hidden">
+                <div className="absolute inset-x-0 -top-24 h-40 bg-gradient-to-r from-primary/10 via-secondary/5 to-primary/10 blur-3xl pointer-events-none" />
 
-            <AppointmentsTable
-              appointments={filteredAppointments}
-              loading={appointmentsLoading}
-              user={user}
-              userProfile={userProfile}
-              professionals={professionals}
-              payments={payments}
-              pendingPayments={pendingPayments}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onCancel={handleCancel}
-              onOpenPayment={openPaymentDialog}
-              canModifyAppointment={canModifyAppointment}
-              canViewFees={canViewFees}
-            />
-          </div>
+                <AppointmentFilters
+                  view={filters.view}
+                  onViewChange={setView}
+                  search={filters.search}
+                  onSearchChange={setSearch}
+                  filterPatient={filters.patientId}
+                  onFilterPatientChange={setFilterPatient}
+                  filterStatus={filters.status}
+                  onFilterStatusChange={setFilterStatus}
+                  onClearFilters={clearFilters}
+                  professionals={professionals}
+                  userRole={userProfile?.role}
+                  searchInputRef={searchInputRef}
+                />
+
+                <AppointmentsTable
+                  appointments={filteredAppointments}
+                  loading={appointmentsLoading}
+                  user={user}
+                  userProfile={userProfile}
+                  professionals={professionals}
+                  payments={payments}
+                  pendingPayments={pendingPayments}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onCancel={handleCancel}
+                  onOpenPayment={openPaymentDialog}
+                  canModifyAppointment={canModifyAppointment}
+                  canViewFees={canViewFees}
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="analytics" className="space-y-6 mt-0">
+              <AnalyticsCards stats={dashboardStats} />
+
+              <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
+                <RevenueChart payments={payments} />
+                <StatusDistributionChart appointments={dashboardAppointments} />
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* Modales */}
