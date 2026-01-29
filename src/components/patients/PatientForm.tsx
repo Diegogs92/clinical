@@ -123,6 +123,7 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
 
       if (patientId && initialPatient) {
         await updatePatient(patientId, patientData);
+        await refreshPatients();
         setSuccessModal({
           show: true,
           title: 'Paciente actualizado',
@@ -130,22 +131,13 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
         });
       } else {
         await createPatient(patientData);
+        await refreshPatients();
         setSuccessModal({
           show: true,
           title: 'Paciente creado',
           message: 'El paciente se ha creado correctamente'
         });
       }
-      await refreshPatients();
-
-      // Esperar a que el modal se cierre antes de llamar onSuccess o navegar
-      setTimeout(() => {
-        if (onSuccess) {
-          onSuccess();
-        } else {
-          router.push('/patients');
-        }
-      }, 2100);
     } catch (e) {
       console.error('Error al guardar:', e);
       alert(`Error al guardar paciente: ${e instanceof Error ? e.message : 'Error desconocido'}`);
@@ -407,7 +399,15 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
 
       <SuccessModal
         isOpen={successModal.show}
-        onClose={() => setSuccessModal({ show: false, title: '', message: '' })}
+        onClose={() => {
+          setSuccessModal({ show: false, title: '', message: '' });
+          // Llamar a onSuccess o navegar después de que el modal se cierre
+          if (onSuccess) {
+            onSuccess();
+          } else {
+            router.push('/patients');
+          }
+        }}
         title={successModal.title}
         message={successModal.message}
       />
