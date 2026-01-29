@@ -14,12 +14,14 @@ import { Search, UserPlus, FileText, Edit, Trash2 } from 'lucide-react';
 import DashboardLayout from '@/components/DashboardLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PatientPanoramicControls from '@/components/patients/PatientPanoramicControls';
+import Modal from '@/components/ui/Modal';
+import PatientForm from '@/components/patients/PatientForm';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { differenceInYears, parseISO, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export default function PatientsPage() {
-    const { patients, loading: patientsLoading } = usePatients();
+    const { patients, loading: patientsLoading, refreshPatients } = usePatients();
     const { user } = useAuth();
     const { appointments } = useAppointments();
     const { canViewAllPayments } = usePermissions();
@@ -134,18 +136,42 @@ export default function PatientsPage() {
         }
     };
 
+    const [editingPatient, setEditingPatient] = useState<any>(null);
+    // refreshPatients removed from here as it is destructured above
+
+    const handleEdit = (patient: any) => {
+        setEditingPatient(patient);
+    };
+
+    const handleDelete = async (patientId: string) => {
+        if (!confirm('¿Estás seguro de que deseas eliminar este paciente? Esta acción no se puede deshacer.')) return;
+
+        try {
+            await deletePatient(patientId);
+            // toast.success('Paciente eliminado correctamente'); // If toast is available in this file? 
+            // The context should auto-update if it's realtime, otherwise:
+            await refreshPatients();
+        } catch (error) {
+            console.error("Error deleting patient:", error);
+            alert('Error al eliminar paciente');
+        }
+    };
+
+    // ... (keep existing helper functions etc)
+
     const loading = patientsLoading || loadingPayments;
 
     return (
         <ProtectedRoute>
             <DashboardLayout>
                 <div className="space-y-6">
+                    {/* ... Header and Search ... */}
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pacientes</h1>
                             <p className="text-gray-500 dark:text-gray-400">Gestiona las historias clínicas y odontogramas</p>
                         </div>
-                        <button className="btn-primary flex items-center gap-2">
+                        <button className="btn-primary flex items-center gap-2" onClick={() => setEditingPatient({})}> {/* Empty obj or null logic for "New"? The existing button was just "New Patient" */}
                             <UserPlus className="w-4 h-4" />
                             Nuevo Paciente
                         </button>
@@ -153,6 +179,7 @@ export default function PatientsPage() {
 
                     <Card>
                         <CardHeader className="pb-3">
+                            {/* ... Search input ... */}
                             <div className="relative">
                                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
                                 <input
@@ -167,6 +194,7 @@ export default function PatientsPage() {
                         <CardContent>
                             <div className="rounded-md border overflow-x-auto">
                                 <table className="w-full text-sm text-left">
+                                    {/* ... Thead ... */}
                                     <thead className="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400">
                                         <tr>
                                             <th className="px-4 py-3 font-medium w-40">Adjuntar Panorámica</th>
@@ -238,7 +266,7 @@ export default function PatientsPage() {
                                                             <div className="flex justify-end gap-2">
                                                                 <button
                                                                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-blue-600"
-                                                                    onClick={(e) => { e.stopPropagation(); console.log('Edit', patient.id); /* Implement Edit Modal or Nav */ }}
+                                                                    onClick={(e) => { e.stopPropagation(); handleEdit(patient); }}
                                                                     title="Editar"
                                                                 >
                                                                     <Edit className="w-4 h-4" />
@@ -247,9 +275,7 @@ export default function PatientsPage() {
                                                                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-red-600"
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
-                                                                        if (confirm('¿Eliminar paciente?')) {
-                                                                            deletePatient(patient.id);
-                                                                        }
+                                                                        handleDelete(patient.id);
                                                                     }}
                                                                     title="Eliminar"
                                                                 >
@@ -273,6 +299,24 @@ export default function PatientsPage() {
                             </div>
                         </CardContent>
                     </Card>
+
+                    {/* Modal de Edición/Creación */}
+                    <Modal
+                        open={!!editingPatient}
+                        onClose={() => setEditingPatient(null)}
+                        title={editingPatient?.id ? "Editar Paciente" : "Nuevo Paciente"}
+                        maxWidth="max-w-3xl"
+                    >
+                        {editingPatient && (
+                            <PatientForm
+                                patientId={editingPatient.id}
+                                onSuccess={() => {
+                                    refreshPatients();
+                                    setEditingPatient(null);
+                                }}
+                            />
+                        )}
+                    </Modal>
                 </div>
             </DashboardLayout>
         </ProtectedRoute>
