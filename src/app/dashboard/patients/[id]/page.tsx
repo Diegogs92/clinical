@@ -97,10 +97,6 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
                             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                                 {patient.firstName} {patient.lastName}
                             </h1>
-                            <p className="text-gray-500 dark:text-gray-400 flex items-center gap-2 text-sm">
-                                <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
-                                Paciente #{patient.id.slice(-6)}
-                            </p>
                         </div>
 
                     </div>
