@@ -6,6 +6,7 @@ import { updatePatient } from '@/lib/patients';
 import { listPayments } from '@/lib/payments';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useToast } from '@/hooks/useToast';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -21,6 +22,7 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
     const { user } = useAuth();
     const { canViewAllPayments } = usePermissions();
     const router = useRouter();
+    const toast = useToast();
     const patient = patients.find(p => p.id === params.id);
     const [odontogramData, setOdontogramData] = useState<any>(null);
     const [isSaving, setIsSaving] = useState(false);
@@ -33,9 +35,10 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
         try {
             await updatePatient(patient.id, { odontogram: odontogramData });
             await refreshPatients();
-            // Optional: show toast
+            toast.success("Odontograma guardado con éxito");
         } catch (error) {
             console.error("Error saving odontogram:", error);
+            toast.error("Error al guardar el odontograma");
         } finally {
             setIsSaving(false);
         }
