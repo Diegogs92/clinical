@@ -91,10 +91,9 @@ export function useCommonShortcuts({
   if (onNew) {
     shortcuts.push({
       key: 'n',
-      ctrl: true,
-      meta: true,
+      alt: true,
       action: onNew,
-      description: 'Nuevo (Ctrl+N)',
+      description: 'Nuevo (Alt+N)',
     });
   }
 
