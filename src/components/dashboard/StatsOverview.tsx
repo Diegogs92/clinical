@@ -138,10 +138,10 @@ export default function StatsOverview() {
           <div className={`absolute inset-0 bg-gradient-to-br ${s.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
 
           <div className="relative z-10">
-            <div className="text-[11px] md:text-xs uppercase tracking-wide font-bold text-elegant-600 dark:text-elegant-400 mb-0.5 truncate">
+            <div className="text-[11px] md:text-xs uppercase tracking-wide font-bold text-slate-600 dark:text-slate-400 mb-0.5 truncate">
               {s.label}
             </div>
-            <div className="text-lg md:text-2xl font-bold tabular-nums text-black dark:text-white mb-0.5">
+            <div className="text-lg md:text-2xl font-bold tabular-nums text-slate-900 dark:text-slate-100 mb-0.5">
               {s.numericValue !== undefined
                 ? s.isMonetary
                   ? `$${formatCurrency(s.numericValue)}`
@@ -149,7 +149,7 @@ export default function StatsOverview() {
                 : s.value}
             </div>
             {s.sub && (
-              <div className="text-[11px] md:text-xs text-elegant-500 dark:text-elegant-400 font-medium truncate">
+              <div className="text-[11px] md:text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
                 {s.sub}
               </div>
             )}
