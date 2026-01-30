@@ -3,7 +3,7 @@ import { collection, addDoc, updateDoc, doc, deleteDoc, getDoc, getDocs, query, 
 import { Appointment, RecurrenceRule } from '@/types';
 import { loadFromLocalStorage, saveToLocalStorage } from './mockStorage';
 import { deletePayment, listPaymentsByAppointment } from './payments';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 const APPOINTMENTS_COLLECTION = 'appointments';
 // In-memory mocks when mockMode is active
@@ -152,13 +152,13 @@ export async function getAllAppointments(): Promise<Appointment[]> {
  * @returns Array de turnos que se solapan
  */
 export async function getOverlappingAppointments(
-  professionalId: string,
+  professionalId: string, // Kept for signature compatibility, but ignored for query to ensure global overlap check
   date: string,
   startTime: string,
   endTime: string,
   excludeAppointmentId?: string
 ): Promise<Appointment[]> {
-  console.log('[getOverlappingAppointments] Validando:', {
+  console.log('[getOverlappingAppointments] Validando GLOBALMENTE (ignorando profesional):', {
     professionalId,
     date,
     startTime,
@@ -166,26 +166,40 @@ export async function getOverlappingAppointments(
     excludeAppointmentId,
   });
 
-  // Obtener turnos del profesional seleccionado para evitar errores de permisos
+  // Calcular rango de fecha local para la query
+  // date viene como YYYY-MM-DD del cliente (local)
+  const localDate = parseISO(date);
+  const startRange = startOfDay(localDate).toISOString();
+  const endRange = endOfDay(localDate).toISOString();
+
   let appointments: Appointment[];
+
   if (mockMode || !db) {
-    appointments = mockAppointments.filter(a => a.userId === professionalId);
+    // En mock mode, filtramos por fecha (string comparison works for simplistic ISO YYYY-MM-DD if mock data matches)
+    // Pero mejor usar lógica consistente con DB si es posible.
+    // Asumimos mockAppointments tiene fechas ISO.
+    appointments = mockAppointments;
   } else {
     const colRef = collection(db as Firestore, APPOINTMENTS_COLLECTION);
-    const q = query(colRef, where('userId', '==', professionalId));
+    // Query por rango de fecha para obtener TODOS los turnos del día (Global Check)
+    const q = query(
+      colRef,
+      where('date', '>=', startRange),
+      where('date', '<=', endRange)
+    );
     const snap = await getDocs(q);
     appointments = snap.docs.map(d => ({ ...d.data() as Appointment, id: d.id }));
   }
 
-  // Normalizar la fecha del turno a comparar (solo la parte de fecha)
-  const targetDateStr = date.includes('T') ? date.split('T')[0] : date;
+  // Normalizar la fecha del turno a comparar
+  const targetDateStr = format(localDate, 'yyyy-MM-dd');
 
-  // Filtrar turnos del mismo día
+  // Filtrar turnos del mismo día (doble check en memoria)
   const sameDayAppointments = appointments.filter(a => {
     // Excluir el turno que estamos editando
     if (excludeAppointmentId && a.id === excludeAppointmentId) return false;
 
-    // Normalizar la fecha del turno existente usando date-fns para respetar zona horaria local
+    // Normalizar la fecha del turno existente
     const appointmentDateStr = a.date.includes('T')
       ? format(parseISO(a.date), 'yyyy-MM-dd')
       : a.date;
@@ -193,7 +207,7 @@ export async function getOverlappingAppointments(
     return appointmentDateStr === targetDateStr;
   });
 
-  console.log('[getOverlappingAppointments] Turnos del mismo día:', sameDayAppointments.length);
+  console.log('[getOverlappingAppointments] Turnos del mismo día (Global):', sameDayAppointments.length);
 
   // Función auxiliar para convertir HH:mm a minutos desde medianoche
   const timeToMinutes = (time: string): number => {
@@ -206,13 +220,16 @@ export async function getOverlappingAppointments(
 
   // Verificar solapamiento
   const overlapping = sameDayAppointments.filter(a => {
+    // Solo verificar overlaps con turnos de pacientes (ignorar eventos personales ajenos si se desea logic más laxa, 
+    // pero para evitar "doble reserva de sillón", checkeamos todo).
+    // Si queremos ser estrictos: Todo bloquea todo.
+
+    // Check de estado: Si está cancelado, no cuenta
+    if (a.status === 'cancelled') return false;
+
     const appointmentStart = timeToMinutes(a.startTime);
     const appointmentEnd = timeToMinutes(a.endTime);
 
-    // Dos rangos se solapan si:
-    // - El inicio del nuevo turno está dentro del rango existente
-    // - El fin del nuevo turno está dentro del rango existente
-    // - El nuevo turno envuelve completamente al existente
     const overlaps = (
       (targetStart >= appointmentStart && targetStart < appointmentEnd) || // Inicio se solapa
       (targetEnd > appointmentStart && targetEnd <= appointmentEnd) ||     // Fin se solapa
@@ -221,9 +238,9 @@ export async function getOverlappingAppointments(
 
     if (overlaps) {
       console.log('[getOverlappingAppointments] Solapamiento detectado:', {
-        existing: `${a.startTime}-${a.endTime}`,
+        existing: `${a.startTime}-${a.endTime} (${a.patientName})`,
         new: `${startTime}-${endTime}`,
-        patientName: a.patientName,
+        professional: a.userId // Mostrar quien tiene el turno
       });
     }
 
