@@ -3,6 +3,7 @@ import { collection, addDoc, updateDoc, doc, deleteDoc, getDoc, getDocs, query, 
 import { Appointment, RecurrenceRule } from '@/types';
 import { loadFromLocalStorage, saveToLocalStorage } from './mockStorage';
 import { deletePayment, listPaymentsByAppointment } from './payments';
+import { format, parseISO } from 'date-fns';
 
 const APPOINTMENTS_COLLECTION = 'appointments';
 // In-memory mocks when mockMode is active
@@ -99,7 +100,7 @@ export async function getAppointment(id: string): Promise<Appointment | null> {
 
 export async function getAppointmentsByUser(userId: string): Promise<Appointment[]> {
   if (mockMode || !db) {
-    return mockAppointments.filter(a => a.userId === userId).sort((a,b) => a.date.localeCompare(b.date));
+    return mockAppointments.filter(a => a.userId === userId).sort((a, b) => a.date.localeCompare(b.date));
   }
   const colRef = collection(db as Firestore, APPOINTMENTS_COLLECTION);
 
@@ -122,7 +123,7 @@ export async function getAllAppointments(): Promise<Appointment[]> {
     const { start, end } = getAppointmentsDateRange();
     return mockAppointments
       .filter(a => a.date >= start && a.date <= end)
-      .sort((a,b) => a.date.localeCompare(b.date));
+      .sort((a, b) => a.date.localeCompare(b.date));
   }
 
   // Optimización: cargar solo turnos en rango de fechas relevante
@@ -184,8 +185,10 @@ export async function getOverlappingAppointments(
     // Excluir el turno que estamos editando
     if (excludeAppointmentId && a.id === excludeAppointmentId) return false;
 
-    // Normalizar la fecha del turno existente
-    const appointmentDateStr = a.date.includes('T') ? a.date.split('T')[0] : a.date;
+    // Normalizar la fecha del turno existente usando date-fns para respetar zona horaria local
+    const appointmentDateStr = a.date.includes('T')
+      ? format(parseISO(a.date), 'yyyy-MM-dd')
+      : a.date;
 
     return appointmentDateStr === targetDateStr;
   });

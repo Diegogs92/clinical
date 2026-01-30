@@ -22,7 +22,7 @@ import {
 import {
   getAllSchedulePreferences,
 } from '@/lib/schedulePreferences';
-import { getAllAppointments, updateAppointment } from '@/lib/appointments';
+import { getAllAppointments, updateAppointment, getOverlappingAppointments } from '@/lib/appointments';
 import { combineDateAndTime } from '@/lib/dateUtils';
 import { listProfessionals } from '@/lib/users';
 import { UserProfile } from '@/types';
@@ -619,17 +619,17 @@ export default function AgendaPage() {
       }
       return sum;
     })();
-            const totalPaid = deposit + completed + pending;
-            const remainingAmount = (appt.fee || 0) - totalPaid;
-            const hasPartialPaid = totalPaid > 0 && remainingAmount > 0 && remainingAmount < (appt.fee || 0);
+    const totalPaid = deposit + completed + pending;
+    const remainingAmount = (appt.fee || 0) - totalPaid;
+    const hasPartialPaid = totalPaid > 0 && remainingAmount > 0 && remainingAmount < (appt.fee || 0);
 
     if (amountNum > remainingAmount) {
       toast.error(`El monto ingresado ($${amountNum.toLocaleString('es-AR')}) supera el monto restante ($${remainingAmount.toLocaleString('es-AR')})`);
       return;
     }
 
-      const isTotal = amountNum >= remainingAmount;
-      const status: 'completed' = 'completed';
+    const isTotal = amountNum >= remainingAmount;
+    const status: 'completed' = 'completed';
 
     try {
       setSubmittingPayment(true);
@@ -759,16 +759,37 @@ export default function AgendaPage() {
     const endMinute = endTotalMinutes % 60;
     const newEndTime = `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`;
 
-      const targetDateString = format(targetDate, 'yyyy-MM-dd');
+    const targetDateString = format(targetDate, 'yyyy-MM-dd');
 
-      // Verificar conflictos con franjas bloqueadas (solo del mismo profesional)
-      const hasConflict = blockedSlots.some(slot => {
-        // Las franjas bloqueadas solo afectan al profesional que las creó
-        if (slot.userId !== draggedAppointment.userId) return false;
-        if (!isBlockedSlotActiveOnDate(slot, targetDateString)) return false;
+    // Validar superposición de turnos
+    try {
+      const overlapping = await getOverlappingAppointments(
+        draggedAppointment.userId,
+        targetDateString,
+        newStartTime,
+        newEndTime,
+        draggedAppointment.id
+      );
 
-        const slotStartTime = slot.startTime;
-        const slotEndTime = slot.endTime;
+      if (overlapping.length > 0) {
+        toast.error('No se puede mover el turno porque se superpone con otro existente');
+        setDraggedAppointment(null);
+        return;
+      }
+    } catch (error) {
+      console.error('Error checking overlapping appointments:', error);
+      toast.error('Error al validar disponibilidad del horario');
+      return;
+    }
+
+    // Verificar conflictos con franjas bloqueadas (solo del mismo profesional)
+    const hasConflict = blockedSlots.some(slot => {
+      // Las franjas bloqueadas solo afectan al profesional que las creó
+      if (slot.userId !== draggedAppointment.userId) return false;
+      if (!isBlockedSlotActiveOnDate(slot, targetDateString)) return false;
+
+      const slotStartTime = slot.startTime;
+      const slotEndTime = slot.endTime;
 
       return (
         (newStartTime >= slotStartTime && newStartTime < slotEndTime) ||
@@ -935,9 +956,8 @@ export default function AgendaPage() {
               setSelectedEvent(apt);
             }
           }}
-          className={`${statusColor} border-l-2 rounded p-1.5 transition-all text-xs ${
-            isDragging ? 'opacity-50' : ''
-          } ${canDrag ? 'cursor-move' : canOpen ? 'cursor-pointer hover:shadow-sm' : 'cursor-default'}`}
+          className={`${statusColor} border-l-2 rounded p-1.5 transition-all text-xs ${isDragging ? 'opacity-50' : ''
+            } ${canDrag ? 'cursor-move' : canOpen ? 'cursor-pointer hover:shadow-sm' : 'cursor-default'}`}
           style={{ borderLeftColor: professionalColor }}
         >
           <div className="flex items-center gap-1">
@@ -965,9 +985,8 @@ export default function AgendaPage() {
               setSelectedEvent(apt);
             }
           }}
-          className={`${statusColor} border-l-4 rounded-lg px-2 py-1.5 transition-all duration-200 overflow-hidden ${
-            isDragging ? 'opacity-50' : ''
-          } ${canDrag ? 'cursor-move hover:shadow-md' : canOpen ? 'cursor-pointer hover:shadow-md' : 'cursor-default'}`}
+          className={`${statusColor} border-l-4 rounded-lg px-2 py-1.5 transition-all duration-200 overflow-hidden ${isDragging ? 'opacity-50' : ''
+            } ${canDrag ? 'cursor-move hover:shadow-md' : canOpen ? 'cursor-pointer hover:shadow-md' : 'cursor-default'}`}
           style={{ borderLeftColor: professionalColor, height: '100%' }}
         >
           <div className="flex items-start gap-2 h-full">
@@ -1002,9 +1021,8 @@ export default function AgendaPage() {
             setSelectedEvent(apt);
           }
         }}
-        className={`${statusColor} border-l-4 rounded-lg p-3 transition-all duration-200 ${
-          isDragging ? 'opacity-50' : ''
-        } ${canDrag ? 'cursor-move hover:shadow-md hover:scale-[1.02]' : canOpen ? 'cursor-pointer hover:shadow-md hover:scale-[1.02]' : 'cursor-default'}`}
+        className={`${statusColor} border-l-4 rounded-lg p-3 transition-all duration-200 ${isDragging ? 'opacity-50' : ''
+          } ${canDrag ? 'cursor-move hover:shadow-md hover:scale-[1.02]' : canOpen ? 'cursor-pointer hover:shadow-md hover:scale-[1.02]' : 'cursor-default'}`}
         style={{ borderLeftColor: professionalColor }}
       >
         <div className="flex items-start gap-2">
@@ -1057,28 +1075,28 @@ export default function AgendaPage() {
                 Gestiona tus turnos y citas - Arrastra para reprogramar
               </p>
             </div>
-              <div className="flex gap-2">
-                {/* Solo Romina Araoz y Diego García Santillán pueden bloquear horarios */}
-                {(userProfile?.displayName === 'Romina Araoz' || userProfile?.displayName === 'Diego García Santillán') && (
-                  <>
-                    <button
-                      onClick={() => setShowBlockModal(true)}
-                      className="btn-danger flex items-center gap-2 whitespace-nowrap"
-                    >
-                      <Ban className="w-4 h-4" />
-                      Bloquear Horario
-                    </button>
-                    <button
-                      onClick={() => setShowBlocksList(true)}
-                      className="btn-secondary flex items-center gap-2 whitespace-nowrap"
-                    >
-                      <FileText className="w-4 h-4" />
-                      Bloqueos
-                    </button>
-                  </>
-                )}
-              </div>
+            <div className="flex gap-2">
+              {/* Solo Romina Araoz y Diego García Santillán pueden bloquear horarios */}
+              {(userProfile?.displayName === 'Romina Araoz' || userProfile?.displayName === 'Diego García Santillán') && (
+                <>
+                  <button
+                    onClick={() => setShowBlockModal(true)}
+                    className="btn-danger flex items-center gap-2 whitespace-nowrap"
+                  >
+                    <Ban className="w-4 h-4" />
+                    Bloquear Horario
+                  </button>
+                  <button
+                    onClick={() => setShowBlocksList(true)}
+                    className="btn-secondary flex items-center gap-2 whitespace-nowrap"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Bloqueos
+                  </button>
+                </>
+              )}
             </div>
+          </div>
         </div>
 
         {/* Navegación y selector de vista */}
@@ -1093,8 +1111,8 @@ export default function AgendaPage() {
                   {viewMode === 'month'
                     ? format(currentDate, "MMMM yyyy", { locale: es })
                     : viewMode === 'week'
-                    ? `${format(weekStart, 'd MMM', { locale: es })} - ${format(weekEnd, 'd MMM yyyy', { locale: es })}`
-                    : format(currentDate, "EEEE d 'de' MMMM, yyyy", { locale: es })
+                      ? `${format(weekStart, 'd MMM', { locale: es })} - ${format(weekEnd, 'd MMM yyyy', { locale: es })}`
+                      : format(currentDate, "EEEE d 'de' MMMM, yyyy", { locale: es })
                   }
                 </h2>
                 <p className="text-[11px] text-elegant-600 dark:text-elegant-400 mt-0.5">
@@ -1114,31 +1132,28 @@ export default function AgendaPage() {
             <div className="flex items-center gap-2 bg-elegant-100 dark:bg-elegant-800/60 p-1 rounded-lg">
               <button
                 onClick={() => setViewMode('day')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
-                  viewMode === 'day'
-                    ? 'bg-primary text-white shadow'
-                    : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
-                }`}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'day'
+                  ? 'bg-primary text-white shadow'
+                  : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
+                  }`}
               >
                 Día
               </button>
               <button
                 onClick={() => setViewMode('week')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
-                  viewMode === 'week'
-                    ? 'bg-primary text-white shadow'
-                    : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
-                }`}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'week'
+                  ? 'bg-primary text-white shadow'
+                  : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
+                  }`}
               >
                 Semana
               </button>
               <button
                 onClick={() => setViewMode('month')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
-                  viewMode === 'month'
-                    ? 'bg-primary text-white shadow'
-                    : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
-                }`}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'month'
+                  ? 'bg-primary text-white shadow'
+                  : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
+                  }`}
               >
                 Mes
               </button>
@@ -1171,156 +1186,154 @@ export default function AgendaPage() {
 
             {/* Grid de días */}
             <div className="flex-1 grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-3">
-            {weekDays.map((day) => {
-              const { dayAppointments, dayBlocked, dayBirthdays } = getEventsForDay(day);
-              const isToday = isSameDay(day, new Date());
+              {weekDays.map((day) => {
+                const { dayAppointments, dayBlocked, dayBirthdays } = getEventsForDay(day);
+                const isToday = isSameDay(day, new Date());
 
-              return (
-                <div
-                  key={day.toISOString()}
-                  className={`card min-h-[320px] transition-all ${
-                    isToday ? 'ring-2 ring-primary' : ''
-                  }`}
-                >
-                  {/* Header del día con indicador de cumpleaños */}
+                return (
                   <div
-                    className="mb-3 pb-3 border-b border-elegant-200 dark:border-elegant-700"
-                    style={{ height: `${headerHeight}px` }}
+                    key={day.toISOString()}
+                    className={`card min-h-[320px] transition-all ${isToday ? 'ring-2 ring-primary' : ''
+                      }`}
                   >
-                    <div className="relative text-center h-full flex flex-col items-center justify-center">
-                      {dayBirthdays.length > 0 && (
-                        <div className="absolute top-0 right-0 text-lg group">
-                          <button
-                            type="button"
-                            className="leading-none"
-                            onClick={() => setBirthdayDialog({ open: true, date: day, birthdays: dayBirthdays })}
-                            aria-label="Ver cumpleaños"
-                          >
-                            🎂
-                          </button>
-                          <div className="absolute right-0 mt-2 w-44 rounded-lg border border-elegant-200 dark:border-elegant-700 bg-white/95 dark:bg-elegant-900/95 p-2 text-xs text-elegant-700 dark:text-elegant-200 shadow-lg opacity-0 translate-y-1 pointer-events-none transition group-hover:opacity-100 group-hover:translate-y-0">
-                            <div className="font-semibold text-elegant-900 dark:text-white mb-1">Cumpleaños</div>
-                            <div className="space-y-1">
-                              {dayBirthdays.map(p => (
-                                <div key={`birthday-tooltip-${p.id}`} className="truncate">
-                                  {p.lastName}, {p.firstName}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      <div className="text-xs font-medium text-elegant-500 dark:text-elegant-400 uppercase">
-                        {format(day, 'EEE', { locale: es })}
-                      </div>
-                      <div className={`text-2xl font-bold ${isToday ? 'text-primary' : 'text-elegant-900 dark:text-white'}`}>
-                        {format(day, 'd')}
-                      </div>
-                      <div className="text-xs text-elegant-500 dark:text-elegant-400">
-                        {format(day, 'MMM', { locale: es })}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Franjas horarias granulares */}
-                  <div className="relative space-y-0" style={{ height: `${gridHeight}px` }}>
-                    {timeSlots.map((timeSlot) => {
-                      const isDragOverSlot = dragOverSlot &&
-                        isSameDay(dragOverSlot.date, day) &&
-                        dragOverSlot.time === timeSlot;
-                      const isHourLine = timeSlot.endsWith(':00');
-
-                      return (
-                        <div
-                          key={timeSlot}
-                          onDragOver={(e) => handleDragOver(e, day, timeSlot)}
-                          onDragLeave={handleDragLeave}
-                          onDrop={(e) => handleDrop(e, day, timeSlot)}
-                          className={`relative transition-colors ${
-                            isDragOverSlot ? 'bg-blue-100 dark:bg-blue-900/30 border-l-2 border-l-blue-400' : ''
-                          } ${isHourLine ? 'border-t border-elegant-200/80 dark:border-elegant-700/70' : 'border-t border-elegant-100/60 dark:border-elegant-800/60'}`}
-                          style={{ height: `${slotHeight}px` }}
-                        />
-                      );
-                    })}
-
-                    {/* Capa de eventos posicionados por hora */}
-                    <div className="absolute inset-0 z-10 pointer-events-none">
-                      {dayBlocked.map((slot) => {
-                        const durationMinutes = timeToMinutes(slot.endTime) - timeToMinutes(slot.startTime);
-                        const heightPx = Math.max(slotHeight, (durationMinutes / slotMinutes) * slotHeight);
-                        const topPx = timeToTopPx(slot.startTime);
-
-                        return (
-                          <div
-                            key={`blocked-${slot.id}`}
-                            className="absolute left-1 right-1 bg-red-100 border border-red-300 dark:bg-red-900/30 dark:border-red-700 rounded-lg p-3 transition-all duration-200 pointer-events-auto"
-                            style={{ top: `${topPx}px`, height: `${heightPx}px` }}
-                          >
-                            <div className="flex items-start gap-2 h-full">
-                              <div className="flex-1 min-w-0 space-y-1.5">
-                                {/* Motivo del bloqueo */}
-                                <h4 className="font-semibold text-sm text-red-700 dark:text-red-300 line-clamp-2">
-                                  {slot.reason}
-                                </h4>
-
-                                {/* Horario */}
-                                <div className="flex items-center gap-1.5 text-xs text-elegant-600 dark:text-elegant-300">
-                                  <Clock className="w-3.5 h-3.5 flex-shrink-0" />
-                                  <span className="font-medium">{slot.startTime} - {slot.endTime}</span>
-                                </div>
+                    {/* Header del día con indicador de cumpleaños */}
+                    <div
+                      className="mb-3 pb-3 border-b border-elegant-200 dark:border-elegant-700"
+                      style={{ height: `${headerHeight}px` }}
+                    >
+                      <div className="relative text-center h-full flex flex-col items-center justify-center">
+                        {dayBirthdays.length > 0 && (
+                          <div className="absolute top-0 right-0 text-lg group">
+                            <button
+                              type="button"
+                              className="leading-none"
+                              onClick={() => setBirthdayDialog({ open: true, date: day, birthdays: dayBirthdays })}
+                              aria-label="Ver cumpleaños"
+                            >
+                              🎂
+                            </button>
+                            <div className="absolute right-0 mt-2 w-44 rounded-lg border border-elegant-200 dark:border-elegant-700 bg-white/95 dark:bg-elegant-900/95 p-2 text-xs text-elegant-700 dark:text-elegant-200 shadow-lg opacity-0 translate-y-1 pointer-events-none transition group-hover:opacity-100 group-hover:translate-y-0">
+                              <div className="font-semibold text-elegant-900 dark:text-white mb-1">Cumpleaños</div>
+                              <div className="space-y-1">
+                                {dayBirthdays.map(p => (
+                                  <div key={`birthday-tooltip-${p.id}`} className="truncate">
+                                    {p.lastName}, {p.firstName}
+                                  </div>
+                                ))}
                               </div>
-
-                              <button
-                                onClick={async () => {
-                                  if (await confirm({
-                                    title: 'Eliminar franja bloqueada',
-                                    description: `¿Estás seguro de que deseas eliminar esta franja bloqueada (${slot.startTime} - ${slot.endTime})?`,
-                                    confirmText: 'Eliminar',
-                                    tone: 'danger'
-                                  })) {
-                                    try {
-                                      await deleteBlockedSlot(slot.id);
-                                      const slots = await getBlockedSlotsByUser(user!.uid);
-                                      setBlockedSlots(slots);
-                                      setSuccessModal({ show: true, title: 'Franja eliminada', message: 'La franja bloqueada se ha eliminado correctamente' });
-                                    } catch (error) {
-                                      console.error('Error eliminando franja:', error);
-                                      toast.error('No se pudo eliminar la franja bloqueada');
-                                    }
-                                  }
-                                }}
-                                className="shrink-0 rounded-full p-1 text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/40"
-                                title="Eliminar franja bloqueada"
-                              >
-                                <X className="w-3 h-3" />
-                              </button>
                             </div>
                           </div>
-                        );
-                      })}
+                        )}
+                        <div className="text-xs font-medium text-elegant-500 dark:text-elegant-400 uppercase">
+                          {format(day, 'EEE', { locale: es })}
+                        </div>
+                        <div className={`text-2xl font-bold ${isToday ? 'text-primary' : 'text-elegant-900 dark:text-white'}`}>
+                          {format(day, 'd')}
+                        </div>
+                        <div className="text-xs text-elegant-500 dark:text-elegant-400">
+                          {format(day, 'MMM', { locale: es })}
+                        </div>
+                      </div>
+                    </div>
 
-                      {dayAppointments.map((apt) => {
-                        if (!apt?.startTime || !apt?.endTime) return null;
-                        const durationMinutes = timeToMinutes(apt.endTime) - timeToMinutes(apt.startTime);
-                        const heightPx = Math.max(slotHeight, (durationMinutes / slotMinutes) * slotHeight);
-                        const topPx = timeToTopPx(apt.startTime);
+                    {/* Franjas horarias granulares */}
+                    <div className="relative space-y-0" style={{ height: `${gridHeight}px` }}>
+                      {timeSlots.map((timeSlot) => {
+                        const isDragOverSlot = dragOverSlot &&
+                          isSameDay(dragOverSlot.date, day) &&
+                          dragOverSlot.time === timeSlot;
+                        const isHourLine = timeSlot.endsWith(':00');
 
                         return (
                           <div
-                            key={`appointment-${apt.id}`}
-                            className="absolute left-1 right-1 pointer-events-auto"
-                            style={{ top: `${topPx}px`, height: `${heightPx}px` }}
-                          >
-                            {renderAppointmentCard(apt, 'week')}
-                          </div>
+                            key={timeSlot}
+                            onDragOver={(e) => handleDragOver(e, day, timeSlot)}
+                            onDragLeave={handleDragLeave}
+                            onDrop={(e) => handleDrop(e, day, timeSlot)}
+                            className={`relative transition-colors ${isDragOverSlot ? 'bg-blue-100 dark:bg-blue-900/30 border-l-2 border-l-blue-400' : ''
+                              } ${isHourLine ? 'border-t border-elegant-200/80 dark:border-elegant-700/70' : 'border-t border-elegant-100/60 dark:border-elegant-800/60'}`}
+                            style={{ height: `${slotHeight}px` }}
+                          />
                         );
                       })}
+
+                      {/* Capa de eventos posicionados por hora */}
+                      <div className="absolute inset-0 z-10 pointer-events-none">
+                        {dayBlocked.map((slot) => {
+                          const durationMinutes = timeToMinutes(slot.endTime) - timeToMinutes(slot.startTime);
+                          const heightPx = Math.max(slotHeight, (durationMinutes / slotMinutes) * slotHeight);
+                          const topPx = timeToTopPx(slot.startTime);
+
+                          return (
+                            <div
+                              key={`blocked-${slot.id}`}
+                              className="absolute left-1 right-1 bg-red-100 border border-red-300 dark:bg-red-900/30 dark:border-red-700 rounded-lg p-3 transition-all duration-200 pointer-events-auto"
+                              style={{ top: `${topPx}px`, height: `${heightPx}px` }}
+                            >
+                              <div className="flex items-start gap-2 h-full">
+                                <div className="flex-1 min-w-0 space-y-1.5">
+                                  {/* Motivo del bloqueo */}
+                                  <h4 className="font-semibold text-sm text-red-700 dark:text-red-300 line-clamp-2">
+                                    {slot.reason}
+                                  </h4>
+
+                                  {/* Horario */}
+                                  <div className="flex items-center gap-1.5 text-xs text-elegant-600 dark:text-elegant-300">
+                                    <Clock className="w-3.5 h-3.5 flex-shrink-0" />
+                                    <span className="font-medium">{slot.startTime} - {slot.endTime}</span>
+                                  </div>
+                                </div>
+
+                                <button
+                                  onClick={async () => {
+                                    if (await confirm({
+                                      title: 'Eliminar franja bloqueada',
+                                      description: `¿Estás seguro de que deseas eliminar esta franja bloqueada (${slot.startTime} - ${slot.endTime})?`,
+                                      confirmText: 'Eliminar',
+                                      tone: 'danger'
+                                    })) {
+                                      try {
+                                        await deleteBlockedSlot(slot.id);
+                                        const slots = await getBlockedSlotsByUser(user!.uid);
+                                        setBlockedSlots(slots);
+                                        setSuccessModal({ show: true, title: 'Franja eliminada', message: 'La franja bloqueada se ha eliminado correctamente' });
+                                      } catch (error) {
+                                        console.error('Error eliminando franja:', error);
+                                        toast.error('No se pudo eliminar la franja bloqueada');
+                                      }
+                                    }
+                                  }}
+                                  className="shrink-0 rounded-full p-1 text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/40"
+                                  title="Eliminar franja bloqueada"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        {dayAppointments.map((apt) => {
+                          if (!apt?.startTime || !apt?.endTime) return null;
+                          const durationMinutes = timeToMinutes(apt.endTime) - timeToMinutes(apt.startTime);
+                          const heightPx = Math.max(slotHeight, (durationMinutes / slotMinutes) * slotHeight);
+                          const topPx = timeToTopPx(apt.startTime);
+
+                          return (
+                            <div
+                              key={`appointment-${apt.id}`}
+                              className="absolute left-1 right-1 pointer-events-auto"
+                              style={{ top: `${topPx}px`, height: `${heightPx}px` }}
+                            >
+                              {renderAppointmentCard(apt, 'week')}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
             </div>
           </div>
         )}
@@ -1346,11 +1359,9 @@ export default function AgendaPage() {
                     onDragOver={(e) => handleDragOver(e, day)}
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => handleDrop(e, day)}
-                    className={`bg-white dark:bg-elegant-900 p-2 min-h-[100px] transition-all ${
-                      !isCurrentMonth ? 'opacity-40' : ''
-                    } ${isToday ? 'ring-2 ring-inset ring-primary' : ''} ${
-                      isDragOver ? 'bg-blue-50 dark:bg-blue-900/20' : ''
-                    }`}
+                    className={`bg-white dark:bg-elegant-900 p-2 min-h-[100px] transition-all ${!isCurrentMonth ? 'opacity-40' : ''
+                      } ${isToday ? 'ring-2 ring-inset ring-primary' : ''} ${isDragOver ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                      }`}
                   >
                     <div className={`text-sm font-medium mb-1 ${isToday ? 'text-primary' : 'text-elegant-900 dark:text-white'}`}>
                       {format(day, 'd')}
@@ -1412,50 +1423,50 @@ export default function AgendaPage() {
                             key={`blocked-${slot.id}`}
                             className="bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg p-4"
                           >
-                              <div className="flex items-start justify-between gap-2 mb-2">
-                                <div className="flex items-center gap-2">
-                                  <Ban className="w-5 h-5 text-red-600 dark:text-red-400" />
-                                  <span className="font-semibold text-red-700 dark:text-red-300">
-                                    {slot.startTime} - {slot.endTime}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {slot.recurrence && slot.recurrence !== 'none' && (
-                                    <button
-                                      onClick={() =>
-                                        setExceptionModal({
-                                          open: true,
-                                          slot,
-                                          date: format(currentDate, 'yyyy-MM-dd'),
-                                        })
-                                      }
-                                      className="text-amber-700 hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-200"
-                                      title="Agregar excepción"
-                                    >
-                                      <MinusCircle className="w-4 h-4" />
-                                    </button>
-                                  )}
-                                  <button
-                                    onClick={() => removeBlock(slot.id)}
-                                    className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
-                                    title="Eliminar franja bloqueada"
-                                  >
-                                    <X className="w-4 h-4" />
-                                  </button>
-                                </div>
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <div className="flex items-center gap-2">
+                                <Ban className="w-5 h-5 text-red-600 dark:text-red-400" />
+                                <span className="font-semibold text-red-700 dark:text-red-300">
+                                  {slot.startTime} - {slot.endTime}
+                                </span>
                               </div>
-                              <p className="text-sm text-red-600 dark:text-red-400 mb-1">
-                                {slot.reason}
-                              </p>
-                              {slot.recurrence && slot.recurrence !== 'none' && (
-                                <p className="text-xs text-red-500 dark:text-red-300">
-                                  {slot.recurrence === 'weekly' ? 'Se repite todas las semanas' : 'Se repite todos los meses'}
-                                </p>
-                              )}
+                              <div className="flex items-center gap-2">
+                                {slot.recurrence && slot.recurrence !== 'none' && (
+                                  <button
+                                    onClick={() =>
+                                      setExceptionModal({
+                                        open: true,
+                                        slot,
+                                        date: format(currentDate, 'yyyy-MM-dd'),
+                                      })
+                                    }
+                                    className="text-amber-700 hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-200"
+                                    title="Agregar excepción"
+                                  >
+                                    <MinusCircle className="w-4 h-4" />
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => removeBlock(slot.id)}
+                                  className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
+                                  title="Eliminar franja bloqueada"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
-                          ))}
-                        </div>
+                            <p className="text-sm text-red-600 dark:text-red-400 mb-1">
+                              {slot.reason}
+                            </p>
+                            {slot.recurrence && slot.recurrence !== 'none' && (
+                              <p className="text-xs text-red-500 dark:text-red-300">
+                                {slot.recurrence === 'weekly' ? 'Se repite todas las semanas' : 'Se repite todos los meses'}
+                              </p>
+                            )}
+                          </div>
+                        ))}
                       </div>
+                    </div>
                   )}
 
                   {dayAppointments.length > 0 && (
@@ -1554,41 +1565,41 @@ export default function AgendaPage() {
             </h3>
 
             <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-elegant-700 dark:text-elegant-300 mb-1.5">
+                  Fecha
+                </label>
+                <input
+                  type="date"
+                  value={blockForm.date}
+                  onChange={(e) => setBlockForm({ ...blockForm, date: e.target.value })}
+                  className="input-field w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-elegant-700 dark:text-elegant-300 mb-1.5">
+                  Repetición
+                </label>
+                <select
+                  value={blockForm.recurrence}
+                  onChange={(e) => setBlockForm({ ...blockForm, recurrence: e.target.value as 'none' | 'weekly' | 'monthly' })}
+                  className="input-field w-full"
+                >
+                  <option value="none">Solo esta fecha</option>
+                  <option value="weekly">Todas las semanas</option>
+                  <option value="monthly">Todos los meses</option>
+                </select>
+                <p className="text-xs text-elegant-500 dark:text-elegant-400 mt-1">
+                  Las excepciones se pueden agregar luego desde la agenda.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-elegant-700 dark:text-elegant-300 mb-1.5">
-                    Fecha
+                    Hora Inicio
                   </label>
-                  <input
-                    type="date"
-                    value={blockForm.date}
-                    onChange={(e) => setBlockForm({ ...blockForm, date: e.target.value })}
-                    className="input-field w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-elegant-700 dark:text-elegant-300 mb-1.5">
-                    Repetición
-                  </label>
-                  <select
-                    value={blockForm.recurrence}
-                    onChange={(e) => setBlockForm({ ...blockForm, recurrence: e.target.value as 'none' | 'weekly' | 'monthly' })}
-                    className="input-field w-full"
-                  >
-                    <option value="none">Solo esta fecha</option>
-                    <option value="weekly">Todas las semanas</option>
-                    <option value="monthly">Todos los meses</option>
-                  </select>
-                  <p className="text-xs text-elegant-500 dark:text-elegant-400 mt-1">
-                    Las excepciones se pueden agregar luego desde la agenda.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium text-elegant-700 dark:text-elegant-300 mb-1.5">
-                      Hora Inicio
-                    </label>
                   <input
                     type="time"
                     value={blockForm.startTime}
@@ -1777,13 +1788,12 @@ export default function AgendaPage() {
                       </p>
                     </div>
                   </div>
-                  <div className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide ${
-                    selectedEvent.status === 'completed' ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white' :
+                  <div className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide ${selectedEvent.status === 'completed' ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white' :
                     selectedEvent.status === 'confirmed' ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white' :
-                    selectedEvent.status === 'cancelled' ? 'bg-gradient-to-r from-red-500 to-red-600 text-white' :
-                    selectedEvent.status === 'no-show' ? 'bg-gradient-to-r from-gray-500 to-gray-600 text-white' :
-                    'bg-gradient-to-r from-sky-500 to-sky-600 text-white'
-                  }`}>
+                      selectedEvent.status === 'cancelled' ? 'bg-gradient-to-r from-red-500 to-red-600 text-white' :
+                        selectedEvent.status === 'no-show' ? 'bg-gradient-to-r from-gray-500 to-gray-600 text-white' :
+                          'bg-gradient-to-r from-sky-500 to-sky-600 text-white'
+                    }`}>
                     {translateAppointmentStatus(selectedEvent.status)}
                   </div>
                 </div>
@@ -1965,12 +1975,12 @@ export default function AgendaPage() {
             // Cerrar el modal del formulario primero
             setShowForm(false);
             setEditingAppointment(null);
-              // Mostrar el modal de éxito después de la transición del formulario
-              setTimeout(() => {
-                setSuccessModal({ show: true, title, message });
-              }, 250);
-            }}
-          />
+            // Mostrar el modal de éxito después de la transición del formulario
+            setTimeout(() => {
+              setSuccessModal({ show: true, title, message });
+            }, 250);
+          }}
+        />
       </Modal>
 
       <Modal
@@ -2036,24 +2046,24 @@ export default function AgendaPage() {
                 </p>
               </div>
 
-                <div className="flex items-center gap-2 bg-elegant-100 dark:bg-elegant-800/60 p-2 rounded-full">
-                  <button
-                    type="button"
-                    className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'total' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
-                    onClick={() => setPaymentDialog(p => ({ ...p, mode: 'total', amount: remainingAmount.toString() }))}
-                  >
-                    {totalPaid > 0 && remainingAmount > 0 && remainingAmount < (appt.fee || 0)
-                      ? 'Pagar saldo'
-                      : 'Pago total'}
-                  </button>
-                  <button
-                    type="button"
-                    className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'partial' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
-                    onClick={() => setPaymentDialog(p => ({ ...p, mode: 'partial', amount: '' }))}
-                  >
-                    Pago parcial
-                  </button>
-                </div>
+              <div className="flex items-center gap-2 bg-elegant-100 dark:bg-elegant-800/60 p-2 rounded-full">
+                <button
+                  type="button"
+                  className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'total' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
+                  onClick={() => setPaymentDialog(p => ({ ...p, mode: 'total', amount: remainingAmount.toString() }))}
+                >
+                  {totalPaid > 0 && remainingAmount > 0 && remainingAmount < (appt.fee || 0)
+                    ? 'Pagar saldo'
+                    : 'Pago total'}
+                </button>
+                <button
+                  type="button"
+                  className={`flex-1 py-2 rounded-full text-sm font-semibold transition ${paymentDialog.mode === 'partial' ? 'bg-primary text-white shadow' : 'text-elegant-600 dark:text-elegant-200'}`}
+                  onClick={() => setPaymentDialog(p => ({ ...p, mode: 'partial', amount: '' }))}
+                >
+                  Pago parcial
+                </button>
+              </div>
 
               {paymentDialog.mode === 'partial' && (
                 <div className="space-y-1">
