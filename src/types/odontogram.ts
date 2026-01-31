@@ -1,4 +1,4 @@
-export type ToothCondition = 'healthy' | 'missing' | 'implant' | 'crown' | 'bridge';
+export type ToothCondition = 'healthy' | 'missing' | 'implant' | 'crown' | 'bridge' | 'extraction';
 export type SurfaceState = 'healthy' | 'caries' | 'filled' | 'endodontics' | 'sealant';
 
 export interface ToothSurfaces {
