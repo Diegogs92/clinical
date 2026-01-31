@@ -206,7 +206,7 @@ export default function ChatWidget() {
             >
                 {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-7 h-7" />}
                 {!isOpen && conversations.some(c => c.lastMessage && !c.lastMessage.seen && c.lastMessage.senderId !== user.uid) && (
-                    <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full border-2 border-white dark:border-elegant-950"></span>
+                    <span className="absolute top-1 right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white dark:border-elegant-950"></span>
                 )}
             </button>
         </div>

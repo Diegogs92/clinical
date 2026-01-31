@@ -71,29 +71,52 @@ export function useChat() {
                 return timeB - timeA;
             });
 
-            // Fetch profiles for all conversations
-            // Optimization: Cache profiles or use a separate users listener if needed, 
-            // but for now fetch unique participants
-            const uniqueUserIds = Array.from(new Set(convs.flatMap(c => c.participants)));
-            // Filter out current user
-            const otherUserIds = uniqueUserIds.filter(uid => uid !== user.uid);
+            // Deduplicate: Keep only the most recent conversation per unique set of participants
+            // Map key: otherUserId (or 'self' if it's just me)
+            const uniqueConvsMap = new Map();
 
-            // Fetch these users. In a real app we might want to batch this or use a cache.
-            // For simplicity, we'll fetch them one by one for now (or use getUserById from lib/users)
+            convs.forEach(conv => {
+                const otherId = conv.participants.find(p => p !== user.uid);
+                // If distinct conversation with same user found, and we haven't stored one yet, store it.
+                // Since we sorted by date desc, the first one is the newest.
+                if (otherId && !uniqueConvsMap.has(otherId)) {
+                    uniqueConvsMap.set(otherId, conv);
+                } else if (!otherId && !uniqueConvsMap.has('self')) {
+                    // Self chat
+                    uniqueConvsMap.set('self', conv);
+                }
+            });
+
+            const uniqueConvs = Array.from(uniqueConvsMap.values());
+
+            // Fetch profiles for all conversations
+            // Optimization: Cache profiles or use a separate users listener if needed
+            const otherUserIds = new Set<string>();
+            uniqueConvs.forEach(c => {
+                c.participants.forEach(p => {
+                    if (p !== user.uid) otherUserIds.add(p);
+                });
+            });
+
+            // Allow fetching profiles in parallel
+            // Note: We need dynamic import inside specific scope or move it out if issues arise
             const { getUserById } = await import('@/lib/users');
 
             const profilesMap = new Map<string, UserProfile>();
-            await Promise.all(otherUserIds.map(async (uid) => {
-                const profile = await getUserById(uid);
-                if (profile) profilesMap.set(uid, profile);
+            await Promise.all(Array.from(otherUserIds).map(async (uid) => {
+                try {
+                    const profile = await getUserById(uid);
+                    if (profile) profilesMap.set(uid, profile);
+                } catch (e) {
+                    console.error("Error fetching profile", uid, e);
+                }
             }));
 
-            // Attach profiles to conversations
-            const enrichedConvs = convs.map(conv => {
+            const enrichedConvs = uniqueConvs.map(conv => {
                 const otherParticipants = conv.participants
-                    .filter(uid => uid !== user.uid)
-                    .map(uid => profilesMap.get(uid))
-                    .filter((p): p is UserProfile => !!p);
+                    .filter((uid: string) => uid !== user.uid)
+                    .map((uid: string) => profilesMap.get(uid))
+                    .filter((p: UserProfile | undefined): p is UserProfile => !!p);
 
                 return {
                     ...conv,
