@@ -37,6 +37,7 @@ import { usePayments } from '@/contexts/PaymentsContext';
 import { useCalendarSync } from '@/contexts/CalendarSyncContext';
 import { formatCurrency } from '@/lib/formatCurrency';
 import AppointmentForm from '@/components/appointments/AppointmentForm';
+import FloatingNewAppointmentButton from '@/components/appointments/FloatingNewAppointmentButton';
 
 export default function AgendaPage() {
   const { user, userProfile } = useAuth();
@@ -90,9 +91,16 @@ export default function AgendaPage() {
     title: '',
     message: ''
   });
-  const [attendanceDialog, setAttendanceDialog] = useState<{ open: boolean; appointment?: any }>({
+  const [attendanceDialog, setAttendanceDialog] = useState<{
+    open: boolean;
+    appointment?: any;
+    paymentMode?: 'full' | 'partial' | 'none';
+    paymentAmount?: string;
+  }>({
     open: false,
-    appointment: undefined
+    appointment: undefined,
+    paymentMode: 'none',
+    paymentAmount: ''
   });
   const [reminderDialog, setReminderDialog] = useState<{ open: boolean; appointment?: any }>({
     open: false,
@@ -384,17 +392,85 @@ export default function AgendaPage() {
       toast.error(getPermissionDeniedMessage());
       return;
     }
-    setAttendanceDialog({ open: true, appointment: evt });
+    // Initialize payment mode based on whether appointment has fees
+    const initialPaymentMode = evt.fee && evt.appointmentType === 'patient' ? 'full' : 'none';
+    setAttendanceDialog({
+      open: true,
+      appointment: evt,
+      paymentMode: initialPaymentMode,
+      paymentAmount: evt.fee?.toString() || ''
+    });
   };
 
   const submitAttendance = async (status: 'completed' | 'no-show') => {
     const evt = attendanceDialog.appointment;
-    if (!evt) return;
+    if (!evt || !user) return;
 
     try {
+      // Mark attendance
       await updateAppointment(evt.id, { status });
+
+      // Register payment if attendance is completed and payment mode is selected
+      if (status === 'completed' && attendanceDialog.paymentMode && attendanceDialog.paymentMode !== 'none' && evt.fee && evt.appointmentType === 'patient' && evt.patientId && evt.patientName) {
+        // Validate patient exists
+        const patient = getPatientInfo(evt.patientId);
+        if (!patient) {
+          toast.error('Error: El paciente del turno no existe.');
+          return;
+        }
+
+        // Calculate payment amount
+        const deposit = evt.deposit || 0;
+        const completed = payments
+          .filter(p => p.appointmentId === evt.id && p.status === 'completed')
+          .reduce((sum, p) => sum + p.amount, 0);
+        const pending = (() => {
+          const seen = new Set<string>();
+          let sum = 0;
+          for (const payment of [...payments, ...pendingPayments]) {
+            if (payment.appointmentId !== evt.id || payment.status !== 'pending') continue;
+            if (seen.has(payment.id)) continue;
+            seen.add(payment.id);
+            sum += payment.amount;
+          }
+          return sum;
+        })();
+        const totalPaid = deposit + completed + pending;
+        const remainingAmount = (evt.fee || 0) - totalPaid;
+
+        let paymentAmount = 0;
+        if (attendanceDialog.paymentMode === 'full') {
+          paymentAmount = remainingAmount;
+        } else if (attendanceDialog.paymentMode === 'partial') {
+          const sanitized = (attendanceDialog.paymentAmount || '').replace(/\./g, '').replace(',', '.');
+          paymentAmount = Number(sanitized);
+          if (!Number.isFinite(paymentAmount) || paymentAmount <= 0 || paymentAmount > remainingAmount) {
+            toast.error(`Ingresa un monto válido entre $1 y $${remainingAmount.toLocaleString('es-AR')}`);
+            return;
+          }
+        }
+
+        if (paymentAmount > 0) {
+          await createPayment({
+            appointmentId: evt.id,
+            patientId: evt.patientId,
+            patientName: evt.patientName,
+            amount: paymentAmount,
+            method: 'cash',
+            status: 'completed',
+            date: new Date().toISOString(),
+            consultationType: evt.type || '',
+            userId: user.uid,
+          });
+
+          await refreshPayments();
+          await refreshPendingPayments();
+        }
+      }
+
       await refreshAgendaAppointments();
-      setAttendanceDialog({ open: false, appointment: undefined });
+      setAttendanceDialog({ open: false, appointment: undefined, paymentMode: 'none', paymentAmount: '' });
+
       if (status === 'completed') {
         setReminderForm({ value: '', unit: 'months', reason: '' });
         setReminderDialog({ open: true, appointment: evt });
@@ -2107,42 +2183,119 @@ export default function AgendaPage() {
       {/* Modal de confirmación de asistencia */}
       <Modal
         open={attendanceDialog.open}
-        onClose={() => setAttendanceDialog({ open: false, appointment: undefined })}
+        onClose={() => setAttendanceDialog({ open: false, appointment: undefined, paymentMode: 'none', paymentAmount: '' })}
         title="Registrar asistencia"
         maxWidth="max-w-md"
       >
-        {attendanceDialog.appointment && (
-          <div className="space-y-6">
-            <p className="text-elegant-600 dark:text-elegant-300 text-center">
-              ¿El paciente <span className="font-semibold text-elegant-900 dark:text-white">{attendanceDialog.appointment.patientName}</span> asistió a la cita?
-            </p>
+        {attendanceDialog.appointment && (() => {
+          const evt = attendanceDialog.appointment;
+          const hasFees = evt.fee && evt.appointmentType === 'patient';
 
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => submitAttendance('completed')}
-                className="flex flex-col items-center gap-3 p-6 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transition-all duration-200 hover:shadow-lg hover:scale-105"
-              >
-                <CheckCircle2 className="w-12 h-12" />
-                <span className="text-lg font-bold">Asistió</span>
-              </button>
+          // Calculate remaining amount
+          const deposit = evt.deposit || 0;
+          const completed = payments
+            .filter(p => p.appointmentId === evt.id && p.status === 'completed')
+            .reduce((sum, p) => sum + p.amount, 0);
+          const pending = (() => {
+            const seen = new Set<string>();
+            let sum = 0;
+            for (const payment of [...payments, ...pendingPayments]) {
+              if (payment.appointmentId !== evt.id || payment.status !== 'pending') continue;
+              if (seen.has(payment.id)) continue;
+              seen.add(payment.id);
+              sum += payment.amount;
+            }
+            return sum;
+          })();
+          const totalPaid = deposit + completed + pending;
+          const remainingAmount = (evt.fee || 0) - totalPaid;
+
+          return (
+            <div className="space-y-6">
+              <p className="text-elegant-600 dark:text-elegant-300 text-center">
+                ¿El paciente <span className="font-semibold text-elegant-900 dark:text-white">{evt.patientName}</span> asistió a la cita?
+              </p>
+
+              {/* Payment Options (only if has fees and remaining amount) */}
+              {hasFees && remainingAmount > 0 && (
+                <div className="space-y-3 bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                  <p className="text-sm font-semibold text-green-800 dark:text-green-300">
+                    Registrar pago (opcional)
+                  </p>
+                  <p className="text-xs text-green-700 dark:text-green-400">
+                    Honorarios: ${formatCurrency(evt.fee)} | Restante: ${formatCurrency(remainingAmount)}
+                  </p>
+
+                  <div className="flex items-center gap-2 bg-white dark:bg-elegant-800 p-2 rounded-lg">
+                    <button
+                      type="button"
+                      className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${attendanceDialog.paymentMode === 'full' ? 'bg-green-600 text-white shadow' : 'text-elegant-600 dark:text-elegant-200 hover:bg-elegant-100 dark:hover:bg-elegant-700'}`}
+                      onClick={() => setAttendanceDialog(p => ({ ...p, paymentMode: 'full', paymentAmount: remainingAmount.toString() }))}
+                    >
+                      Pago completo
+                    </button>
+                    <button
+                      type="button"
+                      className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${attendanceDialog.paymentMode === 'partial' ? 'bg-green-600 text-white shadow' : 'text-elegant-600 dark:text-elegant-200 hover:bg-elegant-100 dark:hover:bg-elegant-700'}`}
+                      onClick={() => setAttendanceDialog(p => ({ ...p, paymentMode: 'partial', paymentAmount: '' }))}
+                    >
+                      Pago parcial
+                    </button>
+                    <button
+                      type="button"
+                      className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${attendanceDialog.paymentMode === 'none' ? 'bg-gray-600 text-white shadow' : 'text-elegant-600 dark:text-elegant-200 hover:bg-elegant-100 dark:hover:bg-elegant-700'}`}
+                      onClick={() => setAttendanceDialog(p => ({ ...p, paymentMode: 'none', paymentAmount: '' }))}
+                    >
+                      Sin pago
+                    </button>
+                  </div>
+
+                  {attendanceDialog.paymentMode === 'partial' && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-green-700 dark:text-green-400">
+                        Monto a pagar (máximo: ${formatCurrency(remainingAmount)})
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={remainingAmount}
+                        value={attendanceDialog.paymentAmount}
+                        onChange={(e) => setAttendanceDialog(p => ({ ...p, paymentAmount: e.target.value }))}
+                        className="input-field text-sm py-2"
+                        placeholder="Ingresar monto"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => submitAttendance('completed')}
+                  className="flex flex-col items-center gap-3 p-6 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transition-all duration-200 hover:shadow-lg hover:scale-105"
+                >
+                  <CheckCircle2 className="w-12 h-12" />
+                  <span className="text-lg font-bold">Asistió</span>
+                </button>
+
+                <button
+                  onClick={() => submitAttendance('no-show')}
+                  className="flex flex-col items-center gap-3 p-6 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white transition-all duration-200 hover:shadow-lg hover:scale-105"
+                >
+                  <Ban className="w-12 h-12" />
+                  <span className="text-lg font-bold">Ausente</span>
+                </button>
+              </div>
 
               <button
-                onClick={() => submitAttendance('no-show')}
-                className="flex flex-col items-center gap-3 p-6 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white transition-all duration-200 hover:shadow-lg hover:scale-105"
+                onClick={() => setAttendanceDialog({ open: false, appointment: undefined, paymentMode: 'none', paymentAmount: '' })}
+                className="w-full btn-secondary"
               >
-                <Ban className="w-12 h-12" />
-                <span className="text-lg font-bold">Ausente</span>
+                Cancelar
               </button>
             </div>
-
-            <button
-              onClick={() => setAttendanceDialog({ open: false, appointment: undefined })}
-              className="w-full btn-secondary"
-            >
-              Cancelar
-            </button>
-          </div>
-        )}
+          );
+        })()}
       </Modal>
 
       <Modal
@@ -2216,6 +2369,9 @@ export default function AgendaPage() {
         title={successModal.title}
         message={successModal.message}
       />
+
+      {/* Floating New Appointment Button */}
+      <FloatingNewAppointmentButton />
     </DashboardLayout>
   );
 }
