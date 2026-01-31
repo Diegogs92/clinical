@@ -14,6 +14,7 @@ import { CalendarSyncProvider } from '@/contexts/CalendarSyncContext';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import GlobalLoader from '@/components/GlobalLoader';
 import { CommandMenu } from '@/components/ui/CommandMenu';
+import ChatWidget from '@/components/chat/ChatWidget';
 
 const sourceSans = Manrope({
   subsets: ['latin'],
@@ -63,6 +64,7 @@ export default function RootLayout({
                           <GlobalLoader />
                           <CommandMenu />
                           {children}
+                          <ChatWidget />
                           <Toaster position="top-center" richColors closeButton className="toaster-centered" />
                         </CalendarSyncProvider>
                       </PaymentsProvider>
