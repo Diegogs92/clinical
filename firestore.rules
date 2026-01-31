@@ -145,6 +145,25 @@ service cloud.firestore {
       allow delete: if signedIn() && request.auth.token.email == email;
     }
 
+    // Chat Conversations
+    match /conversations/{conversationId} {
+      // Permitir lectura si el usuario es participante
+      allow read: if signedIn() && request.auth.uid in resource.data.participants;
+      // Permitir crear si el usuario se incluye como participante
+      allow create: if signedIn() && request.auth.uid in request.resource.data.participants;
+      // Permitir actualizar (ej. lastMessage) si es participante
+      allow update: if signedIn() && request.auth.uid in resource.data.participants;
+      
+      match /messages/{messageId} {
+        // Permitir lectura si es participante de la conversacion padre
+        allow read: if signedIn() && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+        // Permitir enviar mensaje si es el sender y tambien participante
+        allow create: if signedIn() 
+          && request.auth.uid == request.resource.data.senderId
+          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+      }
+    }
+
     // Google Calendar tokens (solo servidor)
     match /googleCalendarTokens/{id} {
       allow read, write: if false;

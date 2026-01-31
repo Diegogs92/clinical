@@ -8,6 +8,7 @@ import { UserProfile } from '@/types';
 import ChatList from './ChatList';
 import ChatWindow from './ChatWindow';
 import UserSelect from './UserSelect';
+import { toast } from 'sonner';
 
 type ViewState = 'LIST' | 'CHAT' | 'NEW_CHAT';
 
@@ -64,7 +65,10 @@ export default function ChatWidget() {
 
     const handleUserSelect = async (selectedUser: UserProfile) => {
         try {
+            console.log("Creating conversation with:", selectedUser.uid);
             const convId = await createConversation(selectedUser.uid);
+            console.log("Conversation created/found:", convId);
+
             if (convId) {
                 // Optimistically set active conversation
                 setActiveConversationId(convId);
@@ -83,9 +87,12 @@ export default function ChatWidget() {
                 }
 
                 setView('CHAT');
+            } else {
+                toast.error("No se pudo iniciar la conversación");
             }
         } catch (error) {
             console.error("Error creating chat", error);
+            toast.error("Error al iniciar el chat. Intenta nuevamente.");
         }
     };
 
