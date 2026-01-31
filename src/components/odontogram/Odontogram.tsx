@@ -109,8 +109,8 @@ export default function Odontogram({ initialData, onDataChange }: OdontogramProp
     };
 
     const tools: { id: ToolType; label: string; color: string }[] = [
-        { id: 'caries', label: 'Caries (Azul Sólido)', color: 'bg-blue-600 text-white' }, // Updated description
-        { id: 'filled', label: 'Arreglo (Rayas Rojas)', color: 'bg-red-500 bg-opacity-20 text-red-700' },
+        { id: 'caries', label: 'Caries (Azul Sólido)', color: 'bg-blue-600 text-white' },
+        { id: 'filled', label: 'Arreglo (Rojo Sólido)', color: 'bg-red-600 text-white' },
         { id: 'extraction', label: 'Extracción (2 Líneas Azules)', color: 'bg-blue-600 text-white' },
         { id: 'crown', label: 'Corona (Círculo Rojo)', color: 'bg-white border-2 border-red-500 text-red-500' },
         { id: 'extract', label: 'Ausente (Cruz Roja)', color: 'bg-red-100 text-red-600' },

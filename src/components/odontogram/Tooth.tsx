@@ -15,8 +15,8 @@ const getSurfaceClasses = (state: SurfaceState) => {
             // Blue fill based on reference image
             return 'fill-blue-600 hover:fill-blue-500 stroke-blue-600 stroke-1';
         case 'filled':
-            // Red lines pattern
-            return 'fill-[url(#diagonal-red)] stroke-gray-300 stroke-1';
+            // Red fill (similar to caries but red)
+            return 'fill-red-600 hover:fill-red-500 stroke-red-600 stroke-1';
         case 'endodontics':
             return 'fill-purple-500 hover:fill-purple-400 stroke-gray-300 stroke-1';
         case 'sealant':
