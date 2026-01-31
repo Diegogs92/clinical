@@ -54,8 +54,8 @@ export function useChat() {
 
         const q = query(
             collection(db, 'conversations'),
-            where('participants', 'array-contains', user.uid),
-            orderBy('updatedAt', 'desc')
+            where('participants', 'array-contains', user.uid)
+            // orderBy('updatedAt', 'desc') // Removed to avoid index requirement
         );
 
         const unsubscribe = onSnapshot(q, async (snapshot) => {
@@ -63,6 +63,13 @@ export function useChat() {
                 id: doc.id,
                 ...doc.data()
             })) as Conversation[];
+
+            // Client-side sort
+            convs.sort((a, b) => {
+                const timeA = a.updatedAt?.seconds || 0;
+                const timeB = b.updatedAt?.seconds || 0;
+                return timeB - timeA;
+            });
 
             // Fetch profiles for all conversations
             // Optimization: Cache profiles or use a separate users listener if needed, 

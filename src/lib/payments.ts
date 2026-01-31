@@ -17,7 +17,7 @@ const sortByDateDesc = (items: Payment[]) => [...items].sort((a, b) => b.date.lo
 const getMockPayments = (): Payment[] => loadFromLocalStorage<Payment>('payments');
 const saveMockPayments = (payments: Payment[]) => saveToLocalStorage('payments', payments);
 
-export async function createPayment(data: Omit<Payment,'id'|'createdAt'|'updatedAt'>) {
+export async function createPayment(data: Omit<Payment, 'id' | 'createdAt' | 'updatedAt'>) {
   console.log('[createPayment] Iniciando creación de pago:', data);
   const now = new Date().toISOString();
   if (mockMode || !db) {
@@ -66,7 +66,7 @@ export async function deletePayment(id: string) {
   await deleteDoc(docRef);
 }
 
-export async function getPayment(id: string): Promise<Payment|null> {
+export async function getPayment(id: string): Promise<Payment | null> {
   if (mockMode || !db) {
     const mockPayments = getMockPayments();
     return mockPayments.find(p => p.id === id) || null;
@@ -111,12 +111,14 @@ export async function listPendingPayments(userId: string, viewAll: boolean = fal
 
   // Optimización: usar query con where para filtrar en el servidor, no en el cliente
   // Solo cargar pagos pendientes recientes para evitar cargar miles de registros
-  const recentDate = getRecentPaymentsStartDate();
+  // Optimización: usar query con where para filtrar en el servidor, no en el cliente
+  // Solo cargar pagos pendientes recientes para evitar cargar miles de registros
+  // const recentDate = getRecentPaymentsStartDate();
   const q = query(
     collection(db as Firestore, PAYMENTS_COLLECTION),
     where('status', '==', 'pending'),
-    where('date', '>=', recentDate),
-    orderBy('date', 'desc'),
+    // where('date', '>=', recentDate), // Removed to avoid composite index requirement
+    // orderBy('date', 'desc'), // Removed to avoid composite index requirement
     limit(500) // Los pendientes suelen ser menos, pero ponemos límite de seguridad
   );
 
