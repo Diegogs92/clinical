@@ -198,7 +198,7 @@ export default function ChatWidget() {
             {/* Floating Toggle Button */}
             <button
                 onClick={isOpen ? handleClose : handleOpen}
-                className={`pointer-events-auto h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95
+                className={`relative pointer-events-auto h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95
           ${isOpen
                         ? 'bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rotate-90'
                         : 'bg-gradient-to-tr from-primary-dark to-primary text-white hover:shadow-primary/50'
@@ -206,7 +206,7 @@ export default function ChatWidget() {
             >
                 {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-7 h-7" />}
                 {!isOpen && conversations.some(c => c.lastMessage && !c.lastMessage.seen && c.lastMessage.senderId !== user.uid) && (
-                    <span className="absolute top-1 right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white dark:border-elegant-950"></span>
+                    <span className="absolute top-0 right-0 h-3.5 w-3.5 bg-red-500 rounded-full border-2 border-white dark:border-elegant-950"></span>
                 )}
             </button>
         </div>
