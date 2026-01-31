@@ -73,10 +73,10 @@ export function useChat() {
 
             // Deduplicate: Keep only the most recent conversation per unique set of participants
             // Map key: otherUserId (or 'self' if it's just me)
-            const uniqueConvsMap = new Map();
+            const uniqueConvsMap = new Map<string, Conversation>();
 
             convs.forEach(conv => {
-                const otherId = conv.participants.find(p => p !== user.uid);
+                const otherId = conv.participants.find((p: string) => p !== user.uid);
                 // If distinct conversation with same user found, and we haven't stored one yet, store it.
                 // Since we sorted by date desc, the first one is the newest.
                 if (otherId && !uniqueConvsMap.has(otherId)) {
@@ -93,7 +93,7 @@ export function useChat() {
             // Optimization: Cache profiles or use a separate users listener if needed
             const otherUserIds = new Set<string>();
             uniqueConvs.forEach(c => {
-                c.participants.forEach(p => {
+                c.participants.forEach((p: string) => {
                     if (p !== user.uid) otherUserIds.add(p);
                 });
             });
