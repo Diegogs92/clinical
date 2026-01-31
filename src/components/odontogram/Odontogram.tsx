@@ -166,15 +166,31 @@ export default function Odontogram({ initialData, onDataChange }: OdontogramProp
             <div className="flex flex-col gap-6 items-center overflow-x-auto pb-4 w-full">
 
                 {/* Permanent Upper (18-11 | 21-28) */}
-                <div className="flex gap-12 md:gap-24">
-                    <div className="flex justify-end">{renderQuadrant(18, 11, true)}</div>
-                    <div className="flex justify-start">{renderQuadrant(21, 28, false)}</div>
+                <div className="flex gap-4 items-start">
+                    <div className="flex flex-col gap-0.5 text-xs font-semibold text-gray-600 dark:text-gray-400 mr-2 pt-1">
+                        <div className="h-3 flex items-center">V</div>
+                        <div className="h-3 flex items-center">P</div>
+                        <div className="h-3 flex items-center">L</div>
+                        <div className="h-3 flex items-center">V</div>
+                    </div>
+                    <div className="flex gap-12 md:gap-24">
+                        <div className="flex justify-end">{renderQuadrant(18, 11, true)}</div>
+                        <div className="flex justify-start">{renderQuadrant(21, 28, false)}</div>
+                    </div>
                 </div>
 
                 {/* Primary Upper (55-51 | 61-65) */}
-                <div className="flex gap-8 md:gap-16 justify-center">
-                    <div className="flex justify-end">{renderQuadrant(55, 51, true)}</div>
-                    <div className="flex justify-start">{renderQuadrant(61, 65, false)}</div>
+                <div className="flex gap-4 items-start">
+                    <div className="flex flex-col gap-0.5 text-xs font-semibold text-gray-600 dark:text-gray-400 mr-2 pt-1">
+                        <div className="h-3 flex items-center">V</div>
+                        <div className="h-3 flex items-center">P</div>
+                        <div className="h-3 flex items-center">L</div>
+                        <div className="h-3 flex items-center">V</div>
+                    </div>
+                    <div className="flex gap-8 md:gap-16 justify-center">
+                        <div className="flex justify-end">{renderQuadrant(55, 51, true)}</div>
+                        <div className="flex justify-start">{renderQuadrant(61, 65, false)}</div>
+                    </div>
                 </div>
 
                 {/* Center Label */}
@@ -183,15 +199,31 @@ export default function Odontogram({ initialData, onDataChange }: OdontogramProp
                 </div>
 
                 {/* Primary Lower (85-81 | 71-75) */}
-                <div className="flex gap-8 md:gap-16 justify-center">
-                    <div className="flex justify-end">{renderQuadrant(85, 81, true)}</div>
-                    <div className="flex justify-start">{renderQuadrant(71, 75, false)}</div>
+                <div className="flex gap-4 items-start">
+                    <div className="flex flex-col gap-0.5 text-xs font-semibold text-gray-600 dark:text-gray-400 mr-2 pt-1">
+                        <div className="h-3 flex items-center">V</div>
+                        <div className="h-3 flex items-center">P</div>
+                        <div className="h-3 flex items-center">L</div>
+                        <div className="h-3 flex items-center">V</div>
+                    </div>
+                    <div className="flex gap-8 md:gap-16 justify-center">
+                        <div className="flex justify-end">{renderQuadrant(85, 81, true)}</div>
+                        <div className="flex justify-start">{renderQuadrant(71, 75, false)}</div>
+                    </div>
                 </div>
 
                 {/* Permanent Lower (48-41 | 31-38) */}
-                <div className="flex gap-12 md:gap-24">
-                    <div className="flex justify-end">{renderQuadrant(48, 41, true)}</div>
-                    <div className="flex justify-start">{renderQuadrant(31, 38, false)}</div>
+                <div className="flex gap-4 items-start">
+                    <div className="flex flex-col gap-0.5 text-xs font-semibold text-gray-600 dark:text-gray-400 mr-2 pt-1">
+                        <div className="h-3 flex items-center">V</div>
+                        <div className="h-3 flex items-center">P</div>
+                        <div className="h-3 flex items-center">L</div>
+                        <div className="h-3 flex items-center">V</div>
+                    </div>
+                    <div className="flex gap-12 md:gap-24">
+                        <div className="flex justify-end">{renderQuadrant(48, 41, true)}</div>
+                        <div className="flex justify-start">{renderQuadrant(31, 38, false)}</div>
+                    </div>
                 </div>
             </div>
 
