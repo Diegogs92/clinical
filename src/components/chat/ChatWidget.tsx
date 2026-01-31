@@ -125,7 +125,7 @@ export default function ChatWidget() {
 
                         {view === 'CHAT' && !activeConversation && (
                             <div className="flex-1 flex items-center justify-center">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                             </div>
                         )}
                     </>
@@ -138,7 +138,7 @@ export default function ChatWidget() {
                 className={`pointer-events-auto h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95
           ${isOpen
                         ? 'bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rotate-90'
-                        : 'bg-gradient-to-tr from-primary-600 to-primary-500 text-white hover:shadow-primary-500/50'
+                        : 'bg-gradient-to-tr from-primary-dark to-primary text-white hover:shadow-primary/50'
                     }`}
             >
                 {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-7 h-7" />}

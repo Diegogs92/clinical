@@ -68,7 +68,7 @@ export default function ChatWindow({ conversation, onBack, onClose }: ChatWindow
                 </div>
 
                 <div className="flex items-center gap-1">
-                    <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-elegant-800 rounded-full text-primary-600">
+                    <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-elegant-800 rounded-full text-primary">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -78,7 +78,7 @@ export default function ChatWindow({ conversation, onBack, onClose }: ChatWindow
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-elegant-950/50">
                 {loadingMessages ? (
                     <div className="flex justify-center py-4">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500"></div>
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                     </div>
                 ) : (
                     messages.map((msg, index) => {
@@ -104,8 +104,8 @@ export default function ChatWindow({ conversation, onBack, onClose }: ChatWindow
 
                                     <div
                                         className={`px-4 py-2 rounded-2xl shadow-sm text-sm break-words ${isMe
-                                                ? 'bg-primary-600 text-white rounded-br-none'
-                                                : 'bg-white dark:bg-elegant-800 text-elegant-900 dark:text-gray-100 rounded-bl-none border border-gray-100 dark:border-gray-700'
+                                            ? 'bg-primary text-white rounded-br-none'
+                                            : 'bg-white dark:bg-elegant-800 text-elegant-900 dark:text-gray-100 rounded-bl-none border border-gray-100 dark:border-gray-700'
                                             }`}
                                     >
                                         {msg.text}
@@ -126,12 +126,12 @@ export default function ChatWindow({ conversation, onBack, onClose }: ChatWindow
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="Escribe un mensaje..."
-                        className="flex-1 bg-gray-100 dark:bg-elegant-800 text-elegant-900 dark:text-gray-100 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:placeholder-gray-500"
+                        className="flex-1 bg-gray-100 dark:bg-elegant-800 text-elegant-900 dark:text-gray-100 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:placeholder-gray-500"
                     />
                     <button
                         type="submit"
                         disabled={!newMessage.trim()}
-                        className="p-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-colors shadow-sm"
+                        className="p-2 bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-colors shadow-sm"
                     >
                         <Send className="w-4 h-4" />
                     </button>

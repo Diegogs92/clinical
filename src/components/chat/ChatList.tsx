@@ -14,7 +14,7 @@ export default function ChatList({ conversations, loading, onSelectConversation,
     if (loading) {
         return (
             <div className="flex-1 flex items-center justify-center p-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
         );
     }
@@ -25,7 +25,7 @@ export default function ChatList({ conversations, loading, onSelectConversation,
                 <h3 className="font-bold text-lg text-elegant-800 dark:text-elegant-100">Chats</h3>
                 <button
                     onClick={onNewChat}
-                    className="p-2 hover:bg-gray-100 dark:hover:bg-elegant-800 rounded-full text-primary-600 dark:text-primary-400 transition-colors"
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-elegant-800 rounded-full text-primary dark:text-primary-light transition-colors"
                     title="Nuevo mensaje"
                 >
                     <MessageSquarePlus className="w-5 h-5" />
@@ -36,7 +36,7 @@ export default function ChatList({ conversations, loading, onSelectConversation,
                 {conversations.length === 0 ? (
                     <div className="p-8 text-center text-gray-500 text-sm">
                         <p className="mb-2">No tienes conversaciones activas.</p>
-                        <button onClick={onNewChat} className="text-primary-600 hover:underline">
+                        <button onClick={onNewChat} className="text-primary hover:underline">
                             Iniciar una charla
                         </button>
                     </div>
@@ -57,7 +57,7 @@ export default function ChatList({ conversations, loading, onSelectConversation,
                                     className="p-3 hover:bg-gray-50 dark:hover:bg-elegant-800 cursor-pointer transition-colors flex gap-3 items-center group"
                                 >
                                     <div className="relative">
-                                        <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900 dark:to-primary-800 flex items-center justify-center text-primary-700 dark:text-primary-300 font-semibold text-lg shadow-sm group-hover:shadow-md transition-shadow">
+                                        <div className="h-12 w-12 rounded-full bg-gradient-to-br from-sky-100 to-sky-200 dark:from-sky-900 dark:to-sky-800 flex items-center justify-center text-sky-700 dark:text-sky-300 font-semibold text-lg shadow-sm group-hover:shadow-md transition-shadow">
                                             {otherUser?.photoURL ? (
                                                 <img src={otherUser.photoURL} alt={name} className="h-full w-full rounded-full object-cover" />
                                             ) : (

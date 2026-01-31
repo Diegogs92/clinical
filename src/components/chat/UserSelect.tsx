@@ -48,7 +48,7 @@ export default function UserSelect({ onSelect, onCancel }: UserSelectProps) {
                     <input
                         type="text"
                         placeholder="Buscar usuario..."
-                        className="w-full pl-9 pr-4 py-2 text-sm border rounded-lg dark:bg-elegant-800 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full pl-9 pr-4 py-2 text-sm border rounded-lg dark:bg-elegant-800 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -68,7 +68,7 @@ export default function UserSelect({ onSelect, onCancel }: UserSelectProps) {
                                 className="p-3 hover:bg-gray-50 dark:hover:bg-elegant-800 cursor-pointer flex items-center gap-3"
                                 onClick={() => onSelect(user)}
                             >
-                                <div className="h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-600 dark:text-primary-300 font-medium">
+                                <div className="h-10 w-10 rounded-full bg-sky-100 dark:bg-sky-900 flex items-center justify-center text-sky-600 dark:text-sky-300 font-medium">
                                     {user.photoURL ? (
                                         <img src={user.photoURL} alt={user.displayName} className="h-full w-full rounded-full object-cover" />
                                     ) : (
