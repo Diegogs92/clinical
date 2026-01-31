@@ -56,7 +56,7 @@ export default function Odontogram({ initialData, onDataChange }: OdontogramProp
 
     const handleSurfaceClick = (toothId: number, surface: keyof ToothSurfaces) => {
         // Condition-setting tools
-        if (selectedTool === 'extract' || selectedTool === 'extraction' || selectedTool === 'crown') {
+        if (selectedTool === 'extract' || selectedTool === 'extraction' || selectedTool === 'crown' || selectedTool === 'cleaning') {
             handleToothClick(toothId);
             return;
         }
@@ -65,8 +65,7 @@ export default function Odontogram({ initialData, onDataChange }: OdontogramProp
             const tooth = prev[toothId];
             const newSurfaces = { ...tooth.surfaces };
 
-            // If tool is 'cleaning', set to healthy
-            const targetState: SurfaceState = selectedTool === 'cleaning' ? 'healthy' : selectedTool as SurfaceState;
+            const targetState: SurfaceState = selectedTool as SurfaceState;
 
             newSurfaces[surface] = targetState;
 
@@ -79,7 +78,17 @@ export default function Odontogram({ initialData, onDataChange }: OdontogramProp
 
     const handleToothClick = (toothId: number) => {
         // Handle whole-tooth conditions
-        if (selectedTool === 'extract') {
+        if (selectedTool === 'cleaning') {
+            // Reset to healthy
+            setTeeth(prev => ({
+                ...prev,
+                [toothId]: {
+                    ...prev[toothId],
+                    condition: 'healthy',
+                    surfaces: { top: 'healthy', bottom: 'healthy', left: 'healthy', right: 'healthy', center: 'healthy' }
+                }
+            }));
+        } else if (selectedTool === 'extract') {
             // "Missing"
             setTeeth(prev => ({
                 ...prev,
@@ -179,6 +188,20 @@ export default function Odontogram({ initialData, onDataChange }: OdontogramProp
                     </div>
                 </div>
 
+                {/* Permanent Lower (48-41 | 31-38) */}
+                <div className="flex gap-4 items-start">
+                    <div className="flex flex-col gap-0.5 text-xs font-semibold text-gray-600 dark:text-gray-400 mr-2 pt-1">
+                        <div className="h-3 flex items-center">V</div>
+                        <div className="h-3 flex items-center">P</div>
+                        <div className="h-3 flex items-center">L</div>
+                        <div className="h-3 flex items-center">V</div>
+                    </div>
+                    <div className="flex gap-12 md:gap-24">
+                        <div className="flex justify-end">{renderQuadrant(48, 41, true)}</div>
+                        <div className="flex justify-start">{renderQuadrant(31, 38, false)}</div>
+                    </div>
+                </div>
+
                 {/* Primary Upper (55-51 | 61-65) */}
                 <div className="flex gap-4 items-start">
                     <div className="flex flex-col gap-0.5 text-xs font-semibold text-gray-600 dark:text-gray-400 mr-2 pt-1">
@@ -195,7 +218,7 @@ export default function Odontogram({ initialData, onDataChange }: OdontogramProp
 
                 {/* Center Label */}
                 <div className="text-xs text-gray-400 font-mono tracking-widest uppercase text-center border-t border-b border-gray-100 dark:border-gray-800 w-full py-2 my-2">
-                    Izquierda &mdash; Derecha
+                    Derecha &mdash; Izquierda
                 </div>
 
                 {/* Primary Lower (85-81 | 71-75) */}
@@ -209,20 +232,6 @@ export default function Odontogram({ initialData, onDataChange }: OdontogramProp
                     <div className="flex gap-8 md:gap-16 justify-center">
                         <div className="flex justify-end">{renderQuadrant(85, 81, true)}</div>
                         <div className="flex justify-start">{renderQuadrant(71, 75, false)}</div>
-                    </div>
-                </div>
-
-                {/* Permanent Lower (48-41 | 31-38) */}
-                <div className="flex gap-4 items-start">
-                    <div className="flex flex-col gap-0.5 text-xs font-semibold text-gray-600 dark:text-gray-400 mr-2 pt-1">
-                        <div className="h-3 flex items-center">V</div>
-                        <div className="h-3 flex items-center">P</div>
-                        <div className="h-3 flex items-center">L</div>
-                        <div className="h-3 flex items-center">V</div>
-                    </div>
-                    <div className="flex gap-12 md:gap-24">
-                        <div className="flex justify-end">{renderQuadrant(48, 41, true)}</div>
-                        <div className="flex justify-start">{renderQuadrant(31, 38, false)}</div>
                     </div>
                 </div>
             </div>
