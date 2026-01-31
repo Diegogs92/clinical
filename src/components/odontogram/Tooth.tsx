@@ -12,8 +12,8 @@ interface ToothProps {
 const getSurfaceClasses = (state: SurfaceState) => {
     switch (state) {
         case 'caries':
-            // Blue borders (stroke), white fill
-            return 'fill-white stroke-blue-600 stroke-[5px] z-10';
+            // Blue fill based on reference image
+            return 'fill-blue-600 hover:fill-blue-500 stroke-blue-600 stroke-1';
         case 'filled':
             // Red lines pattern
             return 'fill-[url(#diagonal-red)] stroke-gray-300 stroke-1';
