@@ -37,7 +37,6 @@ import { usePayments } from '@/contexts/PaymentsContext';
 import { useCalendarSync } from '@/contexts/CalendarSyncContext';
 import { formatCurrency } from '@/lib/formatCurrency';
 import AppointmentForm from '@/components/appointments/AppointmentForm';
-import FloatingNewAppointmentButton from '@/components/appointments/FloatingNewAppointmentButton';
 
 export default function AgendaPage() {
   const { user, userProfile } = useAuth();
@@ -2351,9 +2350,6 @@ export default function AgendaPage() {
         title={successModal.title}
         message={successModal.message}
       />
-
-      {/* Floating New Appointment Button */}
-      <FloatingNewAppointmentButton />
     </DashboardLayout>
   );
 }
