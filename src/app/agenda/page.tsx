@@ -1956,37 +1956,19 @@ export default function AgendaPage() {
             )}
 
             {/* Acciones principales */}
-            <div className="grid grid-cols-2 gap-3">
-              {canViewFees(selectedEvent) && (
-                <button
-                  onClick={() => {
-                    openPaymentDialog(selectedEvent);
-                    setSelectedEvent(null);
-                  }}
-                  disabled={!selectedEvent.fee || selectedEvent.status === 'cancelled'}
-                  className="group relative overflow-hidden bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 hover:from-green-600 hover:via-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg p-3.5 transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed"
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    <DollarSign className="w-5 h-5" />
-                    <span className="text-sm font-bold">Registrar Pago</span>
-                  </div>
-                </button>
-              )}
-
-              <button
-                onClick={() => {
-                  handleAttendance(selectedEvent);
-                  setSelectedEvent(null);
-                }}
-                disabled={selectedEvent.status === 'completed' || selectedEvent.status === 'cancelled'}
-                className="group relative overflow-hidden bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg p-3.5 transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed"
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <CheckCircle2 className="w-5 h-5" />
-                  <span className="text-sm font-bold">Marcar Asistencia</span>
-                </div>
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                handleAttendance(selectedEvent);
+                setSelectedEvent(null);
+              }}
+              disabled={selectedEvent.status === 'completed' || selectedEvent.status === 'cancelled'}
+              className="w-full group relative overflow-hidden bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg p-3.5 transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed"
+            >
+              <div className="flex items-center justify-center gap-2">
+                <CheckCircle2 className="w-5 h-5" />
+                <span className="text-sm font-bold">Marcar Asistencia</span>
+              </div>
+            </button>
 
             <button
               onClick={() => handleReschedule(selectedEvent)}

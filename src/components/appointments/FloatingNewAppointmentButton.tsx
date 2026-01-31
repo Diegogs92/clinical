@@ -5,8 +5,10 @@ import { CalendarPlus } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import AppointmentForm from '@/components/appointments/AppointmentForm';
 import SuccessModal from '@/components/ui/SuccessModal';
+import { useAppointments } from '@/contexts/AppointmentsContext';
 
 export default function FloatingNewAppointmentButton() {
+  const { refreshAppointments } = useAppointments();
   const [isOpen, setIsOpen] = useState(false);
   const [successModal, setSuccessModal] = useState<{ show: boolean; title: string; message?: string }>({
     show: false,
@@ -35,7 +37,8 @@ export default function FloatingNewAppointmentButton() {
         maxWidth="max-w-4xl"
       >
         <AppointmentForm
-          onCreated={() => {
+          onCreated={async () => {
+            await refreshAppointments();
             setIsOpen(false);
           }}
           onCancel={() => setIsOpen(false)}
