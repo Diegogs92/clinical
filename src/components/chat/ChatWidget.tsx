@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, ChevronDown, Minus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Conversation, useChat } from '@/hooks/useChat';
@@ -15,6 +15,62 @@ type ViewState = 'LIST' | 'CHAT' | 'NEW_CHAT';
 export default function ChatWidget() {
     const { user } = useAuth();
     const { conversations, loadingConversations, createConversation } = useChat();
+
+    // Sound effect
+    const playNotificationSound = () => {
+        try {
+            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
+            audio.volume = 0.5;
+            audio.play().catch(e => console.error("Error playing sound", e));
+        } catch (error) {
+            console.error("Audio error", error);
+        }
+    };
+
+    // Track previous last messages to detect new ones
+    const prevLastMessagesRef = useState<{ [key: string]: any }>({});
+
+    // We can't easily use useRef for detecting *changes* in an effect without keeping track state manually.
+    // Instead, let's just use an effect that runs when `conversations` changes.
+    // But we need to know if the change was a *new message* vs just loading.
+
+    useEffect(() => {
+        if (loadingConversations) return;
+
+        // This is a simplified check. A robust one would compare against a ref.
+        // Let's use sessionStorage/ref to store the "last known" state?
+        // Actually, useRef is perfect.
+    }, [conversations, loadingConversations]);
+
+    const lastMessagesMapRef = useRef<{ [key: string]: string }>({});
+
+    useEffect(() => {
+        if (loadingConversations) return;
+
+        let hasNewMessage = false;
+
+        conversations.forEach(conv => {
+            if (!conv.lastMessage) return;
+
+            const prevId = lastMessagesMapRef.current[conv.id];
+            // Identify unique message by timestamp or text+timestamp. 
+            // Ideally messages have IDs, but lastMessage is an object.
+            // We can use createdAt.
+            const currentMsgId = conv.lastMessage.createdAt?.toString() + conv.lastMessage.text;
+
+            // If we have a previous record and it's different, AND it's not from me, AND it's not seen
+            if (prevId && prevId !== currentMsgId && conv.lastMessage.senderId !== user?.uid && !conv.lastMessage.seen) {
+                hasNewMessage = true;
+            }
+
+            // Update ref
+            lastMessagesMapRef.current[conv.id] = currentMsgId;
+        });
+
+        if (hasNewMessage) {
+            playNotificationSound();
+        }
+    }, [conversations, loadingConversations, user?.uid]);
 
     const [isOpen, setIsOpen] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false); // If true, only show header bubble? No, usually just close.

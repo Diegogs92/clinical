@@ -1,0 +1,57 @@
+[debug] [2026-01-31T19:08:17.638Z] ----------------------------------------------------------------------
+[debug] [2026-01-31T19:08:17.639Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\diego\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only firestore:indexes
+[debug] [2026-01-31T19:08:17.640Z] CLI Version:   14.24.2
+[debug] [2026-01-31T19:08:17.640Z] Platform:      win32
+[debug] [2026-01-31T19:08:17.640Z] Node Version:  v22.20.0
+[debug] [2026-01-31T19:08:17.640Z] Time:          Sat Jan 31 2026 16:08:17 GMT-0300 (hora estándar de Argentina)
+[debug] [2026-01-31T19:08:17.640Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-01-31T19:08:17.786Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-31T19:08:17.787Z] > authorizing via signed-in user (dgarciasantillan@gmail.com)
+[debug] [2026-01-31T19:08:17.787Z] [iam] checking project clinical-11d05 for permissions ["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]
+[debug] [2026-01-31T19:08:17.788Z] Checked if tokens are valid: true, expires at: 1769889450745
+[debug] [2026-01-31T19:08:17.788Z] Checked if tokens are valid: true, expires at: 1769889450745
+[debug] [2026-01-31T19:08:17.788Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/clinical-11d05:testIamPermissions [none]
+[debug] [2026-01-31T19:08:17.788Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/clinical-11d05:testIamPermissions x-goog-quota-user=projects/clinical-11d05
+[debug] [2026-01-31T19:08:17.788Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/clinical-11d05:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]}
+[debug] [2026-01-31T19:08:18.757Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/clinical-11d05:testIamPermissions 200
+[debug] [2026-01-31T19:08:18.757Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/clinical-11d05:testIamPermissions {"permissions":["datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get"]}
+[info] 
+[info] === Deploying to 'clinical-11d05'...
+[info] 
+[info] i  deploying firestore 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[debug] [2026-01-31T19:08:18.762Z] Checked if tokens are valid: true, expires at: 1769889450745
+[debug] [2026-01-31T19:08:18.762Z] Checked if tokens are valid: true, expires at: 1769889450745
+[debug] [2026-01-31T19:08:18.762Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/clinical-11d05/databases/(default) [none]
+[debug] [2026-01-31T19:08:19.248Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/clinical-11d05/databases/(default) 200
+[debug] [2026-01-31T19:08:19.248Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/clinical-11d05/databases/(default) {"name":"projects/clinical-11d05/databases/(default)","uid":"57f0df6c-1892-4cd6-9243-7fde9a32af5b","createTime":"2025-11-18T23:29:52.415795Z","updateTime":"2025-11-18T23:29:52.415795Z","locationId":"southamerica-east1","type":"FIRESTORE_NATIVE","concurrencyMode":"PESSIMISTIC","versionRetentionPeriod":"3600s","earliestVersionTime":"2026-01-31T18:08:20.382073Z","appEngineIntegrationMode":"DISABLED","keyPrefix":"i","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","deleteProtectionState":"DELETE_PROTECTION_DISABLED","databaseEdition":"STANDARD","freeTier":true,"realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","etag":"IMrEl4G9tpIDMIOi+beJ/pAD"}
+[info] i  firestore: reading indexes from firestore.indexes.json... 
+[info] i  cloud.firestore: checking firestore.rules for compilation errors... 
+[debug] [2026-01-31T19:08:19.253Z] Checked if tokens are valid: true, expires at: 1769889450745
+[debug] [2026-01-31T19:08:19.253Z] Checked if tokens are valid: true, expires at: 1769889450745
+[debug] [2026-01-31T19:08:19.253Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/clinical-11d05:test [none]
+[debug] [2026-01-31T19:08:19.253Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/clinical-11d05:test [omitted]
+[debug] [2026-01-31T19:08:21.651Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/clinical-11d05:test 200
+[debug] [2026-01-31T19:08:21.651Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/clinical-11d05:test {}
+[info] +  cloud.firestore: rules file firestore.rules compiled successfully 
+[info] i  firestore: deploying indexes... 
+[debug] [2026-01-31T19:08:21.658Z] Checked if tokens are valid: true, expires at: 1769889450745
+[debug] [2026-01-31T19:08:21.659Z] Checked if tokens are valid: true, expires at: 1769889450745
+[debug] [2026-01-31T19:08:21.659Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/clinical-11d05/databases/(default)/collectionGroups/-/indexes [none]
+[debug] [2026-01-31T19:08:21.813Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/clinical-11d05/databases/(default)/collectionGroups/-/indexes 200
+[debug] [2026-01-31T19:08:21.813Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/clinical-11d05/databases/(default)/collectionGroups/-/indexes {"indexes":[{"name":"projects/clinical-11d05/databases/(default)/collectionGroups/payments/indexes/CICAgJim14AK","queryScope":"COLLECTION","fields":[{"fieldPath":"status","order":"ASCENDING"},{"fieldPath":"date","order":"ASCENDING"},{"fieldPath":"__name__","order":"ASCENDING"}],"state":"READY","density":"SPARSE_ALL"},{"name":"projects/clinical-11d05/databases/(default)/collectionGroups/appointments/indexes/CICAgOjXh4EK","queryScope":"COLLECTION","fields":[{"fieldPath":"userId","order":"ASCENDING"},{"fieldPath":"date","order":"ASCENDING"},{"fieldPath":"__name__","order":"ASCENDING"}],"state":"READY","density":"SPARSE_ALL"},{"name":"projects/clinical-11d05/databases/(default)/collectionGroups/blockedSlots/indexes/CICAgJiUpoMK","queryScope":"COLLECTION","fields":[{"fieldPath":"userId","order":"ASCENDING"},{"fieldPath":"date","order":"ASCENDING"},{"fieldPath":"startTime","order":"ASCENDING"},{"fieldPath":"__name__","order":"ASCENDING"}],"state":"READY","density":"SPARSE_ALL"}]}
+[debug] [2026-01-31T19:08:21.813Z] Checked if tokens are valid: true, expires at: 1769889450745
+[debug] [2026-01-31T19:08:21.814Z] Checked if tokens are valid: true, expires at: 1769889450745
+[debug] [2026-01-31T19:08:21.814Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/clinical-11d05/databases/(default)/collectionGroups/-/fields?filter=indexConfig.usesAncestorConfig=false OR ttlConfig:* [none]
+[debug] [2026-01-31T19:08:21.927Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/clinical-11d05/databases/(default)/collectionGroups/-/fields?filter=indexConfig.usesAncestorConfig=false OR ttlConfig:* 200
+[debug] [2026-01-31T19:08:21.927Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/clinical-11d05/databases/(default)/collectionGroups/-/fields?filter=indexConfig.usesAncestorConfig=false OR ttlConfig:* {"fields":[{"name":"projects/clinical-11d05/databases/(default)/collectionGroups/__default__/fields/*","indexConfig":{"indexes":[{"queryScope":"COLLECTION","fields":[{"fieldPath":"*","order":"ASCENDING"}],"state":"READY"},{"queryScope":"COLLECTION","fields":[{"fieldPath":"*","order":"DESCENDING"}],"state":"READY"},{"queryScope":"COLLECTION","fields":[{"fieldPath":"*","arrayConfig":"CONTAINS"}],"state":"READY"}]}},{"name":"projects/clinical-11d05/databases/(default)/collectionGroups/appointments/fields/date","indexConfig":{"indexes":[{"queryScope":"COLLECTION","fields":[{"fieldPath":"date","order":"ASCENDING"}],"state":"READY"},{"queryScope":"COLLECTION","fields":[{"fieldPath":"date","order":"DESCENDING"}],"state":"READY"}],"ancestorField":"projects/clinical-11d05/databases/(default)/collectionGroups/__default__/fields/*"}},{"name":"projects/clinical-11d05/databases/(default)/collectionGroups/payments/fields/date","indexConfig":{"indexes":[{"queryScope":"COLLECTION","fields":[{"fieldPath":"date","order":"ASCENDING"}],"state":"READY"},{"queryScope":"COLLECTION","fields":[{"fieldPath":"date","order":"DESCENDING"}],"state":"READY"}],"ancestorField":"projects/clinical-11d05/databases/(default)/collectionGroups/__default__/fields/*"}}]}
+[debug] [2026-01-31T19:08:21.928Z] Checked if tokens are valid: true, expires at: 1769889450745
+[debug] [2026-01-31T19:08:21.928Z] Checked if tokens are valid: true, expires at: 1769889450745
+[debug] [2026-01-31T19:08:21.929Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/clinical-11d05/databases/(default) [none]
+[debug] [2026-01-31T19:08:22.044Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/clinical-11d05/databases/(default) 200
+[debug] [2026-01-31T19:08:22.044Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/clinical-11d05/databases/(default) {"name":"projects/clinical-11d05/databases/(default)","uid":"57f0df6c-1892-4cd6-9243-7fde9a32af5b","createTime":"2025-11-18T23:29:52.415795Z","updateTime":"2025-11-18T23:29:52.415795Z","locationId":"southamerica-east1","type":"FIRESTORE_NATIVE","concurrencyMode":"PESSIMISTIC","versionRetentionPeriod":"3600s","earliestVersionTime":"2026-01-31T18:08:23.164302Z","appEngineIntegrationMode":"DISABLED","keyPrefix":"i","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","deleteProtectionState":"DELETE_PROTECTION_DISABLED","databaseEdition":"STANDARD","freeTier":true,"realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","etag":"IKCtwYK9tpIDMIOi+beJ/pAD"}
+[info] i  firestore: The following indexes are defined in your project but are not present in your firestore indexes file:
+	(appointments) -- (userId,ASCENDING) (date,ASCENDING)  -- Density:SPARSE_ALL 
+	(blockedSlots) -- (userId,ASCENDING) (date,ASCENDING) (startTime,ASCENDING)  -- Density:SPARSE_ALL  
