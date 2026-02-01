@@ -185,11 +185,43 @@ export function useChat() {
         }
     };
 
+    const closeConversation = async (conversationId: string) => {
+        if (!user?.uid || !db) return;
+
+        try {
+            const convRef = doc(db, 'conversations', conversationId);
+            const convDoc = await getDoc(convRef);
+
+            if (!convDoc.exists()) return;
+
+            const data = convDoc.data();
+            const newParticipants = (data.participants || []).filter((p: string) => p !== user.uid);
+
+            if (newParticipants.length === 0) {
+                // If no participants left, maybe delete? 
+                // For now just update to empty. Or actually, if we want to "close" it for everyone?
+                // The requirement is "cerrar conversación". Usually implies archiving for ME.
+                // If I remove myself, I won't see it anymore.
+                await updateDoc(convRef, {
+                    participants: newParticipants
+                });
+            } else {
+                await updateDoc(convRef, {
+                    participants: newParticipants
+                });
+            }
+        } catch (e) {
+            console.error("Error closing conversation", e);
+            throw e;
+        }
+    };
+
     return {
         conversations,
         loadingConversations,
         createConversation,
-        sendMessage
+        sendMessage,
+        closeConversation
     };
 }
 

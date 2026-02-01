@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Conversation, useChat, useMessages } from '@/hooks/useChat';
 import { useAuth } from '@/contexts/AuthContext';
-import { Send, ArrowLeft, MoreVertical, X } from 'lucide-react';
+import { useConfirm } from '@/contexts/ConfirmContext';
+import { Send, ArrowLeft, MoreVertical, X, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -13,10 +14,13 @@ interface ChatWindowProps {
 
 export default function ChatWindow({ conversation, onBack, onClose }: ChatWindowProps) {
     const { user } = useAuth();
-    const { sendMessage } = useChat();
+    const confirm = useConfirm();
+    const { sendMessage, closeConversation } = useChat();
     const { messages, loadingMessages } = useMessages(conversation.id);
     const [newMessage, setNewMessage] = useState('');
+    const [showMenu, setShowMenu] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
 
     const otherUser = conversation.participantProfiles?.[0];
     const participantName = otherUser?.displayName || 'Usuario';
@@ -29,6 +33,22 @@ export default function ChatWindow({ conversation, onBack, onClose }: ChatWindow
         scrollToBottom();
     }, [messages, loadingMessages]);
 
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setShowMenu(false);
+            }
+        };
+
+        if (showMenu) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showMenu]);
+
     const handleSend = async (e?: React.FormEvent) => {
         e?.preventDefault();
         if (!newMessage.trim()) return;
@@ -38,6 +58,27 @@ export default function ChatWindow({ conversation, onBack, onClose }: ChatWindow
             setNewMessage('');
         } catch (error) {
             console.error("Failed to send message", error);
+        }
+    };
+
+    const handleCloseChat = async () => {
+        setShowMenu(false);
+        const shouldClose = await confirm({
+            title: 'Cerrar conversación',
+            description: '¿Estás seguro de que quieres cerrar esta conversación? Dejará de aparecer en tu lista de chats activos.',
+            confirmText: 'Cerrar conversación',
+            cancelText: 'Cancelar',
+            tone: 'danger'
+        });
+
+        if (shouldClose) {
+            try {
+                await closeConversation(conversation.id);
+                onClose(); // Close the window/widget view
+                onBack(); // Go back to list if needed, or just reset logic
+            } catch (error) {
+                console.error("Error closing conversation", error);
+            }
         }
     };
 
@@ -62,13 +103,36 @@ export default function ChatWindow({ conversation, onBack, onClose }: ChatWindow
                     </div>
 
                     <div className="leading-tight">
-                        <h4 className="font-semibold text-sm text-elegant-900 dark:text-elegant-50">{participantName}</h4>
+                        <h4 className="font-semibold text-sm text-elegant-900 dark:text-elegant-50 max-w-[140px] truncate">{participantName}</h4>
                         <span className="text-xs text-green-600 dark:text-green-400">En línea</span>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-1">
-                    <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-elegant-800 rounded-full text-primary">
+                    {/* Menu Options */}
+                    <div className="relative" ref={menuRef}>
+                        <button
+                            onClick={() => setShowMenu(!showMenu)}
+                            className={`p-1 rounded-full transition-colors ${showMenu ? 'bg-gray-100 dark:bg-elegant-800 text-elegant-900 dark:text-gray-100' : 'hover:bg-gray-100 dark:hover:bg-elegant-800 text-gray-500'}`}
+                            title="Opciones"
+                        >
+                            <MoreVertical className="w-5 h-5" />
+                        </button>
+
+                        {showMenu && (
+                            <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-elegant-800 rounded-lg shadow-xl border border-gray-100 dark:border-gray-700 py-1 z-50 animate-in fade-in zoom-in-95 duration-100 origin-top-right">
+                                <button
+                                    onClick={handleCloseChat}
+                                    className="w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center gap-2 transition-colors"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                    Cerrar conversación
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-elegant-800 rounded-full text-primary" title="Minimizar">
                         <X className="w-5 h-5" />
                     </button>
                 </div>

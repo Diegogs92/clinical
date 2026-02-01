@@ -56,8 +56,40 @@ export default function Odontogram({ initialData, onDataChange }: OdontogramProp
 
     const handleSurfaceClick = (toothId: number, surface: keyof ToothSurfaces) => {
         // Condition-setting tools
-        if (selectedTool === 'extract' || selectedTool === 'extraction' || selectedTool === 'crown' || selectedTool === 'cleaning') {
+        // Condition-setting tools
+        if (selectedTool === 'extract' || selectedTool === 'extraction' || selectedTool === 'crown') {
             handleToothClick(toothId);
+            return;
+        }
+
+        if (selectedTool === 'cleaning') {
+            setTeeth(prev => {
+                const tooth = prev[toothId];
+                // If the tooth has a global condition (missing, crown, etc.), reset it to healthy first.
+                // We don't necessarily clear surfaces here to avoid accidental data loss, 
+                // but usually "cleaning" a missing tooth might mean "it's not missing anymore".
+                if (tooth.condition !== 'healthy') {
+                    return {
+                        ...prev,
+                        [toothId]: {
+                            ...tooth,
+                            condition: 'healthy'
+                        }
+                    };
+                }
+
+                // If condition is already healthy, clean the specific surface
+                return {
+                    ...prev,
+                    [toothId]: {
+                        ...tooth,
+                        surfaces: {
+                            ...tooth.surfaces,
+                            [surface]: 'healthy'
+                        }
+                    }
+                };
+            });
             return;
         }
 
@@ -78,17 +110,7 @@ export default function Odontogram({ initialData, onDataChange }: OdontogramProp
 
     const handleToothClick = (toothId: number) => {
         // Handle whole-tooth conditions
-        if (selectedTool === 'cleaning') {
-            // Reset to healthy
-            setTeeth(prev => ({
-                ...prev,
-                [toothId]: {
-                    ...prev[toothId],
-                    condition: 'healthy',
-                    surfaces: { top: 'healthy', bottom: 'healthy', left: 'healthy', right: 'healthy', center: 'healthy' }
-                }
-            }));
-        } else if (selectedTool === 'extract') {
+        if (selectedTool === 'extract') {
             // "Missing"
             setTeeth(prev => ({
                 ...prev,
