@@ -34,7 +34,7 @@ const generateInitialTeeth = (): Record<number, ToothState> => {
     return teeth;
 };
 
-type ToolType = 'caries' | 'filled' | 'endodontics' | 'sealant' | 'cleaning' | 'extract' | 'crown' | 'extraction';
+type ToolType = 'caries' | 'filled' | 'endodontics' | 'sealant' | 'extract' | 'crown' | 'extraction';
 
 interface OdontogramProps {
     initialData?: Record<number, ToothState>;
@@ -63,37 +63,7 @@ export default function Odontogram({ initialData, onDataChange }: OdontogramProp
             return;
         }
 
-        if (selectedTool === 'cleaning') {
-            setTeeth(prev => {
-                const tooth = prev[toothId];
-                // If the tooth has a global condition (missing, crown, etc.), reset it to healthy first.
-                // We don't necessarily clear surfaces here to avoid accidental data loss, 
-                // but usually "cleaning" a missing tooth might mean "it's not missing anymore".
-                console.log('[Odontogram] cleaning', toothId, tooth.condition);
-                if (tooth.condition !== 'healthy') {
-                    return {
-                        ...prev,
-                        [toothId]: {
-                            ...tooth,
-                            condition: 'healthy'
-                        }
-                    };
-                }
 
-                // If condition is already healthy, clean the specific surface
-                return {
-                    ...prev,
-                    [toothId]: {
-                        ...tooth,
-                        surfaces: {
-                            ...tooth.surfaces,
-                            [surface]: 'healthy'
-                        }
-                    }
-                };
-            });
-            return;
-        }
 
         setTeeth(prev => {
             const tooth = prev[toothId];
