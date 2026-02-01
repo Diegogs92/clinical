@@ -117,7 +117,6 @@ export default function Odontogram({ initialData, onDataChange }: OdontogramProp
         { id: 'extraction', label: 'Extracción (2 Líneas Azules)', color: 'bg-blue-600 text-white' },
         { id: 'crown', label: 'Corona (Círculo Rojo)', color: 'bg-white border-2 border-red-500 text-red-500' },
         { id: 'extract', label: 'Ausente (Cruz Roja)', color: 'bg-red-100 text-red-600' },
-        { id: 'cleaning', label: 'Borrar/Limpiar', color: 'bg-white border text-gray-700' },
     ];
 
     // Helper to render a quadrant
