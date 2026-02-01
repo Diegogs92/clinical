@@ -115,21 +115,7 @@ export function Tooth({ data, onSurfaceClick, onToothClick, className }: ToothPr
                 )}
 
                 {/* Click handler for whole tooth toggling if needed (using transparent overlay) */}
-                <div
-                    className="absolute inset-0 cursor-pointer z-50"
-                    onClick={(e) => {
-                        // Pass click to parent handler only if it hit the overlay area (central)
-                        // But here we want to allow clicking surfaces too.
-                        // So we should NOT block clicks.
-                        // Actually, for whole-tooth tools (extract, etc.), Odontogram.tsx handles 'handleToothClick'.
-                        // We need a way to capture the click on the whole element if we are in that mode.
-                        // But since SVG paths have onClick, those will fire.
-                        // In Odontogram.tsx, handleSurfaceClick checks tool mode and calls handleToothClick if extract/crown/etc.
-                        // So we don't need a covering div here, EXCEPT for when the tooth is 'missing' or covered?
-                        // No, just let the SVG paths handle clicks.
-                    }}
-                    style={{ pointerEvents: 'none' }} // Let clicks pass through to SVG
-                />
+                {/* Removed unused overlay div to ensure clicks pass through to SVG paths */}
             </div>
 
             <span className="text-[10px] text-gray-500 mt-1 font-medium">{data.id}</span>

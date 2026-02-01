@@ -57,6 +57,7 @@ export default function Odontogram({ initialData, onDataChange }: OdontogramProp
     const handleSurfaceClick = (toothId: number, surface: keyof ToothSurfaces) => {
         // Condition-setting tools
         // Condition-setting tools
+        console.log('[Odontogram] handleSurfaceClick', { toothId, surface, selectedTool });
         if (selectedTool === 'extract' || selectedTool === 'extraction' || selectedTool === 'crown') {
             handleToothClick(toothId);
             return;
@@ -68,6 +69,7 @@ export default function Odontogram({ initialData, onDataChange }: OdontogramProp
                 // If the tooth has a global condition (missing, crown, etc.), reset it to healthy first.
                 // We don't necessarily clear surfaces here to avoid accidental data loss, 
                 // but usually "cleaning" a missing tooth might mean "it's not missing anymore".
+                console.log('[Odontogram] cleaning', toothId, tooth.condition);
                 if (tooth.condition !== 'healthy') {
                     return {
                         ...prev,
