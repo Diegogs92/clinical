@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, ChevronDown, Minus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useConfirm } from '@/contexts/ConfirmContext';
 import { Conversation, useChat } from '@/hooks/useChat';
 import { UserProfile } from '@/types';
 import ChatList from './ChatList';
@@ -14,7 +15,8 @@ type ViewState = 'LIST' | 'CHAT' | 'NEW_CHAT';
 
 export default function ChatWidget() {
     const { user } = useAuth();
-    const { conversations, loadingConversations, createConversation } = useChat();
+    const confirm = useConfirm();
+    const { conversations, loadingConversations, createConversation, closeConversation } = useChat();
 
     // Sound effect
     const playNotificationSound = () => {
@@ -152,6 +154,31 @@ export default function ChatWidget() {
         }
     };
 
+    const handleCloseConversation = async (conversation: Conversation) => {
+        const otherUser = conversation.participantProfiles?.[0];
+        const name = otherUser?.displayName || 'Usuario';
+
+        const shouldClose = await confirm({
+            title: 'Cerrar conversación',
+            description: `¿Estás seguro de que quieres cerrar la conversación con ${name}? Dejará de aparecer en tu lista de chats activos.`,
+            confirmText: 'Cerrar conversación',
+            cancelText: 'Cancelar',
+            tone: 'danger'
+        });
+
+        if (!shouldClose) return;
+
+        try {
+            await closeConversation(conversation.id);
+            if (activeConversationId === conversation.id) {
+                handleBackToList();
+            }
+        } catch (error) {
+            console.error("Error closing conversation", error);
+            toast.error("No se pudo cerrar la conversación.");
+        }
+    };
+
     return (
         <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end pointer-events-none">
             {/* Chat Window Container */}
@@ -168,6 +195,7 @@ export default function ChatWidget() {
                                 loading={loadingConversations}
                                 onSelectConversation={handleSelectConversation}
                                 onNewChat={handleNewChat}
+                                onCloseConversation={handleCloseConversation}
                             />
                         )}
 

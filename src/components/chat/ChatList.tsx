@@ -1,16 +1,17 @@
 import { Conversation } from '@/hooks/useChat';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { MessageSquarePlus } from 'lucide-react';
+import { MessageSquarePlus, X } from 'lucide-react';
 
 interface ChatListProps {
     conversations: Conversation[];
     loading: boolean;
     onSelectConversation: (conversation: Conversation) => void;
     onNewChat: () => void;
+    onCloseConversation: (conversation: Conversation) => void;
 }
 
-export default function ChatList({ conversations, loading, onSelectConversation, onNewChat }: ChatListProps) {
+export default function ChatList({ conversations, loading, onSelectConversation, onNewChat, onCloseConversation }: ChatListProps) {
     if (loading) {
         return (
             <div className="flex-1 flex items-center justify-center p-4">
@@ -80,6 +81,18 @@ export default function ChatList({ conversations, loading, onSelectConversation,
                                             {lastMsg?.text || <span className="italic text-gray-400">Nueva conversación</span>}
                                         </p>
                                     </div>
+
+                                    <button
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+                                            onCloseConversation(conv);
+                                        }}
+                                        className="p-1.5 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all"
+                                        title="Cerrar conversaci?n"
+                                        aria-label="Cerrar conversaci?n"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
                                 </li>
                             );
                         })}
