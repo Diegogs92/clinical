@@ -226,6 +226,135 @@ const AppointmentTableRow = memo(function AppointmentTableRow({
     );
 });
 
+const AppointmentMobileCard = memo(function AppointmentMobileCard({
+    appointment,
+    professional,
+    paymentState,
+    canSeeFees,
+    canEdit,
+    canDelete,
+    onEdit,
+    onDelete,
+    onCancel,
+    onOpenPayment,
+    canRegisterPayments
+}: {
+    appointment: Appointment;
+    professional: any;
+    paymentState: any;
+    canSeeFees: boolean;
+    canEdit: boolean;
+    canDelete: boolean;
+    onEdit: (a: Appointment) => void;
+    onDelete: (a: Appointment) => void;
+    onCancel: (a: Appointment) => void;
+    onOpenPayment: (a: Appointment) => void;
+    canRegisterPayments: boolean;
+}) {
+    const fecha = useMemo(() => new Date(appointment.date).toLocaleDateString(), [appointment.date]);
+
+    // Reutilizar lógica de pago (similar a Row)
+    const getPaymentStatusLabel = useMemo(() => {
+        if (!appointment.fee) return 'Sin honorarios';
+        const remaining = paymentState.remainingAmount;
+
+        if (paymentState.status === 'paid') return 'Pagado';
+        if (!paymentState.isDue && paymentState.status !== 'paid') return 'Sin deuda';
+        if (paymentState.status === 'partial') return `Restan $${formatCurrency(remaining)}`;
+        return `Debe $${formatCurrency(remaining)}`;
+    }, [appointment.fee, paymentState]);
+
+    return (
+        <div className="bg-white dark:bg-elegant-900 border border-elegant-200/60 dark:border-elegant-800/60 rounded-xl p-4 shadow-sm space-y-3">
+            <div className="flex justify-between items-start">
+                <div>
+                    <h4 className="font-semibold text-elegant-900 dark:text-white">
+                        {appointment.patientName || appointment.title || 'Evento'}
+                    </h4>
+                    <p className="text-sm text-elegant-600 dark:text-elegant-400">
+                        {fecha} • {appointment.startTime} - {appointment.endTime}
+                    </p>
+                </div>
+                {/* Estado Badge */}
+                <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${appointment.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-200' :
+                    appointment.status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-200' :
+                        appointment.status === 'no-show' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700/60 dark:text-gray-200' :
+                            'bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200'
+                    }`}>
+                    {translateAppointmentStatus(appointment.status)}
+                </span>
+            </div>
+
+            <div className="flex items-center justify-between text-sm">
+                <div className="flex flex-col">
+                    <span className="text-xs text-muted-foreground">Profesional</span>
+                    <span className="text-elegant-700 dark:text-elegant-300">
+                        {professional?.displayName || professional?.email || '-'}
+                    </span>
+                </div>
+                {canSeeFees && appointment.fee && (
+                    <div className="flex flex-col items-end">
+                        <span className="text-xs text-muted-foreground">Honorarios</span>
+                        <span className="font-medium text-elegant-900 dark:text-white">
+                            ${formatCurrency(appointment.fee)}
+                        </span>
+                    </div>
+                )}
+            </div>
+
+            {canSeeFees && appointment.fee && canRegisterPayments && (
+                <div className="pt-2 border-t border-elegant-100 dark:border-elegant-800 flex justify-between items-center">
+                    <span className={`text-xs font-medium ${paymentState.color}`}>
+                        {getPaymentStatusLabel}
+                    </span>
+                    <button
+                        onClick={() => onOpenPayment(appointment)}
+                        disabled={paymentState.status === 'paid'}
+                        className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${!paymentState.isDue && paymentState.status !== 'paid'
+                            ? 'bg-gray-100 text-gray-600'
+                            : paymentState.status === 'paid'
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-primary/10 text-primary hover:bg-primary/20'
+                            }`}
+                    >
+                        {paymentState.status === 'paid' ? 'Ver Pago' : 'Registrar Pago'}
+                    </button>
+                </div>
+            )}
+
+            <div className="flex gap-2 pt-1 justify-end">
+                {canEdit && (
+                    <>
+                        <button
+                            onClick={() => onCancel(appointment)}
+                            className="p-2 rounded-lg bg-gray-50 dark:bg-elegant-800 text-elegant-600 hover:bg-gray-100"
+                            title="Cambiar Estado"
+                        >
+                            <CalendarX className="w-4 h-4" />
+                        </button>
+                        <button
+                            onClick={() => onEdit(appointment)}
+                            className="p-2 rounded-lg bg-primary/5 text-primary hover:bg-primary/10"
+                            title="Editar"
+                        >
+                            <Edit className="w-4 h-4" />
+                        </button>
+                    </>
+                )}
+                {canDelete && (
+                    <button
+                        onClick={() => onDelete(appointment)}
+                        className="p-2 rounded-lg bg-red-50 dark:bg-red-900/10 text-red-600 hover:bg-red-100"
+                        title="Eliminar"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+});
+
 export default function AppointmentsTable({
     appointments,
     loading,
@@ -259,54 +388,86 @@ export default function AppointmentsTable({
 
 
     return (
-        <div className="overflow-x-auto rounded-xl border border-elegant-200/60 dark:border-elegant-800/60">
-            <table className="table-skin">
-                <thead>
-                    <tr>
-                        <th className="w-20">Acciones</th>
-                        <th>Fecha</th>
-                        <th>Hora</th>
-                        <th>Paciente / Título</th>
-                        <th>Profesional</th>
-                        <th>Honorarios</th>
-                        <th>Estado</th>
-                        <th>Pago</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-elegant-100 dark:divide-elegant-800">
-                    {appointments.map((appointment) => {
-                        const professional = professionals.find(p => p.uid === appointment.userId);
-                        const paymentState = getPaymentState(appointment, payments, pendingPayments);
-                        const hasPermission = canModifyAppointment(appointment, user, userProfile);
-                        const canSee = canViewFees(appointment);
+        <>
+            {/* Mobile View */}
+            <div className="md:hidden space-y-4">
+                {appointments.map((appointment) => {
+                    const professional = professionals.find(p => p.uid === appointment.userId);
+                    const paymentState = getPaymentState(appointment, payments, pendingPayments);
+                    const hasPermission = canModifyAppointment(appointment, user, userProfile);
+                    const canSee = canViewFees(appointment);
+                    const canEdit = hasPermission;
+                    const canDelete = hasPermission;
 
-                        // Check if can edit/delete based on role and ownership
-                        // Admin can do everything. Owner usage is common.
-                        // Simplified logic passed from parent:
-                        const canEdit = hasPermission;
-                        const canDelete = hasPermission;
+                    return (
+                        <AppointmentMobileCard
+                            key={appointment.id}
+                            appointment={appointment}
+                            professional={professional}
+                            paymentState={paymentState}
+                            canSeeFees={canSee}
+                            canEdit={canEdit}
+                            canDelete={canDelete}
+                            onEdit={onEdit}
+                            onDelete={onDelete}
+                            onCancel={onCancel}
+                            onOpenPayment={onOpenPayment}
+                            canRegisterPayments={true}
+                        />
+                    )
+                })}
+            </div>
 
-                        return (
-                            <AppointmentTableRow
-                                key={appointment.id}
-                                appointment={appointment}
-                                professional={professional}
-                                paymentState={paymentState}
-                                canSeeFees={canSee}
-                                canEdit={canEdit}
-                                canDelete={canDelete}
-                                payments={payments}
-                                onEdit={onEdit}
-                                onDelete={onDelete}
-                                onCancel={onCancel}
-                                onOpenPayment={onOpenPayment}
-                                canRegisterPayments={true} // Se asume que si puede ver pagos, puede registrar (logica mejorable)
-                            />
-                        );
-                    })}
-                </tbody>
-            </table>
-        </div>
+            {/* Desktop View */}
+            <div className="hidden md:block overflow-x-auto rounded-xl border border-elegant-200/60 dark:border-elegant-800/60">
+                <table className="table-skin">
+                    <thead>
+                        <tr>
+                            <th className="w-20">Acciones</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Paciente / Título</th>
+                            <th>Profesional</th>
+                            <th>Honorarios</th>
+                            <th>Estado</th>
+                            <th>Pago</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-elegant-100 dark:divide-elegant-800">
+                        {appointments.map((appointment) => {
+                            const professional = professionals.find(p => p.uid === appointment.userId);
+                            const paymentState = getPaymentState(appointment, payments, pendingPayments);
+                            const hasPermission = canModifyAppointment(appointment, user, userProfile);
+                            const canSee = canViewFees(appointment);
+
+                            // Check if can edit/delete based on role and ownership
+                            // Admin can do everything. Owner usage is common.
+                            // Simplified logic passed from parent:
+                            const canEdit = hasPermission;
+                            const canDelete = hasPermission;
+
+                            return (
+                                <AppointmentTableRow
+                                    key={appointment.id}
+                                    appointment={appointment}
+                                    professional={professional}
+                                    paymentState={paymentState}
+                                    canSeeFees={canSee}
+                                    canEdit={canEdit}
+                                    canDelete={canDelete}
+                                    payments={payments}
+                                    onEdit={onEdit}
+                                    onDelete={onDelete}
+                                    onCancel={onCancel}
+                                    onOpenPayment={onOpenPayment}
+                                    canRegisterPayments={true} // Se asume que si puede ver pagos, puede registrar (logica mejorable)
+                                />
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+        </>
     );
 }
 

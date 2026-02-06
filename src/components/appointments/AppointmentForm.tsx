@@ -448,7 +448,7 @@ const AppointmentForm = memo(function AppointmentForm({ initialData, onCreated, 
         </div>
 
         {/* Fecha, Hora y Duración */}
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
           <div>
             <label className="block text-sm font-medium text-primary-dark dark:text-white mb-1">Fecha</label>
             <Controller

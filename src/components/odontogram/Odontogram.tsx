@@ -143,7 +143,7 @@ export default function Odontogram({ initialData, onDataChange }: OdontogramProp
     };
 
     return (
-        <div className="flex flex-col gap-8 p-6 bg-white dark:bg-elegant-900 rounded-xl border border-elegant-200 dark:border-elegant-800">
+        <div className="flex flex-col gap-6 md:gap-8 p-3 md:p-6 bg-white dark:bg-elegant-900 rounded-xl border border-elegant-200 dark:border-elegant-800">
             {/* Toolbar */}
             <div className="flex flex-wrap gap-3 items-center justify-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700">
                 {tools.map(tool => (
