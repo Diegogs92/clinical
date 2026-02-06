@@ -236,7 +236,8 @@ export default function PatientHistory({ patientId, payments }: PatientHistoryPr
                 </div>
             ) : (
                 <div className="border rounded-lg overflow-hidden bg-white dark:bg-gray-900 shadow-sm">
-                    <div className="overflow-x-auto">
+                    {/* Desktop View */}
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-sm text-left">
                             <thead className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-b dark:border-gray-700">
                                 <tr>
@@ -298,9 +299,9 @@ export default function PatientHistory({ patientId, payments }: PatientHistoryPr
                                             </td>
                                             <td className="px-4 py-3 text-center">
                                                 <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${event.color === 'green' ? 'border-green-200 bg-green-50 text-green-700 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400' :
-                                                        event.color === 'red' ? 'border-red-200 bg-red-50 text-red-700 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400' :
-                                                            event.color === 'blue' ? 'border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400' :
-                                                                'border-gray-200 bg-gray-50 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
+                                                    event.color === 'red' ? 'border-red-200 bg-red-50 text-red-700 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400' :
+                                                        event.color === 'blue' ? 'border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400' :
+                                                            'border-gray-200 bg-gray-50 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
                                                     }`}>
                                                     {event.type === 'appointment' ? 'Programado' :
                                                         event.type === 'payment' ? 'Pago' :
@@ -312,6 +313,64 @@ export default function PatientHistory({ patientId, payments }: PatientHistoryPr
                                 })}
                             </tbody>
                         </table>
+                    </div>
+
+                    {/* Mobile View */}
+                    <div className="md:hidden divide-y divide-gray-100 dark:divide-gray-800">
+                        {events.map((event, index) => {
+                            const Icon = event.icon;
+                            const colorClasses: Record<string, string> = {
+                                blue: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20',
+                                green: 'text-green-600 bg-green-50 dark:bg-green-900/20',
+                                amber: 'text-amber-600 bg-amber-50 dark:bg-amber-900/20',
+                                yellow: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20',
+                                red: 'text-red-600 bg-red-50 dark:bg-red-900/20',
+                                purple: 'text-purple-600 bg-purple-50 dark:bg-purple-900/20',
+                            };
+
+                            return (
+                                <div key={index} className="p-4 space-y-3">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`p-2 rounded-full ${colorClasses[event.color] || 'bg-gray-100 text-gray-600'}`}>
+                                                <Icon className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-medium text-gray-900 dark:text-white text-sm">{event.title}</h4>
+                                                <span className="text-xs text-gray-500">
+                                                    {new Date(event.date).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })} • {event.time}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {event.amount !== undefined && (
+                                            <span className={`font-semibold text-sm ${event.type === 'payment' ? 'text-green-600' : 'text-gray-900 dark:text-gray-100'}`}>
+                                                {event.type === 'payment' ? '+' : ''}${formatCurrency(event.amount)}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <div className="pl-12">
+                                        <p className="text-sm text-gray-600 dark:text-gray-300">{event.description}</p>
+                                        {event.notes && (
+                                            <div className="mt-2 text-xs text-gray-500 italic bg-gray-50 dark:bg-gray-800/50 p-2 rounded">
+                                                Nota: {event.notes}
+                                            </div>
+                                        )}
+                                        <div className="mt-2">
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${event.color === 'green' ? 'border-green-200 bg-green-50 text-green-700 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400' :
+                                                event.color === 'red' ? 'border-red-200 bg-red-50 text-red-700 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400' :
+                                                    event.color === 'blue' ? 'border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400' :
+                                                        'border-gray-200 bg-gray-50 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
+                                                }`}>
+                                                {event.type === 'appointment' ? 'Programado' :
+                                                    event.type === 'payment' ? 'Pago' :
+                                                        'Registro'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             )}
