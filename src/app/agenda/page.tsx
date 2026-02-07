@@ -81,7 +81,7 @@ export default function AgendaPage() {
     amount: '',
   });
   const [submittingPayment, setSubmittingPayment] = useState(false);
-  const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week');
+  const [viewMode, setViewMode] = useState<'day' | 'week' | 'month' | 'year' | 'all'>('week');
   const [draggedAppointment, setDraggedAppointment] = useState<any | null>(null);
   const [dragOverDate, setDragOverDate] = useState<Date | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<{ date: Date; time: string } | null>(null);
