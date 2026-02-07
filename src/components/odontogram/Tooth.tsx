@@ -37,7 +37,7 @@ export function Tooth({ data, onSurfaceClick, onToothClick, className }: ToothPr
             <div className="relative">
                 <svg
                     viewBox="0 0 100 100"
-                    className="w-12 h-12 drop-shadow-sm cursor-pointer transition-transform group-hover:scale-105"
+                    className="w-14 h-14 md:w-12 md:h-12 drop-shadow-sm cursor-pointer transition-transform group-hover:scale-105 active:scale-110"
                 >
                     <defs>
                         <pattern id="diagonal-red" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)">

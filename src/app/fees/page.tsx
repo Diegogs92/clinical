@@ -332,7 +332,7 @@ export default function FeesPage() {
             </div>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
-            <div className="card overflow-x-auto">
+            <div className="card">
               <div className="mb-3">
                 <h2 className="font-semibold text-primary-dark dark:text-white">Cobros</h2>
                 <p className="text-xs text-elegant-500 dark:text-elegant-400">
@@ -374,37 +374,73 @@ export default function FeesPage() {
                   />
                 </div>
               </div>
-              <table className="table-skin">
-                <thead>
-                  <tr>
-                    <th>Paciente</th>
-                    <th>Monto</th>
-                    <th>Fecha</th>
-                    <th>Deuda</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredCobros.slice(0, 20).map((row) => (
-                    <tr key={row.id}>
-                      <td>{row.patientName}</td>
-                      <td>${formatCurrency(row.amount)}</td>
-                      <td>{new Date(row.date).toLocaleDateString()}</td>
-                      <td>
-                        {row.patientId && patientsWithDebt.has(row.patientId)
-                          ? 'Con deuda'
-                          : 'Sin deuda'}
-                      </td>
-                    </tr>
-                  ))}
-                  {filteredCobros.length === 0 && (
+
+              {/* Desktop View */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="table-skin">
+                  <thead>
                     <tr>
-                      <td colSpan={4} className="p-4 text-center text-black dark:text-white">Sin registros</td>
+                      <th>Paciente</th>
+                      <th>Monto</th>
+                      <th>Fecha</th>
+                      <th>Deuda</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {filteredCobros.slice(0, 20).map((row) => (
+                      <tr key={row.id}>
+                        <td>{row.patientName}</td>
+                        <td>${formatCurrency(row.amount)}</td>
+                        <td>{new Date(row.date).toLocaleDateString()}</td>
+                        <td>
+                          {row.patientId && patientsWithDebt.has(row.patientId)
+                            ? 'Con deuda'
+                            : 'Sin deuda'}
+                        </td>
+                      </tr>
+                    ))}
+                    {filteredCobros.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="p-4 text-center text-black dark:text-white">Sin registros</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile View */}
+              <div className="md:hidden space-y-3">
+                {filteredCobros.slice(0, 20).map((row) => (
+                  <div key={row.id} className="bg-white dark:bg-elegant-900 border border-elegant-200/60 dark:border-elegant-800/60 rounded-lg p-3 shadow-sm">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-elegant-900 dark:text-white text-sm">
+                          {row.patientName}
+                        </h4>
+                        <p className="text-xs text-elegant-600 dark:text-elegant-400">
+                          {new Date(row.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-lg font-bold text-green-600 dark:text-green-400">
+                          ${formatCurrency(row.amount)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between pt-2 border-t border-elegant-100 dark:border-elegant-800">
+                      <span className="text-xs text-muted-foreground">Estado</span>
+                      <span className={`text-xs font-medium ${row.patientId && patientsWithDebt.has(row.patientId) ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                        {row.patientId && patientsWithDebt.has(row.patientId) ? 'Con deuda' : 'Sin deuda'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {filteredCobros.length === 0 && (
+                  <div className="p-8 text-center text-black dark:text-white text-sm">Sin registros</div>
+                )}
+              </div>
             </div>
-            <div className="card overflow-x-auto">
+            <div className="card">
               <div className="mb-4">
                 <h2 className="font-semibold text-primary-dark dark:text-white">Pendientes de pago</h2>
                 <p className="text-xs text-elegant-500 dark:text-elegant-400">
@@ -446,65 +482,128 @@ export default function FeesPage() {
                   />
                 </div>
               </div>
-              <table className="table-skin">
-                <thead>
-                  <tr>
-                    <th>Paciente</th>
-                    <th>Saldo pendiente</th>
-                    <th>Fecha</th>
-                    <th className="text-center">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pendingAppointments
-                    .filter(({ appointment }) => {
-                      if (filters.professionalId && appointment.userId !== filters.professionalId) {
+
+              {/* Desktop View */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="table-skin">
+                  <thead>
+                    <tr>
+                      <th>Paciente</th>
+                      <th>Saldo pendiente</th>
+                      <th>Fecha</th>
+                      <th className="text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingAppointments
+                      .filter(({ appointment }) => {
+                        if (filters.professionalId && appointment.userId !== filters.professionalId) {
+                          return false;
+                        }
+                        if (filters.startDate || filters.endDate) {
+                          const rowDate = new Date(appointment.date);
+                          if (filters.startDate && rowDate < new Date(`${filters.startDate}T00:00:00`)) {
+                            return false;
+                          }
+                          if (filters.endDate && rowDate > new Date(`${filters.endDate}T23:59:59`)) {
+                            return false;
+                          }
+                        }
+                        if (!filters.query.trim()) return true;
+                        const patient = appointment.patientId ? patientsById.get(appointment.patientId) : undefined;
+                        const patientLabel = patient
+                          ? `${patient.lastName}, ${patient.firstName} ${patient.dni}`.toLowerCase()
+                          : `${appointment.patientName || ''}`.toLowerCase();
+                        return patientLabel.includes(filters.query.trim().toLowerCase());
+                      })
+                      .slice(0, 10)
+                      .map(({ appointment, remaining }) => {
+                      return (
+                      <tr key={appointment.id}>
+                        <td>{appointment.patientName}</td>
+                        <td>${formatCurrency(remaining)}</td>
+                        <td>{new Date(appointment.date).toLocaleDateString()}</td>
+                        <td className="text-center">
+                          <button
+                            onClick={() => openPaymentDialog(appointment)}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
+                            aria-label="Registrar pago"
+                            title="Registrar pago"
+                          >
+                            <DollarSign className="w-3.5 h-3.5" />
+                            Registrar pago
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                    })}
+                    {pendingAppointments.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="p-4 text-center text-black dark:text-white">Sin pendientes</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile View */}
+              <div className="md:hidden space-y-3">
+                {pendingAppointments
+                  .filter(({ appointment }) => {
+                    if (filters.professionalId && appointment.userId !== filters.professionalId) {
+                      return false;
+                    }
+                    if (filters.startDate || filters.endDate) {
+                      const rowDate = new Date(appointment.date);
+                      if (filters.startDate && rowDate < new Date(`${filters.startDate}T00:00:00`)) {
                         return false;
                       }
-                      if (filters.startDate || filters.endDate) {
-                        const rowDate = new Date(appointment.date);
-                        if (filters.startDate && rowDate < new Date(`${filters.startDate}T00:00:00`)) {
-                          return false;
-                        }
-                        if (filters.endDate && rowDate > new Date(`${filters.endDate}T23:59:59`)) {
-                          return false;
-                        }
+                      if (filters.endDate && rowDate > new Date(`${filters.endDate}T23:59:59`)) {
+                        return false;
                       }
-                      if (!filters.query.trim()) return true;
-                      const patient = appointment.patientId ? patientsById.get(appointment.patientId) : undefined;
-                      const patientLabel = patient
-                        ? `${patient.lastName}, ${patient.firstName} ${patient.dni}`.toLowerCase()
-                        : `${appointment.patientName || ''}`.toLowerCase();
-                      return patientLabel.includes(filters.query.trim().toLowerCase());
-                    })
-                    .slice(0, 10)
-                    .map(({ appointment, remaining }) => {
-                    return (
-                    <tr key={appointment.id}>
-                      <td>{appointment.patientName}</td>
-                      <td>${formatCurrency(remaining)}</td>
-                      <td>{new Date(appointment.date).toLocaleDateString()}</td>
-                      <td className="text-center">
+                    }
+                    if (!filters.query.trim()) return true;
+                    const patient = appointment.patientId ? patientsById.get(appointment.patientId) : undefined;
+                    const patientLabel = patient
+                      ? `${patient.lastName}, ${patient.firstName} ${patient.dni}`.toLowerCase()
+                      : `${appointment.patientName || ''}`.toLowerCase();
+                    return patientLabel.includes(filters.query.trim().toLowerCase());
+                  })
+                  .slice(0, 10)
+                  .map(({ appointment, remaining }) => (
+                    <div key={appointment.id} className="bg-white dark:bg-elegant-900 border border-elegant-200/60 dark:border-elegant-800/60 rounded-lg p-3 shadow-sm">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-elegant-900 dark:text-white text-sm">
+                            {appointment.patientName}
+                          </h4>
+                          <p className="text-xs text-elegant-600 dark:text-elegant-400">
+                            {new Date(appointment.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-muted-foreground mb-1">Saldo</div>
+                          <span className="text-lg font-bold text-red-600 dark:text-red-400">
+                            ${formatCurrency(remaining)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="pt-2 border-t border-elegant-100 dark:border-elegant-800">
                         <button
                           onClick={() => openPaymentDialog(appointment)}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
+                          className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
                           aria-label="Registrar pago"
-                          title="Registrar pago"
                         >
-                          <DollarSign className="w-3.5 h-3.5" />
+                          <DollarSign className="w-4 h-4" />
                           Registrar pago
                         </button>
-                      </td>
-                    </tr>
-                  );
-                  })}
-                  {pendingAppointments.length === 0 && (
-                    <tr>
-                      <td colSpan={4} className="p-4 text-center text-black dark:text-white">Sin pendientes</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                      </div>
+                    </div>
+                  ))}
+                {pendingAppointments.length === 0 && (
+                  <div className="p-8 text-center text-black dark:text-white text-sm">Sin pendientes</div>
+                )}
+              </div>
             </div>
           </div>
         </div>

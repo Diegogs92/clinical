@@ -126,6 +126,7 @@ const PatientSelect = memo(function PatientSelect({
         }}
         menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
         menuPosition="fixed"
+        menuPlacement="auto"
       />
       {error && <p className="text-red-600 text-xs mt-0.5">{error}</p>}
     </div>

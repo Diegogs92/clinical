@@ -57,7 +57,7 @@ export default function AppointmentFilters({
                 onChange={(v) => onViewChange(v as ViewType)}
             />
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-2.5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2.5">
                 <label className="flex items-center gap-2 px-3 py-2 rounded-lg bg-elegant-100 dark:bg-elegant-800 text-sm text-elegant-700 dark:text-elegant-300">
                     <Search className="w-4 h-4" />
                     <input
