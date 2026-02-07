@@ -349,7 +349,7 @@ export default function PatientHistory({ patientId, payments }: PatientHistoryPr
                                         )}
                                     </div>
 
-                                    <div className="pl-12">
+                                    <div className="pl-8 sm:pl-12">
                                         <p className="text-sm text-gray-600 dark:text-gray-300">{event.description}</p>
                                         {event.notes && (
                                             <div className="mt-2 text-xs text-gray-500 italic bg-gray-50 dark:bg-gray-800/50 p-2 rounded">

@@ -104,7 +104,7 @@ export default function QuickPatientForm({ onSuccess, onCancel }: Props) {
 
       <div>
         <label className="block text-sm font-medium text-primary-dark dark:text-white mb-2">Tipo de Cobertura</label>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <label className={`flex items-center justify-center gap-2 p-3 border-2 rounded-lg cursor-pointer transition-all ${
             insuranceType === 'particular'
               ? 'border-primary bg-primary/10 dark:bg-primary/20'

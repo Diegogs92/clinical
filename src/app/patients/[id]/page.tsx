@@ -16,8 +16,10 @@ export default function PatientDetailPage() {
       <DashboardLayout>
         <div className="space-y-6 max-w-3xl">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-primary-dark">Editar Paciente</h1>
-            <Link href="/patients" className="text-sm text-primary-dark hover:underline">Volver</Link>
+            <h1 className="text-xl md:text-2xl font-bold text-primary-dark">Editar Paciente</h1>
+            <Link href="/patients" className="inline-flex items-center gap-1 px-4 py-2 text-sm font-medium text-primary-dark hover:text-primary dark:text-primary-light dark:hover:text-white transition-colors min-h-[44px]">
+              Volver
+            </Link>
           </div>
           <PatientForm patientId={patientId} />
         </div>

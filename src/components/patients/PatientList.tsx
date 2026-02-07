@@ -254,7 +254,7 @@ export default function PatientList() {
         open={isNewPatientModalOpen}
         onClose={() => setIsNewPatientModalOpen(false)}
         title="Nuevo paciente"
-        maxWidth="max-w-2xl"
+        maxWidth="max-w-full sm:max-w-xl md:max-w-2xl"
       >
         <PatientForm
           onSuccess={async (title, message) => {
@@ -271,7 +271,7 @@ export default function PatientList() {
         open={editPatientModal.open}
         onClose={() => setEditPatientModal({ open: false })}
         title={`Editar paciente${editPatientModal.patientName ? `: ${editPatientModal.patientName}` : ''}`}
-        maxWidth="max-w-2xl"
+        maxWidth="max-w-full sm:max-w-xl md:max-w-2xl"
       >
         {editPatientModal.patientId && (
           <PatientForm
@@ -517,7 +517,7 @@ export default function PatientList() {
         open={historyModal.open}
         onClose={() => setHistoryModal({ open: false })}
         title={`Historial de ${historyModal.patientName || 'Paciente'}`}
-        maxWidth="max-w-4xl"
+        maxWidth="max-w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl"
       >
         {historyModal.patientId && (() => {
           const patient = patients.find(p => p.id === historyModal.patientId);

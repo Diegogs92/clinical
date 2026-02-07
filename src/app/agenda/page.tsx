@@ -1204,10 +1204,10 @@ export default function AgendaPage() {
         <div className="card">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
             <div className="flex items-center gap-2">
-              <button onClick={goToPrevious} className="icon-btn">
-                <ChevronLeft className="w-5 h-5" />
+              <button onClick={goToPrevious} className="icon-btn p-2 min-w-[44px] min-h-[44px]">
+                <ChevronLeft className="w-6 h-6" />
               </button>
-              <div className="text-center min-w-[180px]">
+              <div className="text-center min-w-[140px] sm:min-w-[180px]">
                 <h2 className="text-base font-semibold text-elegant-900 dark:text-white">
                   {viewMode === 'month'
                     ? format(currentDate, "MMMM yyyy", { locale: es })
@@ -1225,15 +1225,15 @@ export default function AgendaPage() {
                   Ir a hoy
                 </button>
               </div>
-              <button onClick={goToNext} className="icon-btn">
-                <ChevronRight className="w-5 h-5" />
+              <button onClick={goToNext} className="icon-btn p-2 min-w-[44px] min-h-[44px]">
+                <ChevronRight className="w-6 h-6" />
               </button>
             </div>
 
             <div className="flex items-center flex-wrap gap-2 bg-elegant-100 dark:bg-elegant-800/60 p-1 rounded-lg">
               <button
                 onClick={() => setViewMode('day')}
-                className={`px-2 sm:px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'day'
+                className={`px-3 py-2 rounded-md text-sm font-medium transition min-h-[40px] ${viewMode === 'day'
                   ? 'bg-primary text-white shadow'
                   : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
                   }`}
@@ -1242,7 +1242,7 @@ export default function AgendaPage() {
               </button>
               <button
                 onClick={() => setViewMode('week')}
-                className={`px-2 sm:px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'week'
+                className={`px-3 py-2 rounded-md text-sm font-medium transition min-h-[40px] ${viewMode === 'week'
                   ? 'bg-primary text-white shadow'
                   : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
                   }`}
@@ -1251,7 +1251,7 @@ export default function AgendaPage() {
               </button>
               <button
                 onClick={() => setViewMode('month')}
-                className={`px-2 sm:px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'month'
+                className={`px-3 py-2 rounded-md text-sm font-medium transition min-h-[40px] ${viewMode === 'month'
                   ? 'bg-primary text-white shadow'
                   : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
                   }`}
@@ -1267,7 +1267,7 @@ export default function AgendaPage() {
         {viewMode === 'week' && (
           <div className="flex gap-3">
             {/* Columna de horarios */}
-            <div className="hidden sm:block w-12 sm:w-16 flex-shrink-0">
+            <div className="w-10 sm:w-12 md:w-16 flex-shrink-0">
               <div className="sticky top-4">
                 {/* Espacio para header del día - debe coincidir exactamente con el header de las cards */}
                 <div style={{ height: `${headerHeight}px` }}></div>
@@ -1286,7 +1286,7 @@ export default function AgendaPage() {
             </div>
 
             {/* Grid de días */}
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-2 md:gap-3">
+            <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 md:gap-3">
               {weekDays.map((day) => {
                 const { dayAppointments, dayBlocked, dayBirthdays } = getEventsForDay(day);
                 const isToday = isSameDay(day, new Date());
@@ -1772,7 +1772,7 @@ export default function AgendaPage() {
         open={showBlocksList}
         onClose={() => setShowBlocksList(false)}
         title="Bloqueos"
-        maxWidth="max-w-2xl"
+        maxWidth="max-w-full sm:max-w-xl md:max-w-2xl"
       >
         <div className="space-y-3">
           {blockedSlots.length === 0 && (
@@ -1869,7 +1869,7 @@ export default function AgendaPage() {
       </Modal>
 
       {selectedEvent && (
-        <Modal open={!!selectedEvent} onClose={() => setSelectedEvent(null)} title="Detalle de turno" maxWidth="max-w-2xl">
+        <Modal open={!!selectedEvent} onClose={() => setSelectedEvent(null)} title="Detalle de turno" maxWidth="max-w-full sm:max-w-xl md:max-w-2xl">
           <div className="space-y-4">
             {/* Card principal con diseño mejorado */}
             <div className="relative overflow-hidden bg-gradient-to-br from-white via-sky-50/30 to-blue-50/50 dark:from-elegant-800 dark:via-sky-900/10 dark:to-blue-900/10 rounded-xl shadow-lg border border-elegant-200/50 dark:border-elegant-700/50">
@@ -2048,7 +2048,7 @@ export default function AgendaPage() {
           setEditingAppointment(null);
         }}
         title={editingAppointment ? 'Reprogramar turno' : 'Nuevo turno'}
-        maxWidth="max-w-2xl"
+        maxWidth="max-w-full sm:max-w-xl md:max-w-2xl"
       >
         <AppointmentForm
           initialData={editingAppointment || undefined}
