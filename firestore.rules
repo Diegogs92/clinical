@@ -135,6 +135,14 @@ service cloud.firestore {
       allow delete: if signedIn() && (isAdmin() || isOwner(resource.data.userId));
     }
 
+    // Schedule Preferences
+    match /schedulePreferences/{preferenceId} {
+      // Todos los usuarios autenticados pueden ver la agenda base
+      allow read: if signedIn();
+      // Solo admin puede configurar la agenda base
+      allow write: if isAdmin();
+    }
+
     // Pending users (invitaciones)
     match /pendingUsers/{email} {
       // Admin puede crear invitaciones
