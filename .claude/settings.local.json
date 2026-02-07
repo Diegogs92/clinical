@@ -39,7 +39,9 @@
       "Bash(firebase --version:*)",
       "Bash(firebase firestore:indexes:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nConfigurar y deployar índices de Firestore para optimización\n\nCrea y deploya índices necesarios para las queries optimizadas:\n\nÍndices Compuestos:\n- payments: \\(status, date\\) para listPendingPayments\\(\\)\n\nField Overrides \\(single-field indexes\\):\n- payments.date: ASC/DESC para listPayments\\(\\)\n- appointments.date: ASC/DESC para getAllAppointments\\(\\)\n\nLos índices simples \\(solo date\\) se manejan con field overrides porque\nFirestore rechaza índices compuestos innecesarios cuando pueden ser\nmanejados con índices de campo único.\n\nEstado: ✓ Deployados y activos en Firebase\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(vercel:*)"
+      "Bash(vercel:*)",
+      "Bash(findstr:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

@@ -56,7 +56,7 @@ export default function DashboardLayout({ children, mobileAction, fullWidth = tr
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-pearl via-white to-secondary-lighter/15 dark:from-elegant-950 dark:via-elegant-900 dark:to-elegant-950">
+    <div className="min-h-[100dvh] flex flex-col bg-gradient-to-br from-pearl via-white to-secondary-lighter/15 dark:from-elegant-950 dark:via-elegant-900 dark:to-elegant-950">
 
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/90 dark:bg-elegant-900/90 border-b border-elegant-200/80 dark:border-elegant-800/80 shadow-sm">
         <div className={`${fullWidth ? 'max-w-full px-3 sm:px-6 lg:px-8' : 'max-w-7xl mx-auto px-3 sm:px-6 lg:px-8'}`}>
@@ -149,7 +149,7 @@ export default function DashboardLayout({ children, mobileAction, fullWidth = tr
         )}
       </header>
 
-      <main className={`flex-1 w-full ${fullWidth ? 'max-w-full px-3 sm:px-6 lg:px-8' : 'max-w-7xl mx-auto px-3 sm:px-6 lg:px-8'} py-2 md:py-4 pb-28 md:pb-10`}>
+      <main className={`flex-1 w-full ${fullWidth ? 'max-w-full px-3 sm:px-6 lg:px-8' : 'max-w-7xl mx-auto px-3 sm:px-6 lg:px-8'} py-2 md:py-4 pb-32 md:pb-10`}>
         {children}
       </main>
 

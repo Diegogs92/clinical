@@ -1268,7 +1268,7 @@ export default function AgendaPage() {
           <div className="flex gap-3">
             {/* Columna de horarios */}
             <div className="w-10 sm:w-12 md:w-16 flex-shrink-0">
-              <div className="sticky top-4">
+              <div className="sticky top-16 z-30">
                 {/* Espacio para header del día - debe coincidir exactamente con el header de las cards */}
                 <div style={{ height: `${headerHeight}px` }}></div>
                 <div className="space-y-0">
