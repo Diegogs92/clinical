@@ -197,6 +197,32 @@ export default function AgendaPage() {
     loadSchedulePreferences();
   }, []);
 
+  // Responsive View Mode: Force 'day' on mobile, restore on desktop
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth < 768;
+
+      if (isMobile) {
+        // En móvil, siempre forzar vista día
+        setViewMode('day');
+      } else {
+        // En desktop, si estaba en 'day' por ser móvil, cambiar a 'week'
+        setViewMode(prev => {
+          // Si es month, mantener month
+          if (prev === 'month' || prev === 'year') return prev;
+          // Si es day, cambiar a week (asumiendo que day fue forzado por móvil)
+          return 'week';
+        });
+      }
+    };
+
+    // Set initial on mount
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Calcular rangos de fechas
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
@@ -1061,7 +1087,7 @@ export default function AgendaPage() {
             }
           }}
           className={`${statusColor} border-l-4 rounded-lg px-2 py-1.5 transition-all duration-200 overflow-hidden ${isDragging ? 'opacity-50' : ''
-            } ${canDrag ? 'cursor-move hover:shadow-md' : canOpen ? 'cursor-pointer hover:shadow-md' : 'cursor-default'}`}
+            } ${canDrag ? 'cursor-move hover:shadow-md' : canOpen ? 'cursor-pointer hover:shadow-md' : 'cursor-default'} relative z-10 touch-manipulation`}
           style={{ borderLeftColor: professionalColor, height: '100%' }}
         >
           <div className="flex items-start gap-2 h-full">
@@ -1097,7 +1123,7 @@ export default function AgendaPage() {
           }
         }}
         className={`${statusColor} border-l-4 rounded-lg p-3 transition-all duration-200 ${isDragging ? 'opacity-50' : ''
-          } ${canDrag ? 'cursor-move hover:shadow-md hover:scale-[1.02]' : canOpen ? 'cursor-pointer hover:shadow-md hover:scale-[1.02]' : 'cursor-default'}`}
+          } ${canDrag ? 'cursor-move hover:shadow-md hover:scale-[1.02]' : canOpen ? 'cursor-pointer hover:shadow-md hover:scale-[1.02]' : 'cursor-default'} relative z-10 touch-manipulation active:scale-95`}
         style={{ borderLeftColor: professionalColor }}
       >
         <div className="flex items-start gap-2">
@@ -1204,10 +1230,10 @@ export default function AgendaPage() {
               </button>
             </div>
 
-            <div className="flex items-center gap-2 bg-elegant-100 dark:bg-elegant-800/60 p-1 rounded-lg">
+            <div className="flex items-center flex-wrap gap-2 bg-elegant-100 dark:bg-elegant-800/60 p-1 rounded-lg">
               <button
                 onClick={() => setViewMode('day')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'day'
+                className={`px-2 sm:px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'day'
                   ? 'bg-primary text-white shadow'
                   : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
                   }`}
@@ -1216,7 +1242,7 @@ export default function AgendaPage() {
               </button>
               <button
                 onClick={() => setViewMode('week')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'week'
+                className={`px-2 sm:px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'week'
                   ? 'bg-primary text-white shadow'
                   : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
                   }`}
@@ -1225,7 +1251,7 @@ export default function AgendaPage() {
               </button>
               <button
                 onClick={() => setViewMode('month')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'month'
+                className={`px-2 sm:px-3 py-1.5 rounded-md text-sm font-medium transition ${viewMode === 'month'
                   ? 'bg-primary text-white shadow'
                   : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
                   }`}
@@ -1241,7 +1267,7 @@ export default function AgendaPage() {
         {viewMode === 'week' && (
           <div className="flex gap-3">
             {/* Columna de horarios */}
-            <div className="hidden lg:block w-16 flex-shrink-0">
+            <div className="hidden sm:block w-12 sm:w-16 flex-shrink-0">
               <div className="sticky top-4">
                 {/* Espacio para header del día - debe coincidir exactamente con el header de las cards */}
                 <div style={{ height: `${headerHeight}px` }}></div>
@@ -1260,7 +1286,7 @@ export default function AgendaPage() {
             </div>
 
             {/* Grid de días */}
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-3">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-2 md:gap-3">
               {weekDays.map((day) => {
                 const { dayAppointments, dayBlocked, dayBirthdays } = getEventsForDay(day);
                 const isToday = isSameDay(day, new Date());
@@ -1268,7 +1294,7 @@ export default function AgendaPage() {
                 return (
                   <div
                     key={day.toISOString()}
-                    className={`card min-h-[320px] transition-all ${isToday ? 'ring-2 ring-primary' : ''
+                    className={`card min-h-[200px] md:min-h-[280px] lg:min-h-[320px] transition-all ${isToday ? 'ring-2 ring-primary' : ''
                       }`}
                   >
                     {/* Header del día con indicador de cumpleaños */}
@@ -1302,7 +1328,7 @@ export default function AgendaPage() {
                         <div className="text-xs font-medium text-elegant-500 dark:text-elegant-400 uppercase">
                           {format(day, 'EEE', { locale: es })}
                         </div>
-                        <div className={`text-2xl font-bold ${isToday ? 'text-primary' : 'text-elegant-900 dark:text-white'}`}>
+                        <div className={`text-xl md:text-2xl font-bold ${isToday ? 'text-primary' : 'text-elegant-900 dark:text-white'}`}>
                           {format(day, 'd')}
                         </div>
                         <div className="text-xs text-elegant-500 dark:text-elegant-400">
@@ -1378,10 +1404,10 @@ export default function AgendaPage() {
                                       }
                                     }
                                   }}
-                                  className="shrink-0 rounded-full p-1 text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/40"
+                                  className="shrink-0 rounded-full p-2 text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/40"
                                   title="Eliminar franja bloqueada"
                                 >
-                                  <X className="w-3 h-3" />
+                                  <X className="w-4 h-4" />
                                 </button>
                               </div>
                             </div>
@@ -1397,8 +1423,15 @@ export default function AgendaPage() {
                           return (
                             <div
                               key={`appointment-${apt.id}`}
-                              className="absolute left-1 right-1 pointer-events-auto"
+                              className="absolute left-1 right-1 pointer-events-auto z-20 touch-manipulation"
                               style={{ top: `${topPx}px`, height: `${heightPx}px` }}
+                              onClick={(e) => {
+                                // Fallback click handler if the inner card doesn't catch it
+                                if (canOpenDetails(apt)) {
+                                  e.stopPropagation();
+                                  setSelectedEvent(apt);
+                                }
+                              }}
                             >
                               {renderAppointmentCard(apt, 'week')}
                             </div>
@@ -1633,8 +1666,8 @@ export default function AgendaPage() {
 
       {/* Modal para bloquear franja horaria */}
       {showBlockModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-elegant-900 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white dark:bg-elegant-900 rounded-2xl max-w-md w-full p-4 md:p-6 shadow-2xl">
             <h3 className="text-xl font-bold text-elegant-900 dark:text-white mb-4">
               Bloquear Franja Horaria
             </h3>
@@ -1670,7 +1703,7 @@ export default function AgendaPage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-elegant-700 dark:text-elegant-300 mb-1.5">
                     Hora Inicio
