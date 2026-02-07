@@ -1,4 +1,4 @@
-const CACHE_NAME = 'clinical-v2';
+const CACHE_NAME = 'clinical-v3-mobile-fixes';
 const STATIC_ASSETS = [
   '/logo.svg',
   '/icon-192.png',
