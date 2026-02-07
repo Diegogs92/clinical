@@ -25,11 +25,11 @@ export default function MobileNavBar({ items, action }: MobileNavBarProps) {
   const isActive = (href: string) => pathname === href || (href !== '/dashboard' && pathname?.startsWith(href));
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 md:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-50 md:hidden pointer-events-none">
       {/* Contenedor con padding safe area */}
       <div className="px-3 pb-safe">
         {/* Barra de navegación */}
-        <div className="bg-white/95 dark:bg-elegant-900/95 backdrop-blur-xl rounded-3xl border border-elegant-200/60 dark:border-elegant-700/60 shadow-xl shadow-black/5 dark:shadow-black/20 overflow-hidden">
+        <div className="bg-white/95 dark:bg-elegant-900/95 backdrop-blur-xl rounded-3xl border border-elegant-200/60 dark:border-elegant-700/60 shadow-xl shadow-black/5 dark:shadow-black/20 overflow-hidden pointer-events-auto">
           {/* Grid de navegación */}
           <div className={`grid ${items.length === 4 ? 'grid-cols-4' : 'grid-cols-5'} gap-0`}>
             {items.map(({ href, label, icon: Icon }) => {
@@ -49,20 +49,18 @@ export default function MobileNavBar({ items, action }: MobileNavBarProps) {
 
                   {/* Icono */}
                   <Icon
-                    className={`w-6 h-6 mb-1 transition-colors duration-150 ${
-                      active
-                        ? 'text-primary dark:text-primary-light stroke-[2.5]'
-                        : 'text-elegant-400 dark:text-elegant-500 stroke-2'
-                    }`}
+                    className={`w-6 h-6 mb-1 transition-colors duration-150 ${active
+                      ? 'text-primary dark:text-primary-light stroke-[2.5]'
+                      : 'text-elegant-400 dark:text-elegant-500 stroke-2'
+                      }`}
                   />
 
                   {/* Label */}
                   <span
-                    className={`text-[13px] font-medium transition-colors duration-150 ${
-                      active
-                        ? 'text-primary dark:text-primary-light font-semibold'
-                        : 'text-elegant-500 dark:text-elegant-400'
-                    }`}
+                    className={`text-[13px] font-medium transition-colors duration-150 ${active
+                      ? 'text-primary dark:text-primary-light font-semibold'
+                      : 'text-elegant-500 dark:text-elegant-400'
+                      }`}
                   >
                     {label}
                   </span>

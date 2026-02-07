@@ -60,20 +60,17 @@ const SelectField = memo(function SelectField({
         components={{ SingleValue: CustomSingleValue }}
         classNames={{
           control: () =>
-            `!min-h-[42px] !bg-white dark:!bg-elegant-900 !border-elegant-200 dark:!border-gray-700 !rounded-lg hover:!border-primary-light dark:hover:!border-primary-dark !shadow-sm ${
-              error ? '!border-red-500' : ''
+            `!min-h-[42px] !bg-white dark:!bg-elegant-900 !border-elegant-200 dark:!border-gray-700 !rounded-lg hover:!border-primary-light dark:hover:!border-primary-dark !shadow-sm ${error ? '!border-red-500' : ''
             }`,
           menu: () =>
             '!bg-white dark:!bg-elegant-800 !border !border-elegant-200 dark:!border-gray-700 !shadow-lg !rounded-lg !mt-1',
           option: (state) =>
-            `!cursor-pointer ${
-              state.isFocused
-                ? '!bg-primary-50 dark:!bg-elegant-100/90 !text-elegant-900 dark:!text-elegant-900'
-                : '!bg-transparent !text-elegant-900 dark:!text-elegant-50'
-            } ${
-              state.isSelected
-                ? '!bg-primary-100 dark:!bg-elegant-200/90 !text-elegant-900 dark:!text-elegant-900'
-                : ''
+            `!cursor-pointer ${state.isFocused
+              ? '!bg-primary-50 dark:!bg-elegant-100/90 !text-elegant-900 dark:!text-elegant-900'
+              : '!bg-transparent !text-elegant-900 dark:!text-elegant-50'
+            } ${state.isSelected
+              ? '!bg-primary-100 dark:!bg-elegant-200/90 !text-elegant-900 dark:!text-elegant-900'
+              : ''
             }`,
           placeholder: () => '!text-gray-400 dark:!text-gray-500',
           singleValue: () => '!text-elegant-900 dark:!text-elegant-50',
@@ -88,7 +85,10 @@ const SelectField = memo(function SelectField({
             ...base,
             backgroundColor: 'transparent',
           }),
+          menuPortal: (base) => ({ ...base, zIndex: 9999 }),
         }}
+        menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
+        menuPosition="fixed"
       />
       {error && <p className="text-red-600 text-xs mt-0.5">{error}</p>}
     </div>

@@ -483,14 +483,20 @@ export default function PatientList() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setEditPatientModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` })}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditPatientModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` });
+                  }}
                   className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark hover:shadow-lg hover:scale-105 transition-all duration-200 active:scale-[0.98]"
                 >
                   <Edit className="w-4 h-4" />
                   Editar
                 </button>
                 <button
-                  onClick={() => handleDelete(p.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(p.id);
+                  }}
                   className="flex items-center justify-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/30 hover:shadow-lg hover:scale-105 transition-all duration-200 active:scale-[0.98]"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -702,10 +708,10 @@ export default function PatientList() {
             });
           });
 
-            // Ordenar eventos por fecha y hora
-            events.sort((a, b) => (
-              historyOrder === 'asc' ? a.sortKey - b.sortKey : b.sortKey - a.sortKey
-            ));
+          // Ordenar eventos por fecha y hora
+          events.sort((a, b) => (
+            historyOrder === 'asc' ? a.sortKey - b.sortKey : b.sortKey - a.sortKey
+          ));
 
           return (
             <div className="space-y-4">
@@ -733,7 +739,7 @@ export default function PatientList() {
 
                   {/* Events */}
                   <div className="space-y-6">
-                  {events.map((event, index) => {
+                    {events.map((event, index) => {
                       const Icon = event.icon;
                       const colorClasses = {
                         blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
