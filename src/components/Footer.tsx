@@ -52,7 +52,7 @@ export function Footer() {
 
   return (
     <>
-      <footer className="mt-auto border-t border-elegant-200 dark:border-elegant-800 bg-pearl dark:bg-navy-dark pb-24 md:pb-8">
+      <footer className="mt-auto border-t border-elegant-200 dark:border-elegant-800 bg-pearl dark:bg-navy-dark pb-24 md:pb-8 hidden md:block">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-6">
           <div className="relative w-full flex items-center justify-center gap-4">
             <div className="absolute left-0">

@@ -1168,11 +1168,11 @@ export default function AgendaPage() {
         {/* Header */}
         <div className="flex flex-col gap-3">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+            <div className="hidden md:block">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
                 Agenda
               </h1>
-              <p className="text-xs md:text-sm text-elegant-600 dark:text-elegant-400 mt-0.5">
+              <p className="text-sm text-elegant-600 dark:text-elegant-400 mt-0.5">
                 Gestiona tus turnos y citas - Arrastra para reprogramar
               </p>
             </div>
@@ -1185,7 +1185,8 @@ export default function AgendaPage() {
                     className="btn-danger flex items-center gap-2 whitespace-nowrap"
                   >
                     <Ban className="w-4 h-4" />
-                    Bloquear Horario
+                    <span className="hidden sm:inline">Bloquear Horario</span>
+                    <span className="sm:hidden">Bloquear</span>
                   </button>
                   <button
                     onClick={() => setShowBlocksList(true)}
@@ -1201,36 +1202,43 @@ export default function AgendaPage() {
         </div>
 
         {/* Navegación y selector de vista */}
-        <div className="card sticky top-14 z-20 sm:static">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
-            <div className="flex items-center gap-2">
+        <div className="card sticky top-12 md:top-14 z-20 sm:static">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+            <div className="flex items-center justify-between gap-1">
               <button onClick={goToPrevious} className="icon-btn p-2 min-w-[44px] min-h-[44px]">
                 <ChevronLeft className="w-6 h-6" />
               </button>
-              <div className="text-center min-w-[140px] sm:min-w-[180px]">
-                <h2 className="text-base font-semibold text-elegant-900 dark:text-white">
+              <div className="text-center flex-1 min-w-0">
+                <h2 className="text-sm sm:text-base font-semibold text-elegant-900 dark:text-white capitalize">
                   {viewMode === 'month'
                     ? format(currentDate, "MMMM yyyy", { locale: es })
                     : viewMode === 'week'
                       ? `${format(weekStart, 'd MMM', { locale: es })} - ${format(weekEnd, 'd MMM yyyy', { locale: es })}`
-                      : format(currentDate, "EEEE d 'de' MMMM, yyyy", { locale: es })
+                      : (
+                        <>
+                          <span className="sm:hidden">{format(currentDate, "EEE d 'de' MMM", { locale: es })}</span>
+                          <span className="hidden sm:inline">{format(currentDate, "EEEE d 'de' MMMM, yyyy", { locale: es })}</span>
+                        </>
+                      )
                   }
                 </h2>
-                <p className="text-[11px] text-elegant-600 dark:text-elegant-400 mt-0.5">
-                  {scheduledPatientsCount === 1
-                    ? '1 paciente agendado'
-                    : `${scheduledPatientsCount} pacientes agendados`}
-                </p>
-                <button onClick={goToToday} className="text-xs text-primary hover:underline">
-                  Ir a hoy
-                </button>
+                <div className="flex items-center justify-center gap-2 mt-0.5">
+                  <p className="text-[11px] text-elegant-600 dark:text-elegant-400">
+                    {scheduledPatientsCount === 1
+                      ? '1 paciente'
+                      : `${scheduledPatientsCount} pacientes`}
+                  </p>
+                  <button onClick={goToToday} className="text-[11px] text-primary font-medium hover:underline">
+                    Hoy
+                  </button>
+                </div>
               </div>
               <button onClick={goToNext} className="icon-btn p-2 min-w-[44px] min-h-[44px]">
                 <ChevronRight className="w-6 h-6" />
               </button>
             </div>
 
-            <div className="flex items-center flex-wrap gap-2 bg-elegant-100 dark:bg-elegant-800/60 p-1 rounded-lg">
+            <div className="hidden sm:flex items-center gap-2 bg-elegant-100 dark:bg-elegant-800/60 p-1 rounded-lg">
               <button
                 onClick={() => setViewMode('day')}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition min-h-[40px] ${viewMode === 'day'
@@ -1242,7 +1250,7 @@ export default function AgendaPage() {
               </button>
               <button
                 onClick={() => setViewMode('week')}
-                className={`hidden sm:inline-flex px-3 py-2 rounded-md text-sm font-medium transition min-h-[40px] ${viewMode === 'week'
+                className={`px-3 py-2 rounded-md text-sm font-medium transition min-h-[40px] ${viewMode === 'week'
                   ? 'bg-primary text-white shadow'
                   : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
                   }`}
@@ -1251,7 +1259,7 @@ export default function AgendaPage() {
               </button>
               <button
                 onClick={() => setViewMode('month')}
-                className={`hidden sm:inline-flex px-3 py-2 rounded-md text-sm font-medium transition min-h-[40px] ${viewMode === 'month'
+                className={`px-3 py-2 rounded-md text-sm font-medium transition min-h-[40px] ${viewMode === 'month'
                   ? 'bg-primary text-white shadow'
                   : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
                   }`}
@@ -1260,7 +1268,6 @@ export default function AgendaPage() {
               </button>
             </div>
           </div>
-
         </div>
 
         {/* Vista de Semana */}
@@ -1591,14 +1598,14 @@ export default function AgendaPage() {
                   )}
 
                   {dayAppointments.length === 0 && dayBlocked.length === 0 && dayBirthdays.length === 0 && (
-                    <div className="text-center py-16">
-                      <Calendar className="w-16 h-16 mx-auto text-elegant-300 dark:text-elegant-600 mb-4" />
-                      <p className="text-elegant-500 dark:text-elegant-400">
+                    <div className="text-center py-8 md:py-16">
+                      <Calendar className="w-12 h-12 md:w-16 md:h-16 mx-auto text-elegant-300 dark:text-elegant-600 mb-3" />
+                      <p className="text-sm text-elegant-500 dark:text-elegant-400">
                         No hay eventos programados para este día
                       </p>
                       <button
                         onClick={newAppointment}
-                        className="btn-primary mt-4 inline-flex items-center gap-2"
+                        className="btn-primary mt-3 inline-flex items-center gap-2"
                       >
                         <PlusCircle className="w-4 h-4" />
                         Crear Turno
