@@ -293,7 +293,7 @@ export default function PatientList() {
       <div className="hidden md:block overflow-x-auto">
         <table className="table-skin table-compact table-fixed">
           <colgroup>
-            <col className="w-14" />
+            <col className="w-24" />
             <col className="w-44" />
             <col className="w-48" />
             <col className="w-24" />
@@ -307,7 +307,7 @@ export default function PatientList() {
           </colgroup>
           <thead>
             <tr>
-              <th className="w-14"></th>
+              <th className="w-24"></th>
               <th className="w-44">Adjuntar panor&aacute;mica</th>
               <th>Paciente</th>
               <th>DNI</th>
