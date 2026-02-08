@@ -183,8 +183,8 @@ export default function ChatWidget() {
         <div className="fixed bottom-24 md:bottom-4 right-4 z-50 flex flex-col items-end pointer-events-none">
             {/* Chat Window Container */}
             <div
-                className={`pointer-events-auto transition-all duration-300 ease-in-out transform origin-bottom-right
-          ${isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4 pointer-events-none'} 
+                className={`transition-all duration-300 ease-in-out transform origin-bottom-right
+          ${isOpen ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-95 translate-y-4 pointer-events-none'}
           w-[360px] max-w-[calc(100vw-32px)] h-[550px] max-h-[80vh] bg-white dark:bg-elegant-900 shadow-2xl rounded-2xl border border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden mb-4`}
             >
                 {isOpen && (

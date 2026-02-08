@@ -38,7 +38,7 @@ export default function Modal({
   const modalContent = (
     <div
       className={`fixed inset-0 z-[9998] flex items-center justify-center p-1 sm:p-4 bg-black/40 backdrop-blur-md transition-opacity duration-[180ms] ${
-        open ? 'opacity-100' : 'opacity-0'
+        open ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
       onTransitionEnd={() => {
         if (!open) setIsVisible(false);
