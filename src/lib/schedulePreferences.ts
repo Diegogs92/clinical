@@ -8,7 +8,6 @@ import {
   getDocs,
   query,
   where,
-  orderBy,
 } from 'firebase/firestore';
 import { SchedulePreference } from '@/types';
 
@@ -44,18 +43,14 @@ export async function createSchedulePreference(
 export async function getAllSchedulePreferences(): Promise<SchedulePreference[]> {
   if (!db) throw new Error('Firestore not initialized');
 
-  const q = query(
-    collection(db, COLLECTION_NAME),
-    orderBy('dayOfWeek', 'asc'),
-    orderBy('startTime', 'asc')
-  );
+  const snapshot = await getDocs(collection(db, COLLECTION_NAME));
 
-  const snapshot = await getDocs(q);
-
-  return snapshot.docs.map(doc => ({
+  const results = snapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data(),
   })) as SchedulePreference[];
+
+  return results.sort((a, b) => a.dayOfWeek - b.dayOfWeek || a.startTime.localeCompare(b.startTime));
 }
 
 /**
@@ -68,16 +63,17 @@ export async function getSchedulePreferencesByDay(
 
   const q = query(
     collection(db, COLLECTION_NAME),
-    where('dayOfWeek', '==', dayOfWeek),
-    orderBy('startTime', 'asc')
+    where('dayOfWeek', '==', dayOfWeek)
   );
 
   const snapshot = await getDocs(q);
 
-  return snapshot.docs.map(doc => ({
+  const results = snapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data(),
   })) as SchedulePreference[];
+
+  return results.sort((a, b) => a.startTime.localeCompare(b.startTime));
 }
 
 /**
@@ -90,17 +86,17 @@ export async function getSchedulePreferencesByProfessional(
 
   const q = query(
     collection(db, COLLECTION_NAME),
-    where('professionalId', '==', professionalId),
-    orderBy('dayOfWeek', 'asc'),
-    orderBy('startTime', 'asc')
+    where('professionalId', '==', professionalId)
   );
 
   const snapshot = await getDocs(q);
 
-  return snapshot.docs.map(doc => ({
+  const results = snapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data(),
   })) as SchedulePreference[];
+
+  return results.sort((a, b) => a.dayOfWeek - b.dayOfWeek || a.startTime.localeCompare(b.startTime));
 }
 
 /**
