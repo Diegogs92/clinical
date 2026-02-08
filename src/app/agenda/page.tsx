@@ -1201,7 +1201,7 @@ export default function AgendaPage() {
         </div>
 
         {/* Navegación y selector de vista */}
-        <div className="card">
+        <div className="card sticky top-14 z-20 sm:static">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
             <div className="flex items-center gap-2">
               <button onClick={goToPrevious} className="icon-btn p-2 min-w-[44px] min-h-[44px]">
@@ -1242,7 +1242,7 @@ export default function AgendaPage() {
               </button>
               <button
                 onClick={() => setViewMode('week')}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition min-h-[40px] ${viewMode === 'week'
+                className={`hidden sm:inline-flex px-3 py-2 rounded-md text-sm font-medium transition min-h-[40px] ${viewMode === 'week'
                   ? 'bg-primary text-white shadow'
                   : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
                   }`}
@@ -1251,7 +1251,7 @@ export default function AgendaPage() {
               </button>
               <button
                 onClick={() => setViewMode('month')}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition min-h-[40px] ${viewMode === 'month'
+                className={`hidden sm:inline-flex px-3 py-2 rounded-md text-sm font-medium transition min-h-[40px] ${viewMode === 'month'
                   ? 'bg-primary text-white shadow'
                   : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
                   }`}
