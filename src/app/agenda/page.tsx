@@ -286,7 +286,8 @@ export default function AgendaPage() {
   const goToToday = () => setCurrentDate(new Date());
 
   const newAppointment = () => {
-    router.push('/dashboard?create=appointment');
+    setEditingAppointment(null);
+    setShowForm(true);
   };
 
   // Manejar bloqueo de franja horaria
