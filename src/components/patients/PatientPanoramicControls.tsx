@@ -179,7 +179,6 @@ export default function PatientPanoramicControls({
       className="hidden"
       accept="image/*,.jpg,.jpeg,.png,.gif,.webp,.bmp"
       onChange={handleFileSelect}
-      onInput={handleFileSelect}
       disabled={uploading}
       ref={inputRef}
       aria-label="Adjuntar panoramica"
