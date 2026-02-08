@@ -197,30 +197,12 @@ export default function AgendaPage() {
     loadSchedulePreferences();
   }, []);
 
-  // Responsive View Mode: Force 'day' on mobile, restore on desktop
+  // Set initial view mode based on screen size (once on mount)
   useEffect(() => {
-    const handleResize = () => {
-      const isMobile = window.innerWidth < 768;
-
-      if (isMobile) {
-        // En móvil, siempre forzar vista día
-        setViewMode('day');
-      } else {
-        // En desktop, si estaba en 'day' por ser móvil, cambiar a 'week'
-        setViewMode(prev => {
-          // Si es month, mantener month
-          if (prev === 'month' || prev === 'year') return prev;
-          // Si es day, cambiar a week (asumiendo que day fue forzado por móvil)
-          return 'week';
-        });
-      }
-    };
-
-    // Set initial on mount
-    handleResize();
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      setViewMode('day');
+    }
   }, []);
 
   // Calcular rangos de fechas
@@ -1214,7 +1196,12 @@ export default function AgendaPage() {
                   {viewMode === 'month'
                     ? format(currentDate, "MMMM yyyy", { locale: es })
                     : viewMode === 'week'
-                      ? `${format(weekStart, 'd MMM', { locale: es })} - ${format(weekEnd, 'd MMM yyyy', { locale: es })}`
+                      ? (
+                        <>
+                          <span className="sm:hidden">{format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM', { locale: es })}</span>
+                          <span className="hidden sm:inline">{format(weekStart, 'd MMM', { locale: es })} - {format(weekEnd, 'd MMM yyyy', { locale: es })}</span>
+                        </>
+                      )
                       : (
                         <>
                           <span className="sm:hidden">{format(currentDate, "EEE d 'de' MMM", { locale: es })}</span>
@@ -1239,10 +1226,10 @@ export default function AgendaPage() {
               </button>
             </div>
 
-            <div className="hidden sm:flex items-center gap-2 bg-elegant-100 dark:bg-elegant-800/60 p-1 rounded-lg">
+            <div className="flex items-center gap-1 sm:gap-2 bg-elegant-100 dark:bg-elegant-800/60 p-1 rounded-lg">
               <button
                 onClick={() => setViewMode('day')}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition min-h-[40px] ${viewMode === 'day'
+                className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md text-sm font-medium transition min-h-[36px] sm:min-h-[40px] ${viewMode === 'day'
                   ? 'bg-primary text-white shadow'
                   : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
                   }`}
@@ -1251,7 +1238,7 @@ export default function AgendaPage() {
               </button>
               <button
                 onClick={() => setViewMode('week')}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition min-h-[40px] ${viewMode === 'week'
+                className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md text-sm font-medium transition min-h-[36px] sm:min-h-[40px] ${viewMode === 'week'
                   ? 'bg-primary text-white shadow'
                   : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
                   }`}
@@ -1260,7 +1247,7 @@ export default function AgendaPage() {
               </button>
               <button
                 onClick={() => setViewMode('month')}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition min-h-[40px] ${viewMode === 'month'
+                className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md text-sm font-medium transition min-h-[36px] sm:min-h-[40px] ${viewMode === 'month'
                   ? 'bg-primary text-white shadow'
                   : 'text-elegant-600 dark:text-elegant-300 hover:bg-elegant-200 dark:hover:bg-elegant-700'
                   }`}
@@ -1458,31 +1445,60 @@ export default function AgendaPage() {
         {viewMode === 'month' && (
           <div className="card">
             <div className="grid grid-cols-7 gap-px bg-elegant-200 dark:bg-elegant-700 border border-elegant-200 dark:border-elegant-700 rounded-lg overflow-hidden">
-              {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((day) => (
-                <div key={day} className="bg-elegant-100 dark:bg-elegant-800 p-2 text-center">
-                  <span className="text-xs font-semibold text-elegant-600 dark:text-elegant-400">{day}</span>
+              {[
+                { short: 'L', full: 'Lun' },
+                { short: 'M', full: 'Mar' },
+                { short: 'M', full: 'Mié' },
+                { short: 'J', full: 'Jue' },
+                { short: 'V', full: 'Vie' },
+                { short: 'S', full: 'Sáb' },
+                { short: 'D', full: 'Dom' },
+              ].map((day, i) => (
+                <div key={i} className="bg-elegant-100 dark:bg-elegant-800 p-1.5 sm:p-2 text-center">
+                  <span className="text-xs font-semibold text-elegant-600 dark:text-elegant-400">
+                    <span className="sm:hidden">{day.short}</span>
+                    <span className="hidden sm:inline">{day.full}</span>
+                  </span>
                 </div>
               ))}
               {monthDays.map((day) => {
-                const { dayAppointments } = getEventsForDay(day);
+                const { dayAppointments, dayBlocked } = getEventsForDay(day);
                 const isToday = isSameDay(day, new Date());
                 const isCurrentMonth = isSameMonth(day, currentDate);
                 const isDragOver = dragOverDate && isSameDay(dragOverDate, day);
+                const totalEvents = dayAppointments.length + dayBlocked.length;
 
                 return (
                   <div
                     key={day.toISOString()}
+                    onClick={() => {
+                      setCurrentDate(day);
+                      setViewMode('day');
+                    }}
                     onDragOver={(e) => handleDragOver(e, day)}
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => handleDrop(e, day)}
-                    className={`bg-white dark:bg-elegant-900 p-2 min-h-[100px] transition-all ${!isCurrentMonth ? 'opacity-40' : ''
+                    className={`bg-white dark:bg-elegant-900 p-1 sm:p-2 min-h-[48px] sm:min-h-[100px] transition-all cursor-pointer hover:bg-elegant-50 dark:hover:bg-elegant-800/50 ${!isCurrentMonth ? 'opacity-40' : ''
                       } ${isToday ? 'ring-2 ring-inset ring-primary' : ''} ${isDragOver ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                       }`}
                   >
-                    <div className={`text-sm font-medium mb-1 ${isToday ? 'text-primary' : 'text-elegant-900 dark:text-white'}`}>
+                    <div className={`text-xs sm:text-sm font-medium mb-0.5 sm:mb-1 text-center sm:text-left ${isToday ? 'text-primary font-bold' : 'text-elegant-900 dark:text-white'}`}>
                       {format(day, 'd')}
                     </div>
-                    <div className="space-y-1">
+                    {/* Mobile: colored dots */}
+                    <div className="flex flex-wrap justify-center gap-0.5 sm:hidden">
+                      {dayAppointments.slice(0, 4).map((apt, i) => (
+                        <div key={i} className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      ))}
+                      {dayBlocked.length > 0 && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                      )}
+                      {dayAppointments.length > 4 && (
+                        <span className="text-[9px] text-elegant-400">+{dayAppointments.length - 4}</span>
+                      )}
+                    </div>
+                    {/* Desktop: appointment cards */}
+                    <div className="hidden sm:block space-y-1">
                       {dayAppointments.slice(0, 3).map((apt) => renderAppointmentCard(apt, 'compact'))}
                       {dayAppointments.length > 3 && (
                         <div className="text-[12px] text-elegant-500 dark:text-elegant-400 text-center">
