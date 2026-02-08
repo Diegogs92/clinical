@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import { useCallback, useEffect, useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { deletePatient } from '@/lib/patients';
 import { listPayments } from '@/lib/payments';
@@ -24,6 +25,7 @@ import { es } from 'date-fns/locale';
 
 export default function PatientList() {
   const { user } = useAuth();
+  const router = useRouter();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -332,6 +334,15 @@ export default function PatientList() {
                     <div className="flex items-center gap-1">
                       <button
                         type="button"
+                        onClick={() => router.push(`/dashboard/patients/${p.id}`)}
+                        className="icon-btn-primary"
+                        aria-label="Ver ficha del paciente"
+                        title="Ver ficha"
+                      >
+                        <FileText className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => setEditPatientModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` })}
                         className="icon-btn-primary"
                         aria-label="Editar paciente"
@@ -485,12 +496,22 @@ export default function PatientList() {
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setEditPatientModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` });
+                    router.push(`/dashboard/patients/${p.id}`);
                   }}
                   className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark hover:shadow-lg hover:scale-105 transition-all duration-200 active:scale-[0.98]"
                 >
+                  <FileText className="w-4 h-4" />
+                  Ver ficha
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditPatientModal({ open: true, patientId: p.id, patientName: `${p.lastName}, ${p.firstName}` });
+                  }}
+                  className="flex items-center justify-center gap-2 px-3 py-2 bg-elegant-100 dark:bg-elegant-800 text-elegant-700 dark:text-elegant-300 rounded-lg text-sm font-medium hover:bg-elegant-200 dark:hover:bg-elegant-700 hover:shadow-lg hover:scale-105 transition-all duration-200 active:scale-[0.98]"
+                >
                   <Edit className="w-4 h-4" />
-                  Editar
                 </button>
                 <button
                   onClick={(e) => {
