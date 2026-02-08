@@ -1,3 +1,10 @@
+// Panoramic image type
+export interface PanoramicImage {
+  url: string;
+  name: string;
+  uploadedAt: string;
+}
+
 // Patient types
 export interface Patient {
   id: string;
@@ -16,6 +23,7 @@ export interface Patient {
   panoramicUrl?: string;
   panoramicName?: string;
   panoramicUploadedAt?: string;
+  panoramics?: PanoramicImage[];
   odontogram?: Record<string, any>; // Estado del odontograma
   createdAt: string;
   updatedAt: string;

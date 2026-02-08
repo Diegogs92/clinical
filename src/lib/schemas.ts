@@ -16,6 +16,11 @@ export const PatientSchema = z.object({
   panoramicUrl: z.string().optional(),
   panoramicName: z.string().optional(),
   panoramicUploadedAt: z.string().optional(),
+  panoramics: z.array(z.object({
+    url: z.string(),
+    name: z.string(),
+    uploadedAt: z.string(),
+  })).optional(),
   odontogram: z.record(z.any()).optional(),
   createdAt: z.string(),
   updatedAt: z.string(),

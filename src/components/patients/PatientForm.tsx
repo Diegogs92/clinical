@@ -381,17 +381,14 @@ export default function PatientForm({ patientId, onSuccess }: Props) {
       {patientId && initialPatient && (
         <div className="space-y-2">
           <label className="block text-sm font-medium text-primary-dark dark:text-white">
-            Panorámica
+            Panoramicas
           </label>
           <PatientPanoramicControls
             patientId={patientId}
-            panoramicUrl={initialPatient.panoramicUrl}
-            panoramicName={initialPatient.panoramicName}
-            onUploaded={(url, name, uploadedAt) => {
+            panoramics={initialPatient.panoramics}
+            onPanoramicsChange={(panoramics) => {
               setInitialPatient(prev =>
-                prev
-                  ? { ...prev, panoramicUrl: url, panoramicName: name, panoramicUploadedAt: uploadedAt }
-                  : prev
+                prev ? { ...prev, panoramics } : prev
               );
             }}
           />

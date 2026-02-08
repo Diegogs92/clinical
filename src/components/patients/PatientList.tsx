@@ -308,7 +308,7 @@ export default function PatientList() {
           <thead>
             <tr>
               <th className="w-24"></th>
-              <th className="w-44">Adjuntar panor&aacute;mica</th>
+              <th className="w-44">Panor&aacute;micas</th>
               <th>Paciente</th>
               <th>DNI</th>
               <th>Edad</th>
@@ -357,8 +357,7 @@ export default function PatientList() {
                   <td className="w-44" onClick={(e) => e.stopPropagation()}>
                     <PatientPanoramicControls
                       patientId={p.id}
-                      panoramicUrl={p.panoramicUrl}
-                      panoramicName={p.panoramicName}
+                      panoramics={p.panoramics}
                       compact
                     />
                   </td>
@@ -483,11 +482,10 @@ export default function PatientList() {
               </div>
 
               <div className="flex items-center justify-between gap-2 mb-3">
-                <span className="text-xs text-secondary dark:text-gray-400">Panor&aacute;mica</span>
+                <span className="text-xs text-secondary dark:text-gray-400">Panoramicas</span>
                 <PatientPanoramicControls
                   patientId={p.id}
-                  panoramicUrl={p.panoramicUrl}
-                  panoramicName={p.panoramicName}
+                  panoramics={p.panoramics}
                   compact
                 />
               </div>
@@ -700,17 +698,19 @@ export default function PatientList() {
             }
           });
 
-          if (patient?.panoramicUploadedAt) {
-            const panoramicEventTime = getEventDateTime(patient.panoramicUploadedAt);
-            events.push({
-              date: panoramicEventTime.date,
-              time: panoramicEventTime.time,
-              type: 'status_change',
-              icon: FileText,
-              color: 'amber',
-              title: 'Panoramica cargada',
-              description: patient.panoramicName || 'Archivo cargado',
-              sortKey: getSortKey(patient.panoramicUploadedAt),
+          if (patient?.panoramics && patient.panoramics.length > 0) {
+            patient.panoramics.forEach(pano => {
+              const panoramicEventTime = getEventDateTime(pano.uploadedAt);
+              events.push({
+                date: panoramicEventTime.date,
+                time: panoramicEventTime.time,
+                type: 'status_change',
+                icon: FileText,
+                color: 'amber',
+                title: 'Panoramica cargada',
+                description: pano.name || 'Archivo cargado',
+                sortKey: getSortKey(pano.uploadedAt),
+              });
             });
           }
 

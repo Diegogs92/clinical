@@ -1,12 +1,28 @@
 import { db, storage, mockMode } from '@/lib/firebase';
 import { collection, doc, addDoc, updateDoc, deleteDoc, getDoc, getDocs, query, where, Firestore } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { Patient, PatientFile } from '@/types';
+import { Patient, PatientFile, PanoramicImage } from '@/types';
 import { PatientSchema } from './schemas';
 import { logger } from './logger';
 import { loadFromLocalStorage, saveToLocalStorage } from './mockStorage';
 
 const PATIENTS_COLLECTION = 'patients';
+
+/** Promotes legacy single-panoramic fields into the panoramics array on read. */
+function normalizePanoramics(patient: Patient): Patient {
+  const panoramics = patient.panoramics ? [...patient.panoramics] : [];
+  if (
+    patient.panoramicUrl &&
+    !panoramics.some(p => p.url === patient.panoramicUrl)
+  ) {
+    panoramics.push({
+      url: patient.panoramicUrl,
+      name: patient.panoramicName || 'Panoramica',
+      uploadedAt: patient.panoramicUploadedAt || patient.createdAt,
+    });
+  }
+  return { ...patient, panoramics };
+}
 const mockPatients: Patient[] = loadFromLocalStorage<Patient>('patients');
 const PATIENT_FILES_FOLDER = 'patient-files';
 
@@ -57,7 +73,7 @@ export async function getPatient(id: string): Promise<Patient | null> {
 
   try {
     const data = PatientSchema.parse({ ...snap.data(), id: snap.id });
-    return data;
+    return normalizePanoramics(data);
   } catch (error) {
     logger.error('Error validating patient data:', error);
     return null;
@@ -71,7 +87,7 @@ export async function getPatientsByUser(userId: string): Promise<Patient[]> {
   const snap = await getDocs(q);
   const list = snap.docs.map(d => {
     try {
-      return PatientSchema.parse({ ...d.data(), id: d.id });
+      return normalizePanoramics(PatientSchema.parse({ ...d.data(), id: d.id }));
     } catch (error) {
       logger.error('Error validating patient data:', error);
       return null;
@@ -88,7 +104,7 @@ export async function getAllPatients(): Promise<Patient[]> {
   const snap = await getDocs(colRef);
   const list = snap.docs.map(d => {
     try {
-      return PatientSchema.parse({ ...d.data(), id: d.id });
+      return normalizePanoramics(PatientSchema.parse({ ...d.data(), id: d.id }));
     } catch (error) {
       logger.error('Error validating patient data:', error);
       return null;
@@ -130,4 +146,18 @@ export async function deletePatientFileByUrl(url: string) {
   if (mockMode || !storage) return;
   const storageRef = ref(storage!, url);
   await deleteObject(storageRef);
+}
+
+export async function addPanoramic(patientId: string, image: PanoramicImage): Promise<void> {
+  const patient = await getPatient(patientId);
+  if (!patient) throw new Error('Patient not found');
+  const panoramics = [...(patient.panoramics || []), image];
+  await updatePatient(patientId, { panoramics });
+}
+
+export async function removePanoramic(patientId: string, imageUrl: string): Promise<void> {
+  const patient = await getPatient(patientId);
+  if (!patient) throw new Error('Patient not found');
+  const panoramics = (patient.panoramics || []).filter(p => p.url !== imageUrl);
+  await updatePatient(patientId, { panoramics });
 }

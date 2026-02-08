@@ -182,17 +182,19 @@ export default function PatientHistory({ patientId, payments }: PatientHistoryPr
             }
         });
 
-        if (patient?.panoramicUploadedAt) {
-            const panoramicEventTime = getEventDateTime(patient.panoramicUploadedAt);
-            timeline.push({
-                date: panoramicEventTime.date,
-                time: panoramicEventTime.time,
-                type: 'status_change',
-                icon: FileText,
-                color: 'amber',
-                title: 'Panorámica cargada',
-                description: patient.panoramicName || 'Archivo cargado',
-                sortKey: getSortKey(patient.panoramicUploadedAt),
+        if (patient?.panoramics && patient.panoramics.length > 0) {
+            patient.panoramics.forEach(pano => {
+                const panoramicEventTime = getEventDateTime(pano.uploadedAt);
+                timeline.push({
+                    date: panoramicEventTime.date,
+                    time: panoramicEventTime.time,
+                    type: 'status_change',
+                    icon: FileText,
+                    color: 'amber',
+                    title: 'Panoramica cargada',
+                    description: pano.name || 'Archivo cargado',
+                    sortKey: getSortKey(pano.uploadedAt),
+                });
             });
         }
 
